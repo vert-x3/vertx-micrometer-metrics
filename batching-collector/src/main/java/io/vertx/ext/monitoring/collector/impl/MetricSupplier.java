@@ -26,7 +26,7 @@ import java.util.List;
  */
 public interface MetricSupplier {
   /**
-   * @return a list of metrics to send to the Hawkular server
+   * @return a list of metrics to send by the reporter
    */
   List<DataPoint> collect();
 }

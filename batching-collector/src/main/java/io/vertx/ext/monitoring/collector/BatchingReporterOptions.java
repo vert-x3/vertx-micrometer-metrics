@@ -112,8 +112,8 @@ public abstract class BatchingReporterOptions extends MetricsOptionsBase {
   }
 
   /**
-   * Set the maximum number of metrics in a batch. To reduce the number of HTTP exchanges, metric data is sent to the
-   * Hawkular server in batches. A batch is sent as soon as the number of metrics collected reaches the configured
+   * Set the maximum number of metrics in a batch. To reduce the number of HTTP exchanges, metric data is sent by the
+   * reporter in batches. A batch is sent as soon as the number of metrics collected reaches the configured
    * {@code batchSize}, or after the {@code batchDelay} expires. Defaults to {@code 50}.
    */
   public MetricsOptionsBase setBatchSize(int batchSize) {
@@ -130,7 +130,7 @@ public abstract class BatchingReporterOptions extends MetricsOptionsBase {
 
   /**
    * Set the maximum delay between two consecutive batches (in seconds). To reduce the number of HTTP exchanges, metric
-   * data is sent to the Hawkular server in batches. A batch is sent as soon as the number of metrics collected reaches
+   * data is sent by the reporter in batches. A batch is sent as soon as the number of metrics collected reaches
    * the configured {@code batchSize}, or after the {@code batchDelay} expires. Defaults to {@code 1} second.
    */
   public MetricsOptionsBase setBatchDelay(int batchDelay) {

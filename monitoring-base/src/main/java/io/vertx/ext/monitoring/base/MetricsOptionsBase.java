@@ -75,7 +75,7 @@ public abstract class MetricsOptionsBase extends MetricsOptions {
 
   /**
    * @return the metric bridge address. If enabled the metric bridge transfers metrics collected from the event bus to
-   * the Hawkular server. The metrics are sent as message on the event bus to the return address. The message is a
+   * the reporter. The metrics are sent as message on the event bus to the return address. The message is a
    * JSON object specifying at least the {@code source} and {@code value} fields ({@code value} is a double).
    */
   public String getMetricsBridgeAddress() {

@@ -26,7 +26,7 @@
 
   <artifactId>vertx-monitoring-batching-collector</artifactId>
 
-  <name>Vert.x Metrics Collector</name>
+  <name>Vert.x Monitoring Batching Collector</name>
 
   <dependencyManagement>
     <dependencies>

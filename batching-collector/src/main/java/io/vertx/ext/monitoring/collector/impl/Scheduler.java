@@ -40,9 +40,9 @@ public class Scheduler {
 
   /**
    * @param vertx   the {@link Vertx} managed instance
-   * @param options Vertx Hawkular options
+   * @param options batching reporter options
    * @param context the metric collection and sending execution context
-   * @param sender  the object responsible for sending metrics to the Hawkular server
+   * @param sender  the object responsible for sending metrics to a remote server
    */
   public Scheduler(Vertx vertx, BatchingReporterOptions options, Context context, Handler<List<DataPoint>> sender) {
     this.vertx = vertx;
