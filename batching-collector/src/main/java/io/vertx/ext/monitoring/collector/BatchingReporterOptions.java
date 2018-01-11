@@ -84,7 +84,7 @@ public class BatchingReporterOptions extends MetricsOptionsBase {
    * Set the metric name prefix. Metric names are not prefixed by default. Prefixing metric names is required to
    * distinguish data sent by different Vert.x instances.
    */
-  public MetricsOptionsBase setPrefix(String prefix) {
+  public BatchingReporterOptions setPrefix(String prefix) {
     this.prefix = prefix;
     return this;
   }
@@ -99,7 +99,7 @@ public class BatchingReporterOptions extends MetricsOptionsBase {
   /**
    * Set the metric collection interval (in seconds). Defaults to {@code 1}.
    */
-  public MetricsOptionsBase setSchedule(int schedule) {
+  public BatchingReporterOptions setSchedule(int schedule) {
     this.schedule = schedule;
     return this;
   }
@@ -116,7 +116,7 @@ public class BatchingReporterOptions extends MetricsOptionsBase {
    * reporter in batches. A batch is sent as soon as the number of metrics collected reaches the configured
    * {@code batchSize}, or after the {@code batchDelay} expires. Defaults to {@code 50}.
    */
-  public MetricsOptionsBase setBatchSize(int batchSize) {
+  public BatchingReporterOptions setBatchSize(int batchSize) {
     this.batchSize = batchSize;
     return this;
   }
@@ -133,7 +133,7 @@ public class BatchingReporterOptions extends MetricsOptionsBase {
    * data is sent by the reporter in batches. A batch is sent as soon as the number of metrics collected reaches
    * the configured {@code batchSize}, or after the {@code batchDelay} expires. Defaults to {@code 1} second.
    */
-  public MetricsOptionsBase setBatchDelay(int batchDelay) {
+  public BatchingReporterOptions setBatchDelay(int batchDelay) {
     this.batchDelay = batchDelay;
     return this;
   }

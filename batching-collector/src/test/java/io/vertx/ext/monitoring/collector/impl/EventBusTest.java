@@ -1,21 +1,20 @@
 package io.vertx.ext.monitoring.collector.impl;
 
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.monitoring.collector.BatchingReporterOptions;
+import io.vertx.ext.monitoring.collector.Comparators;
 import io.vertx.ext.monitoring.collector.DummyVertxMetrics;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.assertj.core.groups.Tuple;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -37,16 +36,19 @@ public class EventBusTest {
 
   @Test
   public void shouldReportEventbusMetrics(TestContext context) throws InterruptedException {
+    int instances = 3;
     Async async = context.async();
     observerRef = DummyVertxMetrics.REPORTER.observe(name -> name.startsWith("vertx.eventbus"), dataPoints -> {
       context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
         // We use a special comparator for processingTime: must be >= expected and <= expected+100ms
-        .usingElementComparator(metricValueComparator("vertx.eventbus.testSubject.processingTime",
-          (actual, expected) -> (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 100) ? 0 : -1))
+        .usingElementComparator(Comparators.metricValueComparator("vertx.eventbus.testSubject.processingTime",
+          (actual, expected) ->
+            (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 100 * instances)
+              ? 0 : -1))
         .containsOnly(
-          tuple("vertx.eventbus.handlers", 1.0),
-          tuple("vertx.eventbus.testSubject.processingTime", 180L),
-          tuple("vertx.eventbus.errorCount", 3L),
+          tuple("vertx.eventbus.handlers", 1.0 * instances),
+          tuple("vertx.eventbus.testSubject.processingTime", 180L * instances),
+          tuple("vertx.eventbus.errorCount", 3L * instances),
           tuple("vertx.eventbus.bytesWritten", 0L),
           tuple("vertx.eventbus.bytesRead", 0L),
           tuple("vertx.eventbus.pending", 0.0),
@@ -70,17 +72,22 @@ public class EventBusTest {
 
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new BatchingReporterOptions().setEnabled(true)));
     // Setup eventbus handler
-    vertx.eventBus().consumer("testSubject", msg -> {
-      JsonObject body = (JsonObject) msg.body();
-      try {
-        Thread.sleep(body.getLong("sleep"));
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      @Override
+      public void start(Future<Void> future) throws Exception {
+        vertx.eventBus().consumer("testSubject", msg -> {
+          JsonObject body = (JsonObject) msg.body();
+          try {
+            Thread.sleep(body.getLong("sleep"));
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+          if (body.getBoolean("fail")) {
+            throw new RuntimeException("expected failure");
+          }
+        });
       }
-      if (body.getBoolean("fail")) {
-        throw new RuntimeException("expected failure");
-      }
-    });
+    }, new DeploymentOptions().setInstances(instances));
 
     // Send to eventbus
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
@@ -94,28 +101,5 @@ public class EventBusTest {
     vertx.eventBus().publish("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     vertx.eventBus().publish("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     async.awaitSuccess();
-  }
-
-  private static Comparator<Tuple> metricValueComparator(String metricName, Comparator<Number> comparator) {
-    return metricValueComparators(Collections.singletonMap(metricName, comparator));
-  }
-
-  private static Comparator<Tuple> metricValueComparators(Map<String, Comparator<Number>> specialComparators) {
-    return (t1, t2) -> {
-      Object[] arr1 = t1.toArray();
-      Object[] arr2 = t2.toArray();
-      String name1 = (String) arr1[0];
-      String name2 = (String) arr2[0];
-      if (name1.equals(name2)) {
-        Number num1 = (Number) arr1[1];
-        Number num2 = (Number) arr2[1];
-        if (specialComparators.containsKey(name1)) {
-          return specialComparators.get(name1).compare(num1, num2);
-        } else {
-          return num1.equals(num2) ? 0 : -1;
-        }
-      }
-      return -1;
-    };
   }
 }
