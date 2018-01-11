@@ -54,7 +54,12 @@ public class Scheduler {
   }
 
   private void collectAndSend(Long timerId) {
-    suppliers.forEach(supplier -> sender.handle(supplier.collect()));
+    suppliers.forEach(supplier -> {
+      List<DataPoint> datapoints = supplier.collect();
+      if (!datapoints.isEmpty()) {
+        sender.handle(datapoints);
+      }
+    });
   }
 
   /**
