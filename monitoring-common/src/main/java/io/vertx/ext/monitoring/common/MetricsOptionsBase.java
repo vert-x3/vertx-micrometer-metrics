@@ -44,19 +44,19 @@ public abstract class MetricsOptionsBase extends MetricsOptions {
 
   private boolean metricsBridgeEnabled;
   private String metricsBridgeAddress;
-  private Set<MetricsType> disabledMetricsTypes;
+  private Set<MetricsCategory> disabledMetricsCategories;
 
   public MetricsOptionsBase() {
     metricsBridgeEnabled = DEFAULT_METRICS_BRIDGE_ENABLED;
     metricsBridgeAddress = DEFAULT_METRICS_BRIDGE_ADDRESS;
-    disabledMetricsTypes = EnumSet.noneOf(MetricsType.class);
+    disabledMetricsCategories = EnumSet.noneOf(MetricsCategory.class);
   }
 
   public MetricsOptionsBase(MetricsOptionsBase other) {
     super(other);
     metricsBridgeAddress = other.metricsBridgeAddress;
     metricsBridgeEnabled = other.metricsBridgeEnabled;
-    disabledMetricsTypes = other.disabledMetricsTypes != null ? EnumSet.copyOf(other.disabledMetricsTypes) : EnumSet.noneOf(MetricsType.class);
+    disabledMetricsCategories = other.disabledMetricsCategories != null ? EnumSet.copyOf(other.disabledMetricsCategories) : EnumSet.noneOf(MetricsCategory.class);
   }
 
   public MetricsOptionsBase(JsonObject json) {
@@ -120,39 +120,39 @@ public abstract class MetricsOptionsBase extends MetricsOptions {
   /**
    * @return the disabled metrics types.
    */
-  public Set<MetricsType> getDisabledMetricsTypes() {
-    return disabledMetricsTypes;
+  public Set<MetricsCategory> getDisabledMetricsCategories() {
+    return disabledMetricsCategories;
   }
 
   /**
    * Sets metrics types that are disabled.
    *
-   * @param disabledMetricsTypes to specify the set of metrics types to be disabled.
+   * @param disabledMetricsCategories to specify the set of metrics types to be disabled.
    * @return a reference to this, so that the API can be used fluently
    */
-  public MetricsOptionsBase setDisabledMetricsTypes(Set<MetricsType> disabledMetricsTypes) {
-    this.disabledMetricsTypes = disabledMetricsTypes;
+  public MetricsOptionsBase setDisabledMetricsCategories(Set<MetricsCategory> disabledMetricsCategories) {
+    this.disabledMetricsCategories = disabledMetricsCategories;
     return this;
   }
 
   /**
-   * Set metric that will not be registered. Schedulers will check the set {@code disabledMetricsTypes} when
+   * Set metric that will not be registered. Schedulers will check the set {@code disabledMetricsCategories} when
    * registering metrics suppliers
    *
-   * @param metricsType the type of metrics
+   * @param metricsCategory the type of metrics
    * @return a reference to this, so that the API can be used fluently
    */
   @GenIgnore
-  public MetricsOptionsBase addDisabledMetricsType(MetricsType metricsType) {
-    if (disabledMetricsTypes == null) {
-      disabledMetricsTypes = EnumSet.noneOf(MetricsType.class);
+  public MetricsOptionsBase addDisabledMetricsCategory(MetricsCategory metricsCategory) {
+    if (disabledMetricsCategories == null) {
+      disabledMetricsCategories = EnumSet.noneOf(MetricsCategory.class);
     }
-    this.disabledMetricsTypes.add(metricsType);
+    this.disabledMetricsCategories.add(metricsCategory);
     return this;
   }
 
   @GenIgnore
-  public boolean isMetricsTypeDisabled(MetricsType metricsType) {
-    return disabledMetricsTypes != null && disabledMetricsTypes.contains(metricsType);
+  public boolean isMetricsCategoryDisabled(MetricsCategory metricsCategory) {
+    return disabledMetricsCategories != null && disabledMetricsCategories.contains(metricsCategory);
   }
 }

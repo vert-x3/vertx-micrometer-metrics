@@ -37,7 +37,7 @@ import io.vertx.core.spi.metrics.HttpClientMetrics;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
 import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.TCPMetrics;
-import io.vertx.ext.monitoring.common.MetricsType;
+import io.vertx.ext.monitoring.common.MetricsCategory;
 import io.vertx.ext.monitoring.collector.BatchingReporterOptions;
 import io.vertx.ext.monitoring.collector.Reporter;
 
@@ -46,7 +46,7 @@ import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static io.vertx.ext.monitoring.common.MetricsType.*;
+import static io.vertx.ext.monitoring.common.MetricsCategory.*;
 
 /**
  * Metrics SPI implementation.
@@ -56,7 +56,7 @@ import static io.vertx.ext.monitoring.common.MetricsType.*;
 public abstract class BatchingVertxMetrics<T extends BatchingReporterOptions> extends DummyVertxMetrics {
   protected final Vertx vertx;
   protected final T options;
-  protected final Map<MetricsType, MetricSupplier> metricSuppliers;
+  protected final Map<MetricsCategory, MetricSupplier> metricSuppliers;
 
   private Future<Void> metricsReady = Future.future();
 
@@ -67,29 +67,29 @@ public abstract class BatchingVertxMetrics<T extends BatchingReporterOptions> ex
     this.vertx = vertx;
     this.options = options;
     String prefix = options.getPrefix();
-    Map<MetricsType, MetricSupplier> supplierMap = new EnumMap<>(MetricsType.class);
-    if (!options.isMetricsTypeDisabled(HTTP_SERVER)) {
+    Map<MetricsCategory, MetricSupplier> supplierMap = new EnumMap<>(MetricsCategory.class);
+    if (!options.isMetricsCategoryDisabled(HTTP_SERVER)) {
       supplierMap.put(HTTP_SERVER, new HttpServerMetricsSupplier(prefix));
     }
-    if (!options.isMetricsTypeDisabled(HTTP_CLIENT)) {
+    if (!options.isMetricsCategoryDisabled(HTTP_CLIENT)) {
       supplierMap.put(HTTP_CLIENT, new HttpClientMetricsSupplier(prefix));
     }
-    if (!options.isMetricsTypeDisabled(NET_SERVER)) {
+    if (!options.isMetricsCategoryDisabled(NET_SERVER)) {
       supplierMap.put(NET_SERVER, new NetServerMetricsSupplier(prefix));
     }
-    if (!options.isMetricsTypeDisabled(NET_CLIENT)) {
+    if (!options.isMetricsCategoryDisabled(NET_CLIENT)) {
       supplierMap.put(NET_CLIENT, new NetClientMetricsSupplier(prefix));
     }
-    if (!options.isMetricsTypeDisabled(DATAGRAM_SOCKET)) {
+    if (!options.isMetricsCategoryDisabled(DATAGRAM_SOCKET)) {
       supplierMap.put(DATAGRAM_SOCKET, new DatagramSocketMetricsSupplier(prefix));
     }
-    if (!options.isMetricsTypeDisabled(EVENT_BUS)) {
+    if (!options.isMetricsCategoryDisabled(EVENT_BUS)) {
       supplierMap.put(EVENT_BUS, new EventBusMetricsImpl(prefix));
     }
-    if (!options.isMetricsTypeDisabled(NAMED_POOLS)) {
+    if (!options.isMetricsCategoryDisabled(NAMED_POOLS)) {
       supplierMap.put(NAMED_POOLS, new NamedPoolMetricsSupplier(prefix));
     }
-    if (!options.isMetricsTypeDisabled(VERTICLES)) {
+    if (!options.isMetricsCategoryDisabled(VERTICLES)) {
       supplierMap.put(VERTICLES, new VerticleMetricsSupplier(prefix));
     }
     metricSuppliers = Collections.unmodifiableMap(supplierMap);

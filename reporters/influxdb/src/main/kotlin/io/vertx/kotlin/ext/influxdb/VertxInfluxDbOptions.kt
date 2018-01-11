@@ -3,7 +3,7 @@ package io.vertx.kotlin.ext.influxdb
 import io.vertx.ext.influxdb.VertxInfluxDbOptions
 import io.vertx.core.http.HttpClientOptions
 import io.vertx.ext.influxdb.AuthenticationOptions
-import io.vertx.ext.monitoring.common.MetricsType
+import io.vertx.ext.monitoring.common.MetricsCategory
 
 /**
  * A function providing a DSL for building [io.vertx.ext.influxdb.VertxInfluxDbOptions] objects.
@@ -14,7 +14,7 @@ import io.vertx.ext.monitoring.common.MetricsType
  * @param batchDelay 
  * @param batchSize 
  * @param database  Set the InfluxDb database. Defaults to <code>default</code>.
- * @param disabledMetricsTypes 
+ * @param disabledMetricsCategories 
  * @param enabled 
  * @param gzipEnabled 
  * @param host  Set the InfluxDb Metrics service host. Defaults to <code>localhost</code>.
@@ -35,7 +35,7 @@ fun VertxInfluxDbOptions(
   batchDelay: Int? = null,
   batchSize: Int? = null,
   database: String? = null,
-  disabledMetricsTypes: Iterable<MetricsType>? = null,
+  disabledMetricsCategories: Iterable<MetricsCategory>? = null,
   enabled: Boolean? = null,
   gzipEnabled: Boolean? = null,
   host: String? = null,
@@ -60,8 +60,8 @@ fun VertxInfluxDbOptions(
   if (database != null) {
     this.setDatabase(database)
   }
-  if (disabledMetricsTypes != null) {
-    this.setDisabledMetricsTypes(disabledMetricsTypes.toSet())
+  if (disabledMetricsCategories != null) {
+    this.setDisabledMetricsCategories(disabledMetricsCategories.toSet())
   }
   if (enabled != null) {
     this.setEnabled(enabled)

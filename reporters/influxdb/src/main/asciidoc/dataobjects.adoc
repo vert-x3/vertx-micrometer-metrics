@@ -48,7 +48,7 @@ Set the options for authentication.
 +++
 Set the InfluxDb database. Defaults to <code>default</code>.
 +++
-|[[disabledMetricsTypes]]`disabledMetricsTypes`|`Array of link:enums.html#MetricsType[MetricsType]`|-
+|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsCategory[MetricsCategory]`|-
 |[[enabled]]`enabled`|`Boolean`|-
 |[[gzipEnabled]]`gzipEnabled`|`Boolean`|-
 |[[host]]`host`|`String`|

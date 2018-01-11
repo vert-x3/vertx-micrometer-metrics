@@ -22,7 +22,7 @@ import io.vertx.codegen.annotations.VertxGen;
  * Metrics types for each metrics.
  */
 @VertxGen
-public enum MetricsType {
+public enum MetricsCategory {
 
   /**
    * Net server metrics.

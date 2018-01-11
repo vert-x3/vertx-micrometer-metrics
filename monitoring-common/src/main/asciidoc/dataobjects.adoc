@@ -12,7 +12,7 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[disabledMetricsTypes]]`disabledMetricsTypes`|`Array of link:enums.html#MetricsType[MetricsType]`|
+|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsCategory[MetricsCategory]`|
 +++
 Sets metrics types that are disabled.
 +++

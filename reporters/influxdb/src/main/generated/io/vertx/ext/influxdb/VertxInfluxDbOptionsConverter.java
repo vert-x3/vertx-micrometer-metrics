@@ -39,13 +39,13 @@ public class VertxInfluxDbOptionsConverter {
     if (json.getValue("database") instanceof String) {
       obj.setDatabase((String)json.getValue("database"));
     }
-    if (json.getValue("disabledMetricsTypes") instanceof JsonArray) {
-      java.util.HashSet<io.vertx.ext.monitoring.common.MetricsType> list = new java.util.HashSet<>();
-      json.getJsonArray("disabledMetricsTypes").forEach( item -> {
+    if (json.getValue("disabledMetricsCategories") instanceof JsonArray) {
+      java.util.HashSet<io.vertx.ext.monitoring.common.MetricsCategory> list = new java.util.HashSet<>();
+      json.getJsonArray("disabledMetricsCategories").forEach( item -> {
         if (item instanceof String)
-          list.add(io.vertx.ext.monitoring.common.MetricsType.valueOf((String)item));
+          list.add(io.vertx.ext.monitoring.common.MetricsCategory.valueOf((String)item));
       });
-      obj.setDisabledMetricsTypes(list);
+      obj.setDisabledMetricsCategories(list);
     }
     if (json.getValue("enabled") instanceof Boolean) {
       obj.setEnabled((Boolean)json.getValue("enabled"));
@@ -88,10 +88,10 @@ public class VertxInfluxDbOptionsConverter {
     if (obj.getDatabase() != null) {
       json.put("database", obj.getDatabase());
     }
-    if (obj.getDisabledMetricsTypes() != null) {
+    if (obj.getDisabledMetricsCategories() != null) {
       JsonArray array = new JsonArray();
-      obj.getDisabledMetricsTypes().forEach(item -> array.add(item.name()));
-      json.put("disabledMetricsTypes", array);
+      obj.getDisabledMetricsCategories().forEach(item -> array.add(item.name()));
+      json.put("disabledMetricsCategories", array);
     }
     json.put("enabled", obj.isEnabled());
     json.put("gzipEnabled", obj.isGzipEnabled());
