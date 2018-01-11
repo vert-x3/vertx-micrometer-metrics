@@ -40,10 +40,10 @@ public class VertxInfluxDbOptionsConverter {
       obj.setDatabase((String)json.getValue("database"));
     }
     if (json.getValue("disabledMetricsTypes") instanceof JsonArray) {
-      java.util.HashSet<io.vertx.ext.monitoring.base.MetricsType> list = new java.util.HashSet<>();
+      java.util.HashSet<io.vertx.ext.monitoring.common.MetricsType> list = new java.util.HashSet<>();
       json.getJsonArray("disabledMetricsTypes").forEach( item -> {
         if (item instanceof String)
-          list.add(io.vertx.ext.monitoring.base.MetricsType.valueOf((String)item));
+          list.add(io.vertx.ext.monitoring.common.MetricsType.valueOf((String)item));
       });
       obj.setDisabledMetricsTypes(list);
     }

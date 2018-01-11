@@ -3,7 +3,7 @@ package io.vertx.kotlin.ext.influxdb
 import io.vertx.ext.influxdb.VertxInfluxDbOptions
 import io.vertx.core.http.HttpClientOptions
 import io.vertx.ext.influxdb.AuthenticationOptions
-import io.vertx.ext.monitoring.base.MetricsType
+import io.vertx.ext.monitoring.common.MetricsType
 
 /**
  * A function providing a DSL for building [io.vertx.ext.influxdb.VertxInfluxDbOptions] objects.

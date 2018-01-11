@@ -18,7 +18,7 @@ package io.vertx.ext.monitoring.collector;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.monitoring.base.MetricsOptionsBase;
+import io.vertx.ext.monitoring.common.MetricsOptionsBase;
 
 /**
  * Common options for reporters sending metrics in batches.

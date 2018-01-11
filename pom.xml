@@ -44,7 +44,7 @@
   </properties>
 
   <modules>
-    <module>monitoring-base</module>
+    <module>monitoring-common</module>
     <module>batching-collector</module>
     <module>reporters</module>
   </modules>

@@ -43,7 +43,7 @@
   <dependencies>
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-monitoring-base</artifactId>
+      <artifactId>vertx-monitoring-common</artifactId>
       <version>3.5.0-SNAPSHOT</version>
     </dependency>
 

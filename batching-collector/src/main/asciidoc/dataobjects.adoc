@@ -15,13 +15,13 @@
 |[[batchDelay]]`batchDelay`|`Number (int)`|
 +++
 Set the maximum delay between two consecutive batches (in seconds). To reduce the number of HTTP exchanges, metric
- data is sent to the Hawkular server in batches. A batch is sent as soon as the number of metrics collected reaches
+ data is sent by the reporter in batches. A batch is sent as soon as the number of metrics collected reaches
  the configured <code>batchSize</code>, or after the <code>batchDelay</code> expires. Defaults to <code>1</code> second.
 +++
 |[[batchSize]]`batchSize`|`Number (int)`|
 +++
-Set the maximum number of metrics in a batch. To reduce the number of HTTP exchanges, metric data is sent to the
- Hawkular server in batches. A batch is sent as soon as the number of metrics collected reaches the configured
+Set the maximum number of metrics in a batch. To reduce the number of HTTP exchanges, metric data is sent by the
+ reporter in batches. A batch is sent as soon as the number of metrics collected reaches the configured
  <code>batchSize</code>, or after the <code>batchDelay</code> expires. Defaults to <code>50</code>.
 +++
 |[[disabledMetricsTypes]]`disabledMetricsTypes`|`Array of link:enums.html#MetricsType[MetricsType]`|-

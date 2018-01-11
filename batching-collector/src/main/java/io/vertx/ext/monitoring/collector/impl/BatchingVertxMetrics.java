@@ -37,7 +37,7 @@ import io.vertx.core.spi.metrics.HttpClientMetrics;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
 import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.TCPMetrics;
-import io.vertx.ext.monitoring.base.MetricsType;
+import io.vertx.ext.monitoring.common.MetricsType;
 import io.vertx.ext.monitoring.collector.BatchingReporterOptions;
 import io.vertx.ext.monitoring.collector.Reporter;
 
@@ -46,7 +46,7 @@ import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static io.vertx.ext.monitoring.base.MetricsType.*;
+import static io.vertx.ext.monitoring.common.MetricsType.*;
 
 /**
  * Metrics SPI implementation.

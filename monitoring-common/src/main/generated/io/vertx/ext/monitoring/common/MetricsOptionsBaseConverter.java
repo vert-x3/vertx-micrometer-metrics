@@ -14,24 +14,24 @@
  * under the License.
  */
 
-package io.vertx.ext.monitoring.base;
+package io.vertx.ext.monitoring.common;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 
 /**
- * Converter for {@link io.vertx.ext.monitoring.base.MetricsOptionsBase}.
+ * Converter for {@link io.vertx.ext.monitoring.common.MetricsOptionsBase}.
  *
- * NOTE: This class has been automatically generated from the {@link io.vertx.ext.monitoring.base.MetricsOptionsBase} original class using Vert.x codegen.
+ * NOTE: This class has been automatically generated from the {@link io.vertx.ext.monitoring.common.MetricsOptionsBase} original class using Vert.x codegen.
  */
 public class MetricsOptionsBaseConverter {
 
   public static void fromJson(JsonObject json, MetricsOptionsBase obj) {
     if (json.getValue("disabledMetricsTypes") instanceof JsonArray) {
-      java.util.HashSet<io.vertx.ext.monitoring.base.MetricsType> list = new java.util.HashSet<>();
+      java.util.HashSet<io.vertx.ext.monitoring.common.MetricsType> list = new java.util.HashSet<>();
       json.getJsonArray("disabledMetricsTypes").forEach( item -> {
         if (item instanceof String)
-          list.add(io.vertx.ext.monitoring.base.MetricsType.valueOf((String)item));
+          list.add(io.vertx.ext.monitoring.common.MetricsType.valueOf((String)item));
       });
       obj.setDisabledMetricsTypes(list);
     }

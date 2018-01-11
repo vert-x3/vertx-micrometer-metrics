@@ -13,8 +13,47 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+package io.vertx.ext.monitoring.common;
 
-@ModuleGen(name = "vertx-monitoring-base", groupPackage = "io.vertx")
-package io.vertx.ext.monitoring.base;
+import io.vertx.codegen.annotations.VertxGen;
 
-import io.vertx.codegen.annotations.ModuleGen;
+
+/**
+ * Metrics types for each metrics.
+ */
+@VertxGen
+public enum MetricsType {
+
+  /**
+   * Net server metrics.
+   */
+  NET_SERVER,
+  /**
+   * Net client metrics.
+   */
+  NET_CLIENT,
+  /**
+   * Http server metrics.
+   */
+  HTTP_SERVER,
+  /**
+   * Http client metrics.
+   */
+  HTTP_CLIENT,
+  /**
+   * Datagram socket metrics.
+   */
+  DATAGRAM_SOCKET,
+  /**
+   * Event bus metrics.
+   */
+  EVENT_BUS,
+  /**
+   * Named pools metrics.
+   */
+  NAMED_POOLS,
+  /**
+   * Verticle metrics.
+   */
+  VERTICLES
+}
