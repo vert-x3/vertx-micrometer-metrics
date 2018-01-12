@@ -36,9 +36,8 @@ public class EventBusTest {
 
   @Test
   public void shouldReportEventbusMetrics(TestContext context) throws InterruptedException {
-    int instances = 3;
+    int instances = 2;
     Async assertions = context.async();
-    Async messagesAllReceived = context.async(8 * instances);
     watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.eventbus"), dataPoints -> {
       // Discard watch if there's no handler registered yet
       dataPoints.stream().filter(dp -> dp.getName().equals("vertx.eventbus.handlers"))
@@ -80,14 +79,12 @@ public class EventBusTest {
     Async ebReady = context.async(instances);
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new BatchingReporterOptions()
-        //.setSchedule(2)
         .setEnabled(true)));
     // Setup eventbus handler
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start(Future<Void> future) throws Exception {
         vertx.eventBus().consumer("testSubject", msg -> {
-          messagesAllReceived.countDown();
           JsonObject body = (JsonObject) msg.body();
           try {
             Thread.sleep(body.getLong("sleep"));

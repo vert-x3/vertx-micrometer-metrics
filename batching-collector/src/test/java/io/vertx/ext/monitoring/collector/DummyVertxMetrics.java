@@ -21,8 +21,8 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.monitoring.collector.impl.BatchingVertxMetrics;
 import io.vertx.ext.monitoring.collector.impl.DataPoint;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -44,7 +44,7 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
   }
 
   public static class DummyReporter implements Reporter {
-    private List<Watcher> watchers = new ArrayList<>();
+    private List<Watcher> watchers = new CopyOnWriteArrayList<>();
 
     @Override
     public void stop() {

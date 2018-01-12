@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class InfluxDbReporterTest {
+public class InfluxDbReporterITest {
 
   private Vertx vertx;
 
@@ -41,6 +41,8 @@ public class InfluxDbReporterTest {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new VertxInfluxDbOptions().setAuthenticationOptions(
         new AuthenticationOptions().setUsername("xx").setSecret("yy").setEnabled(true))
+        // Set batch delay in order to prevent multiple batch requests during test which leads to completing async twice
+        .setBatchDelay(10)
         .setEnabled(true))
     );
   }
