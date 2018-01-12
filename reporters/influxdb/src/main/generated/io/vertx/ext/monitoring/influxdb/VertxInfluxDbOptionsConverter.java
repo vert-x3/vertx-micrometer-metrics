@@ -14,21 +14,21 @@
  * under the License.
  */
 
-package io.vertx.ext.influxdb;
+package io.vertx.ext.monitoring.influxdb;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 
 /**
- * Converter for {@link io.vertx.ext.influxdb.VertxInfluxDbOptions}.
+ * Converter for {@link io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions}.
  *
- * NOTE: This class has been automatically generated from the {@link io.vertx.ext.influxdb.VertxInfluxDbOptions} original class using Vert.x codegen.
+ * NOTE: This class has been automatically generated from the {@link io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions} original class using Vert.x codegen.
  */
 public class VertxInfluxDbOptionsConverter {
 
   public static void fromJson(JsonObject json, VertxInfluxDbOptions obj) {
     if (json.getValue("authenticationOptions") instanceof JsonObject) {
-      obj.setAuthenticationOptions(new io.vertx.ext.influxdb.AuthenticationOptions((JsonObject)json.getValue("authenticationOptions")));
+      obj.setAuthenticationOptions(new io.vertx.ext.monitoring.influxdb.AuthenticationOptions((JsonObject)json.getValue("authenticationOptions")));
     }
     if (json.getValue("batchDelay") instanceof Number) {
       obj.setBatchDelay(((Number)json.getValue("batchDelay")).intValue());

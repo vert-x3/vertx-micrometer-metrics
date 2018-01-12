@@ -1,36 +1,37 @@
-package io.vertx.kotlin.ext.influxdb
+package io.vertx.kotlin.ext.monitoring.influxdb
 
 import io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions
-import io.vertx.ext.monitoring.influxdb.AuthenticationOptions
+import io.vertx.core.http.HttpClientOptions
 import io.vertx.ext.monitoring.common.MetricsCategory
+import io.vertx.ext.monitoring.influxdb.AuthenticationOptions
 
 /**
- * A function providing a DSL for building [io.vertx.ext.influxdb.VertxInfluxDbOptions] objects.
+ * A function providing a DSL for building [io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions] objects.
  *
  * Vert.x InfluxDb monitoring configuration.
  *
  * @param authenticationOptions  Set the options for authentication.
- * @param batchDelay
- * @param batchSize
+ * @param batchDelay 
+ * @param batchSize 
  * @param database  Set the InfluxDb database. Defaults to <code>default</code>.
- * @param disabledMetricsCategories
- * @param enabled
- * @param gzipEnabled
+ * @param disabledMetricsCategories 
+ * @param enabled 
+ * @param gzipEnabled 
  * @param host  Set the InfluxDb Metrics service host. Defaults to <code>localhost</code>.
  * @param httpHeaders  Set specific headers to include in HTTP requests.
  * @param httpOptions  Set the configuration of the InfluxDb Metrics HTTP client.
- * @param metricsBridgeAddress
- * @param metricsBridgeEnabled
+ * @param metricsBridgeAddress 
+ * @param metricsBridgeEnabled 
  * @param metricsServiceUri  Set the InfluxDb Metrics service URI. Defaults to <code>/InfluxDb/metrics</code>. This can be useful if you host the InfluxDb server behind a proxy and manipulate the default service URI.
  * @param port  Set the InfluxDb Metrics service port.  Defaults to <code>8080</code>.
- * @param prefix
- * @param schedule
+ * @param prefix 
+ * @param schedule 
  *
  * <p/>
- * NOTE: This function has been automatically generated from the [VertxInfluxDbOptions original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from the [io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions original] using Vert.x codegen.
  */
 fun VertxInfluxDbOptions(
-  authenticationOptions: AuthenticationOptions? = null,
+  authenticationOptions: io.vertx.ext.monitoring.influxdb.AuthenticationOptions? = null,
   batchDelay: Int? = null,
   batchSize: Int? = null,
   database: String? = null,
@@ -45,7 +46,7 @@ fun VertxInfluxDbOptions(
   metricsServiceUri: String? = null,
   port: Int? = null,
   prefix: String? = null,
-  schedule: Int? = null): VertxInfluxDbOptions = VertxInfluxDbOptions().apply {
+  schedule: Int? = null): VertxInfluxDbOptions = io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions().apply {
 
   if (authenticationOptions != null) {
     this.setAuthenticationOptions(authenticationOptions)

@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.vertx.ext.influxdb.impl;
+package io.vertx.ext.monitoring.influxdb.impl;
 
 import io.vertx.codegen.annotations.Nullable;
 

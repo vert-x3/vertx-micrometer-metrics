@@ -37,7 +37,7 @@ And Gradle users, to their build file:
 compile 'io.vertx:vertx-monitoring-influxdb:3.5.1-SNAPSHOT'
 ----
 
-Please refer to `link:../../apidocs/io/vertx/ext/influxdb/VertxInfluxDbOptions.html[VertxInfluxDbOptions]` for an exhaustive list of options.
+Please refer to `link:../../apidocs/io/vertx/ext/monitoring/influxdb/VertxInfluxDbOptions.html[VertxInfluxDbOptions]` for an exhaustive list of options.
 
 == Vert.x core tools metrics
 

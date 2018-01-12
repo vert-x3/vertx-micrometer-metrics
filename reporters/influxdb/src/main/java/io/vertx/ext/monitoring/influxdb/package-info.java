@@ -54,7 +54,7 @@
  * compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
  * ----
  *
- * Please refer to {@link io.vertx.ext.influxdb.VertxInfluxDbOptions} for an exhaustive list of options.
+ * Please refer to {@link io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions} for an exhaustive list of options.
  *
  * == Vert.x core tools metrics
  *
@@ -418,7 +418,7 @@
  */
 @ModuleGen(name = "vertx-influxdb", groupPackage = "io.vertx")
 @Document(fileName = "index.adoc")
-package io.vertx.ext.influxdb;
+package io.vertx.ext.monitoring.influxdb;
 
 import io.vertx.codegen.annotations.ModuleGen;
 import io.vertx.docgen.Document;

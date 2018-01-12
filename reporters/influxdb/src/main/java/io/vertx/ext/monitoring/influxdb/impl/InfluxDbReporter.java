@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.vertx.ext.influxdb.impl;
+package io.vertx.ext.monitoring.influxdb.impl;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -26,8 +26,8 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.influxdb.AuthenticationOptions;
-import io.vertx.ext.influxdb.VertxInfluxDbOptions;
+import io.vertx.ext.monitoring.influxdb.AuthenticationOptions;
+import io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions;
 import io.vertx.ext.monitoring.collector.impl.AvailabilityPoint;
 import io.vertx.ext.monitoring.collector.impl.CounterPoint;
 import io.vertx.ext.monitoring.collector.impl.DataPoint;

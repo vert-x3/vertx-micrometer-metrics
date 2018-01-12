@@ -13,14 +13,14 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.vertx.ext.influxdb.impl;
+package io.vertx.ext.monitoring.influxdb.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.VertxMetricsFactory;
 import io.vertx.core.spi.metrics.VertxMetrics;
-import io.vertx.ext.influxdb.VertxInfluxDbOptions;
+import io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions;
 
 /**
  * @author Dan Kristensen

@@ -14,15 +14,15 @@
  * under the License.
  */
 
-package io.vertx.ext.influxdb;
+package io.vertx.ext.monitoring.influxdb;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 
 /**
- * Converter for {@link io.vertx.ext.influxdb.AuthenticationOptions}.
+ * Converter for {@link io.vertx.ext.monitoring.influxdb.AuthenticationOptions}.
  *
- * NOTE: This class has been automatically generated from the {@link io.vertx.ext.influxdb.AuthenticationOptions} original class using Vert.x codegen.
+ * NOTE: This class has been automatically generated from the {@link io.vertx.ext.monitoring.influxdb.AuthenticationOptions} original class using Vert.x codegen.
  */
 public class AuthenticationOptionsConverter {
 

@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.vertx.ext.influxdb;
+package io.vertx.ext.monitoring.influxdb;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.http.HttpClientOptions;

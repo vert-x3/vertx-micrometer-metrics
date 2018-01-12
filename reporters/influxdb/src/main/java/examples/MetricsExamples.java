@@ -20,8 +20,8 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
-import io.vertx.ext.influxdb.AuthenticationOptions;
-import io.vertx.ext.influxdb.VertxInfluxDbOptions;
+import io.vertx.ext.monitoring.influxdb.AuthenticationOptions;
+import io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions;
 
 /**
  * @author Thomas Segismont

@@ -14,15 +14,15 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.vertx.ext.influxdb.impl;
+package io.vertx.ext.monitoring.influxdb.impl;
 
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.influxdb.AuthenticationOptions;
-import io.vertx.ext.influxdb.VertxInfluxDbOptions;
+import io.vertx.ext.monitoring.influxdb.AuthenticationOptions;
+import io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;

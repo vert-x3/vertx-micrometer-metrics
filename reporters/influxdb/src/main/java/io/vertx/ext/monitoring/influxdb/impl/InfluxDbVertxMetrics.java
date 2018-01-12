@@ -14,11 +14,11 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.vertx.ext.influxdb.impl;
+package io.vertx.ext.monitoring.influxdb.impl;
 
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
-import io.vertx.ext.influxdb.VertxInfluxDbOptions;
+import io.vertx.ext.monitoring.influxdb.VertxInfluxDbOptions;
 import io.vertx.ext.monitoring.collector.Reporter;
 import io.vertx.ext.monitoring.collector.impl.BatchingVertxMetrics;
 
