@@ -14,7 +14,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -91,11 +90,9 @@ public class HttpClientServerTest {
       dp -> dp.getName().equals("vertx.http.client.127.0.0.1:9195.connections") && ((double)(dp.getValue())) == 0d, // wait until
       dataPoints -> {
         ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
-          // We use a special comparator for responseTime: must be >= expected and <= expected+margin
+          // We use a special comparator for responseTime: must be >= expected and <= 5*expected (large margin for CI)
           .usingElementComparator(Comparators.metricValueComparator("vertx.http.client.127.0.0.1:9195.responseTime",
-            (actual, expected) ->
-              (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 5 * expectedRequestCount)
-                ? 0 : -1))
+            Comparators.factorN(5)))
           .hasSize(8)
           .contains(
             tuple("vertx.http.client.127.0.0.1:9195.wsConnections", 0.0),
@@ -129,11 +126,9 @@ public class HttpClientServerTest {
             "vertx.http.server.127.0.0.1:9195.bytesSent",
             "vertx.http.server.127.0.0.1:9195.errorCount");
           assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
-            // We use a special comparator for responseTime: must be >= expected and <= expected+margin
+            // We use a special comparator for responseTime: must be >= expected and <= 5*expected (large margin for CI)
             .usingElementComparator(Comparators.metricValueComparator("vertx.http.server.127.0.0.1:9195.processingTime",
-              (actual, expected) ->
-                (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 5 * expectedRequestCount)
-                  ? 0 : -1))
+              Comparators.factorN(5)))
             .hasSize(8)
             .contains(
               tuple("vertx.http.server.127.0.0.1:9195.bytesSent", (long) concurrentClients * (SENT_COUNT + 1) * SERVER_RESPONSE.getBytes().length),

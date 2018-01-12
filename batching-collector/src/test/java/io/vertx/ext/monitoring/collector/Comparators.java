@@ -30,6 +30,12 @@ public final class Comparators {
   private Comparators() {
   }
 
+  public static Comparator<Number> factorN(double n) {
+    return (actual, expected) ->
+      (actual.doubleValue() >= expected.doubleValue() && actual.doubleValue() <= n * expected.doubleValue())
+        ? 0 : -1;
+  }
+
   public static Comparator<Tuple> metricValueComparator(String metricName, Comparator<Number> comparator) {
     return metricValueComparators(Collections.singletonMap(metricName, comparator));
   }
