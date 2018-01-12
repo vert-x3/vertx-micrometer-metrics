@@ -35,11 +35,10 @@ public class DatagramSocketTest {
     Async async = context.async();
     String datagramContent = "some text";
     int loops = 5;
-    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.datagram"), dataPoints -> {
-      if (dataPoints.size() == 1) {
-        // Not sent yet, but empty errorCount already reported
-        return;
-      }
+    watcherRef = DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith("vertx.datagram"),  // filter
+      dp -> dp.getName().startsWith("vertx.datagram.localhost:9192"), // wait until
+      dataPoints -> {
       context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
         .containsOnly(
           tuple("vertx.datagram.localhost:9192.bytesSent", 45L),  // 45 = size("some text") * loops

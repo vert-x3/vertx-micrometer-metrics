@@ -14,6 +14,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,10 +42,7 @@ public class HttpClientServerTest {
   private final int concurrentClients = ForkJoinPool.commonPool().getParallelism();
   private final long expectedRequestCount = concurrentClients * SENT_COUNT;
   private final long expectedRequestDelay = expectedRequestCount * REQ_DELAY;
-  private final Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new BatchingReporterOptions()
-        .setSchedule(2)
-        .setEnabled(true)));
+  private final Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new BatchingReporterOptions().setEnabled(true)));
 
   @Before
   public void setUp(TestContext ctx) {
@@ -88,22 +86,26 @@ public class HttpClientServerTest {
   public void shouldReportHttpClientMetrics(TestContext ctx) throws InterruptedException {
     Async assertions = ctx.async();
 
-    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.http.client"), dataPoints -> {
-      ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
-        // We use a special comparator for responseTime: must be >= expected and <= expected+margin
-        .usingElementComparator(Comparators.metricValueComparator("vertx.http.client.127.0.0.1:9195.responseTime",
-          (actual, expected) ->
-            (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 5 * expectedRequestCount)
-              ? 0 : -1))
-        .hasSize(8)
-        .contains(
-          tuple("vertx.http.client.127.0.0.1:9195.wsConnections", 0.0),
-          tuple("vertx.http.client.127.0.0.1:9195.bytesReceived", (long) concurrentClients * (SENT_COUNT + 1) * SERVER_RESPONSE.getBytes().length),
-          tuple("vertx.http.client.127.0.0.1:9195.bytesSent", (long) concurrentClients * (SENT_COUNT + 1) * CLIENT_REQUEST.getBytes().length),
-          tuple("vertx.http.client.127.0.0.1:9195.requestCount", expectedRequestCount),
-          tuple("vertx.http.client.127.0.0.1:9195.responseTime", expectedRequestDelay)));
-      assertions.complete();
-    });
+    watcherRef = DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith("vertx.http.client"), // filter
+      dp -> dp.getName().equals("vertx.http.client.127.0.0.1:9195.connections") && ((double)(dp.getValue())) == 0d, // wait until
+      dataPoints -> {
+        ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+          // We use a special comparator for responseTime: must be >= expected and <= expected+margin
+          .usingElementComparator(Comparators.metricValueComparator("vertx.http.client.127.0.0.1:9195.responseTime",
+            (actual, expected) ->
+              (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 5 * expectedRequestCount)
+                ? 0 : -1))
+          .hasSize(8)
+          .contains(
+            tuple("vertx.http.client.127.0.0.1:9195.wsConnections", 0.0),
+            tuple("vertx.http.client.127.0.0.1:9195.bytesReceived", (long) concurrentClients * (SENT_COUNT + 1) * SERVER_RESPONSE.getBytes().length),
+            tuple("vertx.http.client.127.0.0.1:9195.bytesSent", (long) concurrentClients * (SENT_COUNT + 1) * CLIENT_REQUEST.getBytes().length),
+            tuple("vertx.http.client.127.0.0.1:9195.requestCount", expectedRequestCount),
+            tuple("vertx.http.client.127.0.0.1:9195.responseTime", expectedRequestDelay)));
+        assertions.complete();
+      }
+    );
 
     runClientRequests(ctx);
   }
@@ -112,32 +114,36 @@ public class HttpClientServerTest {
   public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
     Async assertions = ctx.async();
 
-    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.http.server"), dataPoints -> {
-      ctx.verify(v -> {
-        assertThat(dataPoints).extracting(DataPoint::getName).containsOnly(
-          "vertx.http.server.127.0.0.1:9195.processingTime",
-          "vertx.http.server.127.0.0.1:9195.requestCount",
-          "vertx.http.server.127.0.0.1:9195.requests",
-          "vertx.http.server.127.0.0.1:9195.httpConnections",
-          "vertx.http.server.127.0.0.1:9195.wsConnections",
-          "vertx.http.server.127.0.0.1:9195.bytesReceived",
-          "vertx.http.server.127.0.0.1:9195.bytesSent",
-          "vertx.http.server.127.0.0.1:9195.errorCount");
-        assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
-          // We use a special comparator for responseTime: must be >= expected and <= expected+margin
-          .usingElementComparator(Comparators.metricValueComparator("vertx.http.server.127.0.0.1:9195.processingTime",
-            (actual, expected) ->
-              (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 5 * expectedRequestCount)
-                ? 0 : -1))
-          .hasSize(8)
-          .contains(
-            tuple("vertx.http.server.127.0.0.1:9195.bytesSent", (long) concurrentClients * (SENT_COUNT + 1) * SERVER_RESPONSE.getBytes().length),
-            tuple("vertx.http.server.127.0.0.1:9195.bytesReceived", (long) concurrentClients * (SENT_COUNT + 1) * CLIENT_REQUEST.getBytes().length),
-            tuple("vertx.http.server.127.0.0.1:9195.requestCount", expectedRequestCount),
-            tuple("vertx.http.server.127.0.0.1:9195.processingTime", expectedRequestDelay));
-      });
-      assertions.complete();
-    });
+    watcherRef = DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith("vertx.http.server"),
+      dp -> dp.getName().equals("vertx.http.server.127.0.0.1:9195.httpConnections") && ((double)(dp.getValue())) == 7d, // wait until
+      dataPoints -> {
+        ctx.verify(v -> {
+          assertThat(dataPoints).extracting(DataPoint::getName).containsOnly(
+            "vertx.http.server.127.0.0.1:9195.processingTime",
+            "vertx.http.server.127.0.0.1:9195.requestCount",
+            "vertx.http.server.127.0.0.1:9195.requests",
+            "vertx.http.server.127.0.0.1:9195.httpConnections",
+            "vertx.http.server.127.0.0.1:9195.wsConnections",
+            "vertx.http.server.127.0.0.1:9195.bytesReceived",
+            "vertx.http.server.127.0.0.1:9195.bytesSent",
+            "vertx.http.server.127.0.0.1:9195.errorCount");
+          assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+            // We use a special comparator for responseTime: must be >= expected and <= expected+margin
+            .usingElementComparator(Comparators.metricValueComparator("vertx.http.server.127.0.0.1:9195.processingTime",
+              (actual, expected) ->
+                (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 5 * expectedRequestCount)
+                  ? 0 : -1))
+            .hasSize(8)
+            .contains(
+              tuple("vertx.http.server.127.0.0.1:9195.bytesSent", (long) concurrentClients * (SENT_COUNT + 1) * SERVER_RESPONSE.getBytes().length),
+              tuple("vertx.http.server.127.0.0.1:9195.bytesReceived", (long) concurrentClients * (SENT_COUNT + 1) * CLIENT_REQUEST.getBytes().length),
+              tuple("vertx.http.server.127.0.0.1:9195.requestCount", expectedRequestCount),
+              tuple("vertx.http.server.127.0.0.1:9195.processingTime", expectedRequestDelay));
+        });
+        assertions.complete();
+      }
+    );
 
     runClientRequests(ctx);
   }
@@ -150,6 +156,7 @@ public class HttpClientServerTest {
         createdClients.add(httpClient);
         httpRequest(httpClient, ctx);
         wsRequest(httpClient, ctx);
+        //httpClient.close();
         clientsFinished.countDown();
       });
     }

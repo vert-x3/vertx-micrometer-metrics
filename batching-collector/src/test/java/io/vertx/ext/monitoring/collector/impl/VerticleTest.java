@@ -38,7 +38,7 @@ public class VerticleTest {
     String baseName = "vertx.verticle." + SampleVerticle.class.getName();
     AtomicInteger gauge = new AtomicInteger();
     AtomicReference<Async> atomAsync = new AtomicReference<>();
-    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith(baseName), dataPoints -> {
+    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith(baseName), dp -> true, dataPoints -> {
       context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName).containsOnly(baseName));
       gauge.set(((Number)dataPoints.get(0).getValue()).intValue());
       atomAsync.get().complete();

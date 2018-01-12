@@ -79,15 +79,19 @@ public class NetClientServerTest {
   public void shouldReportNetClientMetrics(TestContext ctx) throws InterruptedException {
     Async assertions = ctx.async();
 
-    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.net.client"), dataPoints -> {
-      ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
-        .containsOnly(
-          tuple("vertx.net.client.localhost:9194.connections", 0.0),
-          tuple("vertx.net.client.localhost:9194.bytesReceived", (long) concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-          tuple("vertx.net.client.localhost:9194.bytesSent", (long) concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-          tuple("vertx.net.client.localhost:9194.errorCount", 0L)));
-      assertions.complete();
-    });
+    watcherRef = DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith("vertx.net.client"),  // filter
+      dp -> dp.getName().equals("vertx.net.client.localhost:9194.connections") && (double)(dp.getValue()) == 0d,  // wait until
+      dataPoints -> {
+        ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+          .containsOnly(
+            tuple("vertx.net.client.localhost:9194.connections", 0.0),
+            tuple("vertx.net.client.localhost:9194.bytesReceived", (long) concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+            tuple("vertx.net.client.localhost:9194.bytesSent", (long) concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+            tuple("vertx.net.client.localhost:9194.errorCount", 0L)));
+        assertions.complete();
+      }
+    );
 
     runClientRequests(ctx);
   }
@@ -96,14 +100,18 @@ public class NetClientServerTest {
   public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
     Async assertions = ctx.async();
 
-    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.net.server"), dataPoints -> {
-      ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue).containsOnly(
-        tuple("vertx.net.server.localhost:9194.connections", 0.0),
-        tuple("vertx.net.server.localhost:9194.bytesReceived", (long) concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-        tuple("vertx.net.server.localhost:9194.bytesSent", (long) concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-        tuple("vertx.net.server.localhost:9194.errorCount", 0L)));
-      assertions.complete();
-    });
+    watcherRef = DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith("vertx.net.server"),  // filter
+      dp -> dp.getName().equals("vertx.net.server.localhost:9194.connections") && (double)(dp.getValue()) == 0d,  // wait until
+      dataPoints -> {
+        ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue).containsOnly(
+          tuple("vertx.net.server.localhost:9194.connections", 0.0),
+          tuple("vertx.net.server.localhost:9194.bytesReceived", (long) concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+          tuple("vertx.net.server.localhost:9194.bytesSent", (long) concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+          tuple("vertx.net.server.localhost:9194.errorCount", 0L)));
+        assertions.complete();
+      }
+    );
 
     runClientRequests(ctx);
   }

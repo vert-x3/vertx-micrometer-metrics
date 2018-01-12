@@ -54,27 +54,26 @@ public class NamedPoolTest {
       (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + margin
         ? 0 : -1));
 
-    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.pool.worker.test-worker"), dataPoints -> {
-      // Discard watch if there's no completed task yet
-      dataPoints.stream().filter(dp -> dp.getName().equals("vertx.pool.worker.test-worker.completed"))
-        .findAny()
-        .filter(dp -> (long) (dp.getValue()) > 0)
-        .ifPresent(dp -> {
-          context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
-            // We use a special comparator for processingTime: must be >= expected and <= expected+100ms
-            .usingElementComparator(Comparators.metricValueComparators(specialComparators))
-            .containsOnly(
-              tuple("vertx.pool.worker.test-worker.delay", maxPoolSize * 2 * sleepMillis),
-              tuple("vertx.pool.worker.test-worker.queued", 0.0),
-              tuple("vertx.pool.worker.test-worker.queuedCount", (long) taskCount),
-              tuple("vertx.pool.worker.test-worker.usage", taskCount * sleepMillis),
-              tuple("vertx.pool.worker.test-worker.inUse", 0.0),
-              tuple("vertx.pool.worker.test-worker.completed", (long) taskCount),
-              tuple("vertx.pool.worker.test-worker.maxPoolSize", (double) maxPoolSize),
-              tuple("vertx.pool.worker.test-worker.poolRatio", 0.0)));
-          assertions.complete();
-        });
-    });
+    watcherRef = DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith("vertx.pool.worker.test-worker"), // filter
+      dp -> dp.getName().equals("vertx.pool.worker.test-worker.completed") && (long) (dp.getValue()) > 0, // wait until
+      dataPoints -> {
+        // Discard watch if there's no completed task yet
+        context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+          // We use a special comparator for processingTime: must be >= expected and <= expected+100ms
+          .usingElementComparator(Comparators.metricValueComparators(specialComparators))
+          .containsOnly(
+            tuple("vertx.pool.worker.test-worker.delay", maxPoolSize * 2 * sleepMillis),
+            tuple("vertx.pool.worker.test-worker.queued", 0.0),
+            tuple("vertx.pool.worker.test-worker.queuedCount", (long) taskCount),
+            tuple("vertx.pool.worker.test-worker.usage", taskCount * sleepMillis),
+            tuple("vertx.pool.worker.test-worker.inUse", 0.0),
+            tuple("vertx.pool.worker.test-worker.completed", (long) taskCount),
+            tuple("vertx.pool.worker.test-worker.maxPoolSize", (double) maxPoolSize),
+            tuple("vertx.pool.worker.test-worker.poolRatio", 0.0)));
+        assertions.complete();
+      }
+    );
 
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new BatchingReporterOptions()

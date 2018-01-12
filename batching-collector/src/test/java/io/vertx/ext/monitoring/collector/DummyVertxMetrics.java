@@ -44,7 +44,7 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
   }
 
   public static class DummyReporter implements Reporter {
-    private List<Watcher> watchers = new CopyOnWriteArrayList<>();
+    private final List<Watcher> watchers = new CopyOnWriteArrayList<>();
 
     @Override
     public void stop() {
@@ -53,15 +53,17 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
     @Override
     public void handle(List<DataPoint> dataPoints) {
       watchers.forEach(watcher -> {
-        List<DataPoint> filtered = dataPoints.stream().filter(dp -> watcher.filter.test(dp.getName())).collect(Collectors.toList());
-        if (!filtered.isEmpty()) {
-          watcher.handler.accept(filtered);
+        if (dataPoints.stream().anyMatch(watcher.waitUntil)) {
+          List<DataPoint> filtered = dataPoints.stream().filter(dp -> watcher.filter.test(dp.getName())).collect(Collectors.toList());
+          if (!filtered.isEmpty()) {
+            watcher.handler.accept(filtered);
+          }
         }
       });
     }
 
-    public Object watch(Predicate<String> filter, Consumer<List<DataPoint>> handler) {
-      Watcher watcher = new Watcher(filter, handler);
+    public Object watch(Predicate<String> filter, Predicate<DataPoint> waitUntil, Consumer<List<DataPoint>> handler) {
+      Watcher watcher = new Watcher(filter, waitUntil, handler);
       watchers.add(watcher);
       return watcher;
     }
@@ -72,9 +74,11 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
 
     private static class Watcher {
       private Predicate<String> filter;
+      private Predicate<DataPoint> waitUntil;
       private Consumer<List<DataPoint>> handler;
-      Watcher(Predicate<String> filter, Consumer<List<DataPoint>> handler) {
+      Watcher(Predicate<String> filter, Predicate<DataPoint> waitUntil, Consumer<List<DataPoint>> handler) {
         this.filter = filter;
+        this.waitUntil = waitUntil;
         this.handler = handler;
       }
     }
