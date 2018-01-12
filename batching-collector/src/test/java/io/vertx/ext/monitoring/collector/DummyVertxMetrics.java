@@ -58,6 +58,8 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
           if (!filtered.isEmpty()) {
             watcher.handler.accept(filtered);
           }
+        } else if (System.currentTimeMillis() - watcher.startTime > 30000) {
+          throw new AssertionError("Watcher waiting condition timed out");
         }
       });
     }
@@ -76,10 +78,12 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
       private Predicate<String> filter;
       private Predicate<DataPoint> waitUntil;
       private Consumer<List<DataPoint>> handler;
+      private final long startTime;
       Watcher(Predicate<String> filter, Predicate<DataPoint> waitUntil, Consumer<List<DataPoint>> handler) {
         this.filter = filter;
         this.waitUntil = waitUntil;
         this.handler = handler;
+        startTime = System.currentTimeMillis();
       }
     }
   }

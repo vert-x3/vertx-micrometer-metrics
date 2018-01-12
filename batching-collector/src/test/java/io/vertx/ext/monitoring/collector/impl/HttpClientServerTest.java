@@ -33,7 +33,7 @@ public class HttpClientServerTest {
   private static final int SENT_COUNT = 68;
   private static final String SERVER_RESPONSE = "some text";
   private static final String CLIENT_REQUEST = "pitchounette";
-  private static final long REQ_DELAY = 11L;
+  private static final long REQ_DELAY = 30L;
 
   private Object watcherRef;
   private final List<HttpClient> createdClients = new CopyOnWriteArrayList<>();
@@ -87,7 +87,7 @@ public class HttpClientServerTest {
 
     watcherRef = DummyVertxMetrics.REPORTER.watch(
       name -> name.startsWith("vertx.http.client"), // filter
-      dp -> dp.getName().equals("vertx.http.client.127.0.0.1:9195.connections") && ((double)(dp.getValue())) == 0d, // wait until
+      dp -> dp.getName().equals("vertx.http.client.127.0.0.1:9195.requestCount") && ((long)(dp.getValue())) == expectedRequestCount, // wait until
       dataPoints -> {
         ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
           // We use a special comparator for responseTime: must be >= expected and <= 5*expected (large margin for CI)
@@ -159,21 +159,21 @@ public class HttpClientServerTest {
   }
 
   private void httpRequest(HttpClient httpClient, TestContext ctx) {
+    Async async = ctx.async(SENT_COUNT);
     for (int i = 0; i < SENT_COUNT; i++) {
-      Async async = ctx.async();
       httpClient.post(9195, "127.0.0.1", "", response -> {
-        async.complete();
+        async.countDown();
         if (response.statusCode() != 200) {
           ctx.fail(response.statusMessage());
         }
       }).exceptionHandler(t -> {
-        async.complete();
+        async.countDown();
         ctx.fail(t);
       }).putHeader("Content-Length", String.valueOf(CLIENT_REQUEST.getBytes().length))
         .write(CLIENT_REQUEST)
         .end();
-      async.await();
     }
+    async.await();
   }
 
   private void wsRequest(HttpClient httpClient, TestContext ctx) {
