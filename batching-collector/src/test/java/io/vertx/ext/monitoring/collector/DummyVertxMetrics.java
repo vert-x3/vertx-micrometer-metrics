@@ -44,7 +44,7 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
   }
 
   public static class DummyReporter implements Reporter {
-    private List<Observer> observers = new ArrayList<>();
+    private List<Watcher> watchers = new ArrayList<>();
 
     @Override
     public void stop() {
@@ -52,28 +52,28 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
 
     @Override
     public void handle(List<DataPoint> dataPoints) {
-      observers.forEach(observer -> {
-        List<DataPoint> filtered = dataPoints.stream().filter(dp -> observer.filter.test(dp.getName())).collect(Collectors.toList());
+      watchers.forEach(watcher -> {
+        List<DataPoint> filtered = dataPoints.stream().filter(dp -> watcher.filter.test(dp.getName())).collect(Collectors.toList());
         if (!filtered.isEmpty()) {
-          observer.handler.accept(filtered);
+          watcher.handler.accept(filtered);
         }
       });
     }
 
-    public Object observe(Predicate<String> filter, Consumer<List<DataPoint>> handler) {
-      Observer observer = new Observer(filter, handler);
-      observers.add(observer);
-      return observer;
+    public Object watch(Predicate<String> filter, Consumer<List<DataPoint>> handler) {
+      Watcher watcher = new Watcher(filter, handler);
+      watchers.add(watcher);
+      return watcher;
     }
 
     public void remove(Object ref) {
-      observers.remove((Observer)ref);
+      watchers.remove((Watcher)ref);
     }
 
-    private static class Observer {
+    private static class Watcher {
       private Predicate<String> filter;
       private Consumer<List<DataPoint>> handler;
-      Observer(Predicate<String> filter, Consumer<List<DataPoint>> handler) {
+      Watcher(Predicate<String> filter, Consumer<List<DataPoint>> handler) {
         this.filter = filter;
         this.handler = handler;
       }

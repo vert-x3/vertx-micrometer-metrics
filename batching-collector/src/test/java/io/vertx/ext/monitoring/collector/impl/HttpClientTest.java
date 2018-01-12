@@ -16,8 +16,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,13 +31,13 @@ public class HttpClientTest {
 
   private static final int SENT_COUNT = 68;
 
-  private Object observerRef;
-  private final List<HttpClient> createdClients = new ArrayList<>();
+  private Object watcherRef;
+  private final List<HttpClient> createdClients = new CopyOnWriteArrayList<>();
 
   @After
   public void teardown() {
-    if (observerRef != null) {
-      DummyVertxMetrics.REPORTER.remove(observerRef);
+    if (watcherRef != null) {
+      DummyVertxMetrics.REPORTER.remove(watcherRef);
     }
     createdClients.forEach(HttpClient::close);
   }
@@ -50,7 +50,7 @@ public class HttpClientTest {
     long expectedRequestCount = concurrentClients * SENT_COUNT;
     long expectedRequestDelay = expectedRequestCount * reqDelay;
 
-    observerRef = DummyVertxMetrics.REPORTER.observe(name -> name.startsWith("vertx.http.client"), dataPoints -> {
+    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.http.client"), dataPoints -> {
       ctx.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
         // We use a special comparator for responseTime: must be >= expected and <= expected+margin
         .usingElementComparator(Comparators.metricValueComparator("vertx.http.client.127.0.0.1:9195.responseTime",
@@ -107,8 +107,6 @@ public class HttpClientTest {
       });
     }
     clientsFinished.awaitSuccess();
-
-    assertions.awaitSuccess();
   }
 
   private void httpRequest(HttpClient httpClient, TestContext ctx) {

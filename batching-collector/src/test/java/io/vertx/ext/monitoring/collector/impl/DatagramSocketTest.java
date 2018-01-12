@@ -21,12 +21,12 @@ import static org.assertj.core.api.Assertions.tuple;
 @RunWith(VertxUnitRunner.class)
 public class DatagramSocketTest {
 
-  private Object observerRef;
+  private Object watcherRef;
 
   @After
   public void teardown() {
-    if (observerRef != null) {
-      DummyVertxMetrics.REPORTER.remove(observerRef);
+    if (watcherRef != null) {
+      DummyVertxMetrics.REPORTER.remove(watcherRef);
     }
   }
 
@@ -35,7 +35,7 @@ public class DatagramSocketTest {
     Async async = context.async();
     String datagramContent = "some text";
     int loops = 5;
-    observerRef = DummyVertxMetrics.REPORTER.observe(name -> name.startsWith("vertx.datagram"), dataPoints -> {
+    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.datagram"), dataPoints -> {
       if (dataPoints.size() == 1) {
         // Not sent yet, but empty errorCount already reported
         return;
@@ -60,6 +60,5 @@ public class DatagramSocketTest {
     for (int i = 0; i < loops; i++) {
       client.send(datagramContent, port, host, context.asyncAssertSuccess());
     }
-    async.awaitSuccess();
   }
 }

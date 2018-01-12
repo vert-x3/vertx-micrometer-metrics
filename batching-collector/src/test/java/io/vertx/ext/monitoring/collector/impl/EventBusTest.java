@@ -25,57 +25,69 @@ import static org.assertj.core.api.Assertions.tuple;
 @RunWith(VertxUnitRunner.class)
 public class EventBusTest {
 
-  private Object observerRef;
+  private Object watcherRef;
 
   @After
   public void teardown() {
-    if (observerRef != null) {
-      DummyVertxMetrics.REPORTER.remove(observerRef);
+    if (watcherRef != null) {
+      DummyVertxMetrics.REPORTER.remove(watcherRef);
     }
   }
 
   @Test
   public void shouldReportEventbusMetrics(TestContext context) throws InterruptedException {
     int instances = 3;
-    Async async = context.async();
-    observerRef = DummyVertxMetrics.REPORTER.observe(name -> name.startsWith("vertx.eventbus"), dataPoints -> {
-      context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
-        // We use a special comparator for processingTime: must be >= expected and <= expected+100ms
-        .usingElementComparator(Comparators.metricValueComparator("vertx.eventbus.testSubject.processingTime",
-          (actual, expected) ->
-            (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 100 * instances)
-              ? 0 : -1))
-        .containsOnly(
-          tuple("vertx.eventbus.handlers", 1.0 * instances),
-          tuple("vertx.eventbus.testSubject.processingTime", 180L * instances),
-          tuple("vertx.eventbus.errorCount", 3L * instances),
-          tuple("vertx.eventbus.bytesWritten", 0L),
-          tuple("vertx.eventbus.bytesRead", 0L),
-          tuple("vertx.eventbus.pending", 0.0),
-          tuple("vertx.eventbus.pendingLocal", 0.0),
-          tuple("vertx.eventbus.pendingRemote", 0.0),
-          tuple("vertx.eventbus.publishedMessages", 10L),
-          tuple("vertx.eventbus.publishedLocalMessages", 10L),
-          tuple("vertx.eventbus.publishedRemoteMessages", 0L),
-          tuple("vertx.eventbus.sentMessages", 0L),
-          tuple("vertx.eventbus.sentLocalMessages", 0L),
-          tuple("vertx.eventbus.sentRemoteMessages", 0L),
-          tuple("vertx.eventbus.receivedMessages", 10L),
-          tuple("vertx.eventbus.receivedLocalMessages", 10L),
-          tuple("vertx.eventbus.receivedRemoteMessages", 0L),
-          tuple("vertx.eventbus.deliveredMessages", 8L),
-          tuple("vertx.eventbus.deliveredLocalMessages", 8L),
-          tuple("vertx.eventbus.deliveredRemoteMessages", 0L),
-          tuple("vertx.eventbus.replyFailures", 2L)));
-      async.complete();
+    Async assertions = context.async();
+    Async messagesAllReceived = context.async(8 * instances);
+    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith("vertx.eventbus"), dataPoints -> {
+      // Discard watch if there's no handler registered yet
+      dataPoints.stream().filter(dp -> dp.getName().equals("vertx.eventbus.handlers"))
+        .findAny()
+        .filter(dp -> (double) (dp.getValue()) > 0)
+        .ifPresent(dp -> {
+          context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+            // We use a special comparator for processingTime: must be >= expected and <= expected+100ms
+            .usingElementComparator(Comparators.metricValueComparator("vertx.eventbus.testSubject.processingTime",
+              (actual, expected) ->
+                (actual.longValue() >= expected.longValue() && actual.longValue() <= expected.longValue() + 100 * instances)
+                  ? 0 : -1))
+            .containsOnly(
+              tuple("vertx.eventbus.handlers", 1.0 * instances),
+              tuple("vertx.eventbus.testSubject.processingTime", 180L * instances),
+              tuple("vertx.eventbus.errorCount", 2L * instances),
+              tuple("vertx.eventbus.bytesWritten", 0L),
+              tuple("vertx.eventbus.bytesRead", 0L),
+              tuple("vertx.eventbus.pending", 0.0),
+              tuple("vertx.eventbus.pendingLocal", 0.0),
+              tuple("vertx.eventbus.pendingRemote", 0.0),
+              tuple("vertx.eventbus.publishedMessages", 10L),
+              tuple("vertx.eventbus.publishedLocalMessages", 10L),
+              tuple("vertx.eventbus.publishedRemoteMessages", 0L),
+              tuple("vertx.eventbus.sentMessages", 0L),
+              tuple("vertx.eventbus.sentLocalMessages", 0L),
+              tuple("vertx.eventbus.sentRemoteMessages", 0L),
+              tuple("vertx.eventbus.receivedMessages", 10L),
+              tuple("vertx.eventbus.receivedLocalMessages", 10L),
+              tuple("vertx.eventbus.receivedRemoteMessages", 0L),
+              tuple("vertx.eventbus.deliveredMessages", 8L),
+              tuple("vertx.eventbus.deliveredLocalMessages", 8L),
+              tuple("vertx.eventbus.deliveredRemoteMessages", 0L),
+              tuple("vertx.eventbus.replyFailures", 2L)));
+          assertions.complete();
+        });
     });
 
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new BatchingReporterOptions().setEnabled(true)));
+    Async ebReady = context.async(instances);
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new BatchingReporterOptions()
+        //.setSchedule(2)
+        .setEnabled(true)));
     // Setup eventbus handler
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start(Future<Void> future) throws Exception {
         vertx.eventBus().consumer("testSubject", msg -> {
+          messagesAllReceived.countDown();
           JsonObject body = (JsonObject) msg.body();
           try {
             Thread.sleep(body.getLong("sleep"));
@@ -83,16 +95,18 @@ public class EventBusTest {
             throw new RuntimeException(e);
           }
           if (body.getBoolean("fail")) {
-            throw new RuntimeException("expected failure");
+            throw new RuntimeException("It's ok! [expected failure]");
           }
         });
+        ebReady.countDown();
       }
     }, new DeploymentOptions().setInstances(instances));
 
+    ebReady.awaitSuccess();
     // Send to eventbus
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
-    vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": true, \"sleep\": 10}"));
+    vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 10}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": true, \"sleep\": 10}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
@@ -100,6 +114,5 @@ public class EventBusTest {
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     vertx.eventBus().publish("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     vertx.eventBus().publish("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
-    async.awaitSuccess();
   }
 }
