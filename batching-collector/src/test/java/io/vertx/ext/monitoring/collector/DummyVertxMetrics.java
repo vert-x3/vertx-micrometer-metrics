@@ -56,16 +56,21 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
         if (dataPoints.stream().anyMatch(watcher.waitUntil)) {
           List<DataPoint> filtered = dataPoints.stream().filter(dp -> watcher.filter.test(dp.getName())).collect(Collectors.toList());
           if (!filtered.isEmpty()) {
-            watcher.handler.accept(filtered);
+            try {
+              watcher.handler.accept(filtered);
+            } finally {
+              watchers.remove(watcher);
+            }
           }
-        } else if (System.currentTimeMillis() - watcher.startTime > 30000) {
-          throw new AssertionError("Watcher waiting condition timed out");
+        } else if (System.currentTimeMillis() - watcher.startTime > 10000) {
+          watchers.remove(watcher);
+          watcher.onFailure.accept(new RuntimeException("Watcher waiting condition timed out"));
         }
       });
     }
 
-    public Object watch(Predicate<String> filter, Predicate<DataPoint> waitUntil, Consumer<List<DataPoint>> handler) {
-      Watcher watcher = new Watcher(filter, waitUntil, handler);
+    public Object watch(Predicate<String> filter, Predicate<DataPoint> waitUntil, Consumer<List<DataPoint>> handler, Consumer<Throwable> onFailure) {
+      Watcher watcher = new Watcher(filter, waitUntil, handler, onFailure);
       watchers.add(watcher);
       return watcher;
     }
@@ -75,14 +80,17 @@ public class DummyVertxMetrics extends BatchingVertxMetrics<BatchingReporterOpti
     }
 
     private static class Watcher {
-      private Predicate<String> filter;
-      private Predicate<DataPoint> waitUntil;
-      private Consumer<List<DataPoint>> handler;
+      private final Predicate<String> filter;
+      private final Predicate<DataPoint> waitUntil;
+      private final Consumer<List<DataPoint>> handler;
       private final long startTime;
-      Watcher(Predicate<String> filter, Predicate<DataPoint> waitUntil, Consumer<List<DataPoint>> handler) {
+      private final Consumer<Throwable> onFailure;
+
+      Watcher(Predicate<String> filter, Predicate<DataPoint> waitUntil, Consumer<List<DataPoint>> handler, Consumer<Throwable> onFailure) {
         this.filter = filter;
         this.waitUntil = waitUntil;
         this.handler = handler;
+        this.onFailure = onFailure;
         startTime = System.currentTimeMillis();
       }
     }

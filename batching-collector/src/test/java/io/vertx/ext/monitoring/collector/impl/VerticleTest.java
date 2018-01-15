@@ -9,14 +9,13 @@ import io.vertx.ext.monitoring.collector.DummyVertxMetrics;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /**
  * @author Joel Takvorian
@@ -24,28 +23,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(VertxUnitRunner.class)
 public class VerticleTest {
 
-  private Object watcherRef;
-
-  @After
-  public void teardown() {
-    if (watcherRef != null) {
-      DummyVertxMetrics.REPORTER.remove(watcherRef);
-    }
-  }
-
   @Test
-  public void shouldReportDatagramMetrics(TestContext context) throws InterruptedException {
-    String baseName = "vertx.verticle." + SampleVerticle.class.getName();
-    AtomicInteger gauge = new AtomicInteger();
-    AtomicReference<Async> atomAsync = new AtomicReference<>();
-    watcherRef = DummyVertxMetrics.REPORTER.watch(name -> name.startsWith(baseName), dp -> true, dataPoints -> {
-      context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName).containsOnly(baseName));
-      gauge.set(((Number)dataPoints.get(0).getValue()).intValue());
-      atomAsync.get().complete();
-    });
+  public void shouldReportVerticleMetrics(TestContext context) throws InterruptedException {
+    String metricName = "vertx.verticle." + SampleVerticle.class.getName();
 
-    atomAsync.set(context.async());
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new BatchingReporterOptions().setEnabled(true)));
+    Async async1 = context.async();
+    DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith(metricName),
+      dp -> true,
+      dataPoints -> {
+        try {
+          context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+            .containsOnly(tuple(metricName, 3.0)));
+        } finally {
+          async1.complete();
+        }
+      },
+      context::fail);
+
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new BatchingReporterOptions().setEnabled(true)))
+      .exceptionHandler(context.exceptionHandler());
     AtomicReference<String> deploymentRef = new AtomicReference<>();
     vertx.deployVerticle(SampleVerticle::new, new DeploymentOptions().setInstances(3), res -> {
       if (res.succeeded()) {
@@ -54,18 +51,39 @@ public class VerticleTest {
         throw new RuntimeException(res.cause());
       }
     });
-    atomAsync.get().awaitSuccess();
-    assertThat(gauge.get()).isEqualTo(3);
+    async1.awaitSuccess();
 
-    atomAsync.set(context.async());
+    Async async2 = context.async();
+    DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith(metricName),
+      dp -> true,
+      dataPoints -> {
+        try {
+          context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+            .containsOnly(tuple(metricName, 7.0)));
+        } finally {
+          async2.complete();
+        }
+      },
+      context::fail);
     vertx.deployVerticle(SampleVerticle::new, new DeploymentOptions().setInstances(4));
-    atomAsync.get().awaitSuccess();
-    assertThat(gauge.get()).isEqualTo(7);
+    async2.awaitSuccess();
 
-    atomAsync.set(context.async());
+    Async async3 = context.async();
+    DummyVertxMetrics.REPORTER.watch(
+      name -> name.startsWith(metricName),
+      dp -> true,
+      dataPoints -> {
+        try {
+          context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+            .containsOnly(tuple(metricName, 4.0)));
+        } finally {
+          async3.complete();
+        }
+      },
+      context::fail);
     vertx.undeploy(deploymentRef.get());
-    atomAsync.get().awaitSuccess();
-    assertThat(gauge.get()).isEqualTo(4);
+    async3.awaitSuccess();
   }
 
   private static class SampleVerticle extends AbstractVerticle {}

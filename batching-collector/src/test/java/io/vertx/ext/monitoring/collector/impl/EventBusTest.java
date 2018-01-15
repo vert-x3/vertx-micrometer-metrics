@@ -71,13 +71,11 @@ public class EventBusTest {
             tuple("vertx.eventbus.deliveredRemoteMessages", 0L),
             tuple("vertx.eventbus.replyFailures", 2L)));
         assertions.complete();
-      }
-    );
+      },
+      context::fail);
 
     Async ebReady = context.async(instances);
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new BatchingReporterOptions()
-        .setEnabled(true)));
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new BatchingReporterOptions().setEnabled(true)));
     // Setup eventbus handler
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override

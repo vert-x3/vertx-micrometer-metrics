@@ -38,12 +38,15 @@ public class NetClientServerTest {
   private final List<NetClient> createdClients = new CopyOnWriteArrayList<>();
   private NetServer netServer;
   private final int concurrentClients = ForkJoinPool.commonPool().getParallelism();
-  private final Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new BatchingReporterOptions()
-        .setEnabled(true)));
+  private Vertx vertx;
 
   @Before
   public void setUp(TestContext ctx) {
+    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new BatchingReporterOptions()
+        .setEnabled(true)))
+      .exceptionHandler(ctx.exceptionHandler());
+
     // Setup server
     Async serverReady = ctx.async();
     vertx.deployVerticle(new AbstractVerticle() {
@@ -90,8 +93,8 @@ public class NetClientServerTest {
             tuple("vertx.net.client.localhost:9194.bytesSent", (long) concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
             tuple("vertx.net.client.localhost:9194.errorCount", 0L)));
         assertions.complete();
-      }
-    );
+      },
+      ctx::fail);
 
     runClientRequests(ctx);
   }
@@ -110,8 +113,8 @@ public class NetClientServerTest {
           tuple("vertx.net.server.localhost:9194.bytesSent", (long) concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
           tuple("vertx.net.server.localhost:9194.errorCount", 0L)));
         assertions.complete();
-      }
-    );
+      },
+      ctx::fail);
 
     runClientRequests(ctx);
   }

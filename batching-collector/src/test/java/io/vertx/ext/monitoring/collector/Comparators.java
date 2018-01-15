@@ -36,6 +36,10 @@ public final class Comparators {
         ? 0 : -1;
   }
 
+  public static Comparator<Number> atLeast() {
+    return (actual, expected) -> (actual.doubleValue() >= expected.doubleValue()) ? 0 : -1;
+  }
+
   public static Comparator<Tuple> metricValueComparator(String metricName, Comparator<Number> comparator) {
     return metricValueComparators(Collections.singletonMap(metricName, comparator));
   }

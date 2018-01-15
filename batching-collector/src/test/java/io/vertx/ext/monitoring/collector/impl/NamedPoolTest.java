@@ -72,12 +72,13 @@ public class NamedPoolTest {
             tuple("vertx.pool.worker.test-worker.maxPoolSize", (double) maxPoolSize),
             tuple("vertx.pool.worker.test-worker.poolRatio", 0.0)));
         assertions.complete();
-      }
-    );
+      },
+      context::fail);
 
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new BatchingReporterOptions()
-        .setEnabled(true)));
+        .setEnabled(true)))
+      .exceptionHandler(context.exceptionHandler());
 
     // Setup executor
     WorkerExecutor workerExecutor = vertx.createSharedWorkerExecutor("test-worker", maxPoolSize);

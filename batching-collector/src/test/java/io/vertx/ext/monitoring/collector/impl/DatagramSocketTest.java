@@ -39,15 +39,17 @@ public class DatagramSocketTest {
       name -> name.startsWith("vertx.datagram"),  // filter
       dp -> dp.getName().startsWith("vertx.datagram.localhost:9192"), // wait until
       dataPoints -> {
-      context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
-        .containsOnly(
-          tuple("vertx.datagram.localhost:9192.bytesSent", 45L),  // 45 = size("some text") * loops
-          tuple("vertx.datagram.localhost:9192.bytesReceived", 45L), // same
-          tuple("vertx.datagram.errorCount", 0L)));
-      async.complete();
-    });
+        context.verify(v -> assertThat(dataPoints).extracting(DataPoint::getName, DataPoint::getValue)
+          .containsOnly(
+            tuple("vertx.datagram.localhost:9192.bytesSent", 45L),  // 45 = size("some text") * loops
+            tuple("vertx.datagram.localhost:9192.bytesReceived", 45L), // same
+            tuple("vertx.datagram.errorCount", 0L)));
+        async.complete();
+      },
+      context::fail);
 
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new BatchingReporterOptions().setEnabled(true)));
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new BatchingReporterOptions().setEnabled(true)))
+      .exceptionHandler(context.exceptionHandler());
     // Setup server
     int port = 9192;
     String host = "localhost";
