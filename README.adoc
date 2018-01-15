@@ -1,0 +1,21 @@
+= vertx-monitoring
+:source-language: java
+
+image::https://vertx.ci.cloudbees.com/buildStatus/icon?job=vert.x3-monitoring[link=https://vertx.ci.cloudbees.com/job/vert.x3-monitoring/]
+
+Vert.x Monitoring contains metrics collection and reporting to various target systems.
+
+The http://vertx.io/docs/vertx-core/java/index.html#_metrics_spi[Vert.x Metrics SPI] allows implementers to
+capture events from Vert.x in order to gather metrics.
+
+== Reporters
+
+Reporter implementations are in the _reporters_ sub-project
+
+For each of them please see the in-source Asciidoc documentation or the main documentation on the web-site for a full description
+of this component:
+
+=== InfluxDB
+
+* link:http://vertx.io/docs/vertx-monitoring-influxdb/[web-site docs]
+* link:reporters/influxdb/src/main/asciidoc[in-source docs]

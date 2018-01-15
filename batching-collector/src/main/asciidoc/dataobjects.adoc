@@ -1,0 +1,41 @@
+= Cheatsheets
+
+[[BatchingReporterOptions]]
+== BatchingReporterOptions
+
+++++
+ Common options for reporters sending metrics in batches.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[batchDelay]]`batchDelay`|`Number (int)`|
++++
+Set the maximum delay between two consecutive batches (in seconds). To reduce the number of HTTP exchanges, metric
+ data is sent by the reporter in batches. A batch is sent as soon as the number of metrics collected reaches
+ the configured <code>batchSize</code>, or after the <code>batchDelay</code> expires. Defaults to <code>1</code> second.
++++
+|[[batchSize]]`batchSize`|`Number (int)`|
++++
+Set the maximum number of metrics in a batch. To reduce the number of HTTP exchanges, metric data is sent by the
+ reporter in batches. A batch is sent as soon as the number of metrics collected reaches the configured
+ <code>batchSize</code>, or after the <code>batchDelay</code> expires. Defaults to <code>50</code>.
++++
+|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsCategory[MetricsCategory]`|-
+|[[enabled]]`enabled`|`Boolean`|-
+|[[metricsBridgeAddress]]`metricsBridgeAddress`|`String`|-
+|[[metricsBridgeEnabled]]`metricsBridgeEnabled`|`Boolean`|-
+|[[prefix]]`prefix`|`String`|
++++
+Set the metric name prefix. Metric names are not prefixed by default. Prefixing metric names is required to
+ distinguish data sent by different Vert.x instances.
++++
+|[[schedule]]`schedule`|`Number (int)`|
++++
+Set the metric collection interval (in seconds). Defaults to <code>1</code>.
++++
+|===
+

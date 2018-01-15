@@ -1,0 +1,80 @@
+= Cheatsheets
+
+[[AuthenticationOptions]]
+== AuthenticationOptions
+
+++++
+ Authentication options.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[enabled]]`enabled`|`Boolean`|
++++
+Set whether authentication is enabled. Defaults to <code>false</code>.
++++
+|[[secret]]`secret`|`String`|
++++
+Set the secret used for authentication.
++++
+|[[username]]`username`|`String`|
++++
+Set the identifier used for authentication.
++++
+|===
+
+[[VertxInfluxDbOptions]]
+== VertxInfluxDbOptions
+
+++++
+ Vert.x InfluxDb monitoring configuration.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[authenticationOptions]]`authenticationOptions`|`link:dataobjects.html#AuthenticationOptions[AuthenticationOptions]`|
++++
+Set the options for authentication.
++++
+|[[batchDelay]]`batchDelay`|`Number (int)`|-
+|[[batchSize]]`batchSize`|`Number (int)`|-
+|[[database]]`database`|`String`|
++++
+Set the InfluxDb database. Defaults to <code>default</code>.
++++
+|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsCategory[MetricsCategory]`|-
+|[[enabled]]`enabled`|`Boolean`|-
+|[[gzipEnabled]]`gzipEnabled`|`Boolean`|-
+|[[host]]`host`|`String`|
++++
+Set the InfluxDb Metrics service host. Defaults to <code>localhost</code>.
++++
+|[[httpHeaders]]`httpHeaders`|`Json object`|
++++
+Set specific headers to include in HTTP requests.
++++
+|[[httpOptions]]`httpOptions`|`link:dataobjects.html#HttpClientOptions[HttpClientOptions]`|
++++
+Set the configuration of the InfluxDb Metrics HTTP client.
++++
+|[[metricsBridgeAddress]]`metricsBridgeAddress`|`String`|-
+|[[metricsBridgeEnabled]]`metricsBridgeEnabled`|`Boolean`|-
+|[[metricsServiceUri]]`metricsServiceUri`|`String`|
++++
+Set the InfluxDb Metrics service URI. Defaults to <code>/InfluxDb/metrics</code>. This can be useful if you host the
+ InfluxDb server behind a proxy and manipulate the default service URI.
++++
+|[[port]]`port`|`Number (int)`|
++++
+Set the InfluxDb Metrics service port.  Defaults to <code>8080</code>.
++++
+|[[prefix]]`prefix`|`String`|-
+|[[schedule]]`schedule`|`Number (int)`|-
+|===
+

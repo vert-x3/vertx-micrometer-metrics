@@ -1,0 +1,36 @@
+= Cheatsheets
+
+[[MetricsOptionsBase]]
+== MetricsOptionsBase
+
+++++
+ Base options for metrics reporting.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsCategory[MetricsCategory]`|
++++
+Sets metrics types that are disabled.
++++
+|[[enabled]]`enabled`|`Boolean`|
++++
+Set whether metrics will be enabled on the Vert.x instance. Metrics are not enabled by default.
++++
+|[[metricsBridgeAddress]]`metricsBridgeAddress`|`String`|
++++
+Sets the metric bridge address on which the application is sending the custom metrics. Application can send
+ metrics to this event bus address. The message is a JSON object specifying at least the <code>id</code> and
+ <code>value</code> fields.
+ <p/>
+ Don't forget to also enable the bridge with <code>metricsBridgeEnabled</code>.
++++
+|[[metricsBridgeEnabled]]`metricsBridgeEnabled`|`Boolean`|
++++
+Sets whether or not the metrics bridge should be enabled. The metrics bridge is disabled by default.
++++
+|===
+
