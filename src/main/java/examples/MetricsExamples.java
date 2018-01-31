@@ -81,6 +81,7 @@ public class MetricsExamples {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new VertxMonitoringOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(8080))
           .setEmbeddedServerEndpoint("/metrics/vertx"))
         .setEnabled(true)));

@@ -159,11 +159,15 @@ Set metrics endpoint. Use conjointly with the embedded server options. Defaults 
 +++
 |[[embeddedServerOptions]]`embeddedServerOptions`|`link:dataobjects.html#HttpServerOptions[HttpServerOptions]`|
 +++
-When set, an embedded server will start to expose metrics with Prometheus format
+HTTP server options for the embedded server
 +++
 |[[enabled]]`enabled`|`Boolean`|
 +++
 Set true to enable Prometheus reporting
++++
+|[[startEmbeddedServer]]`startEmbeddedServer`|`Boolean`|
++++
+When true, an embedded server will start to expose metrics with Prometheus format.
 +++
 |===
 

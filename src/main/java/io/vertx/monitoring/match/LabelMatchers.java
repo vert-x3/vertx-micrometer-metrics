@@ -17,6 +17,7 @@
 package io.vertx.monitoring.match;
 
 import io.micrometer.core.instrument.Tag;
+import io.vertx.monitoring.Label;
 import io.vertx.monitoring.MetricsCategory;
 
 import java.util.ArrayList;
@@ -46,22 +47,23 @@ public class LabelMatchers {
         Collectors.collectingAndThen(Collectors.toList(), SimpleMatcher::new)));
   }
 
-  public List<Tag> toTags(MetricsCategory domain, String[] keys, String[] values) {
+  public List<Tag> toTags(MetricsCategory domain, Label[] keys, String[] values) {
     if (keys.length == 0) {
       return Collections.emptyList();
     }
     List<Tag> tags = new ArrayList<>(keys.length);
     for (int i = 0; i < keys.length; i++) {
-      Matcher matcher = getMatcher(domain, keys[i]);
+      String lowKey = keys[i].toString().toLowerCase();
+      Matcher matcher = getMatcher(domain, lowKey);
       if (matcher != null) {
         String match = matcher.matches(values[i]);
         if (match == null) {
           // If one match fails, the measurement is rejected
           return null;
         }
-        tags.add(Tag.of(keys[i], match));
+        tags.add(Tag.of(lowKey, match));
       } else {
-        tags.add(Tag.of(keys[i], values[i]));
+        tags.add(Tag.of(lowKey, values[i]));
       }
     }
     return tags;

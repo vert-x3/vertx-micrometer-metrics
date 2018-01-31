@@ -1,6 +1,7 @@
 package io.vertx.monitoring.match;
 
 import io.micrometer.core.instrument.Tag;
+import io.vertx.monitoring.Label;
 import io.vertx.monitoring.MetricsCategory;
 import org.junit.Test;
 
@@ -14,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Joel Takvorian
  */
 public class LabelMatchersTest {
-  private static final String[] KEYS = {"local", "remote"};
+  private static final Label[] KEYS = {Label.LOCAL, Label.REMOTE};
   private static final String[] METRIC1_VALUES = {"whatever", "cartago"};
   private static final String[] METRIC2_VALUES = {"whatever", "rio"};
   private static final String[] METRIC3_VALUES = {"whatever", "tiahuanaco"};

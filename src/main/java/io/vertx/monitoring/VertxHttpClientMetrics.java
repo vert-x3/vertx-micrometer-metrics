@@ -41,11 +41,11 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
   VertxHttpClientMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
     super(labelMatchers, registry, MetricsCategory.HTTP_CLIENT, "vertx.http.client.");
-    requests = longGauges("requests", "Number of requests waiting for a response", Labels.LOCAL, Labels.REMOTE, Labels.PATH);
-    requestCount = counters("requestCount", "Number of requests sent", Labels.LOCAL, Labels.REMOTE, Labels.PATH, Labels.METHOD);
-    responseTime = timers("responseTime", "Response time", Labels.LOCAL, Labels.REMOTE, Labels.PATH);
-    responseCount = counters("responseCount", "Response count with codes", Labels.LOCAL, Labels.REMOTE, Labels.PATH, Labels.CODE);
-    wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Labels.LOCAL, Labels.REMOTE);
+    requests = longGauges("requests", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.PATH);
+    requestCount = counters("requestCount", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.PATH, Label.METHOD);
+    responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.PATH);
+    responseCount = counters("responseCount", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.PATH, Label.CODE);
+    wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
   @Override

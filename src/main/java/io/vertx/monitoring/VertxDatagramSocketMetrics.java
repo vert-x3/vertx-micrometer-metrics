@@ -36,9 +36,9 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
 
   VertxDatagramSocketMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
     super(labelMatchers, registry, MetricsCategory.DATAGRAM_SOCKET, "vertx.datagram.");
-    bytesReceived = summaries("bytesReceived", "Total number of datagram bytes received", Labels.LOCAL);
+    bytesReceived = summaries("bytesReceived", "Total number of datagram bytes received", Label.LOCAL);
     bytesSent = summaries("bytesSent", "Total number of datagram bytes sent");
-    errorCount = counters("errors", "Total number of datagram errors", Labels.CLASS);
+    errorCount = counters("errors", "Total number of datagram errors", Label.CLASS);
   }
 
   @Override

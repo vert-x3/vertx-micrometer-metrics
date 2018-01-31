@@ -47,9 +47,12 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
 
   @Override
   public void eventBusInitialized(EventBus bus) {
-    if (options.getEmbeddedServerOptions() != null) {
+    if (options.isStartEmbeddedServer()) {
       // Start dedicated server
       HttpServerOptions serverOptions = options.getEmbeddedServerOptions();
+      if (serverOptions == null) {
+        serverOptions = new HttpServerOptions();
+      }
       Router router = Router.router(vertx);
       router.route(options.getEmbeddedServerEndpoint()).handler(routingContext -> {
         String response = registry.scrape();
@@ -63,7 +66,6 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
 
   @Override
   public void close() {
-    // registry.clear();
     if (server != null) {
       server.close();
     }

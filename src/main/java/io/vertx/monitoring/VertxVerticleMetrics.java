@@ -31,7 +31,7 @@ class VertxVerticleMetrics extends AbstractMetrics {
 
   VertxVerticleMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
     super(labelMatchers, registry, MetricsCategory.VERTICLES, "vertx.");
-    verticles = longGauges("verticle", "Number of verticle instances deployed", "name");
+    verticles = longGauges("verticle", "Number of verticle instances deployed", Label.CLASS);
   }
 
   void verticleDeployed(Verticle verticle) {

@@ -20,6 +20,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.noop.NoopCounter;
+import io.vertx.monitoring.Label;
 import io.vertx.monitoring.MetricsCategory;
 import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.Labels;
@@ -37,7 +38,7 @@ public class Counters {
   private final MetricsCategory domain;
   private final String name;
   private final String description;
-  private final String[] keys;
+  private final Label[] keys;
   private final MeterRegistry registry;
   private final Map<Labels.Values, Counter> counters = new ConcurrentHashMap<>();
 
@@ -45,7 +46,7 @@ public class Counters {
                   String name,
                   String description,
                   MeterRegistry registry,
-                  String... keys) {
+                  Label... keys) {
     this.domain = domain;
     this.name = name;
     this.description = description;

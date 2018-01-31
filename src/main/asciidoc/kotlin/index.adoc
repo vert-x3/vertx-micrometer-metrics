@@ -156,6 +156,7 @@ var vertx = Vertx.vertx(VertxOptions(
   metricsOptions = VertxMonitoringOptions(
     prometheusOptions = VertxPrometheusOptions(
       enabled = true,
+      startEmbeddedServer = true,
       embeddedServerOptions = HttpServerOptions(
         port = 8080),
       embeddedServerEndpoint = "/metrics/vertx"),

@@ -44,17 +44,17 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   VertxEventBusMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
     super(labelMatchers, registry, MetricsCategory.EVENT_BUS, "vertx.eventbus.");
-    handlers = longGauges("handlers", "Number of event bus handlers in use", Labels.ADDRESS);
-    pending = longGauges("pending", "Number of messages not processed yet", Labels.ADDRESS, Labels.SIDE);
-    published = counters("published", "Number of messages published (publish / subscribe)", Labels.ADDRESS, Labels.SIDE);
-    sent = counters("sent", "Number of messages sent (point-to-point)", Labels.ADDRESS, Labels.SIDE);
-    received = counters("received", "Number of messages received", Labels.ADDRESS, Labels.SIDE);
-    delivered = counters("delivered", "Number of messages delivered to handlers", Labels.ADDRESS, Labels.SIDE);
-    errorCount = counters("errors", "Number of errors", Labels.ADDRESS, Labels.CLASS);
-    replyFailures = counters("replyFailures", "Number of message reply failures", Labels.ADDRESS, "failure");
-    processTime = timers("processingTime", "Processing time", Labels.ADDRESS);
-    bytesRead = summaries("bytesRead", "Number of bytes received while reading messages from event bus cluster peers", Labels.ADDRESS);
-    bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Labels.ADDRESS);
+    handlers = longGauges("handlers", "Number of event bus handlers in use", Label.ADDRESS);
+    pending = longGauges("pending", "Number of messages not processed yet", Label.ADDRESS, Label.SIDE);
+    published = counters("published", "Number of messages published (publish / subscribe)", Label.ADDRESS, Label.SIDE);
+    sent = counters("sent", "Number of messages sent (point-to-point)", Label.ADDRESS, Label.SIDE);
+    received = counters("received", "Number of messages received", Label.ADDRESS, Label.SIDE);
+    delivered = counters("delivered", "Number of messages delivered to handlers", Label.ADDRESS, Label.SIDE);
+    errorCount = counters("errors", "Number of errors", Label.ADDRESS, Label.CLASS);
+    replyFailures = counters("replyFailures", "Number of message reply failures", Label.ADDRESS, Label.FAILURE);
+    processTime = timers("processingTime", "Processing time", Label.ADDRESS);
+    bytesRead = summaries("bytesRead", "Number of bytes received while reading messages from event bus cluster peers", Label.ADDRESS);
+    bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Label.ADDRESS);
   }
 
   @Override

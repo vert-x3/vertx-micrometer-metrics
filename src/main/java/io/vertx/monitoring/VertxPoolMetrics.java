@@ -39,12 +39,12 @@ class VertxPoolMetrics extends AbstractMetrics {
 
   VertxPoolMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
     super(labelMatchers, registry, MetricsCategory.NAMED_POOLS, "vertx.pool.");
-    queueDelay = timers("queue.delay", "Queue time for a resource", "pool.type", "pool.name");
-    queueSize = longGauges("queue.size", "Number of elements waiting for a resource", "pool.type", "pool.name");
-    usage = timers("usage", "Time using a resource", "pool.type", "pool.name");
-    inUse = longGauges("inUse", "Number of resources used", "pool.type", "pool.name");
-    usageRatio = doubleGauges("ratio", "Pool usage ratio, only present if maximum pool size could be determined", "pool.type", "pool.name");
-    completed = counters("completed", "Number of elements done with the resource", "pool.type", "pool.name");
+    queueDelay = timers("queue.delay", "Queue time for a resource", Label.POOL_TYPE, Label.POOL_NAME);
+    queueSize = longGauges("queue.size", "Number of elements waiting for a resource", Label.POOL_TYPE, Label.POOL_NAME);
+    usage = timers("usage", "Time using a resource", Label.POOL_TYPE, Label.POOL_NAME);
+    inUse = longGauges("inUse", "Number of resources used", Label.POOL_TYPE, Label.POOL_NAME);
+    usageRatio = doubleGauges("ratio", "Pool usage ratio, only present if maximum pool size could be determined", Label.POOL_TYPE, Label.POOL_NAME);
+    completed = counters("completed", "Number of elements done with the resource", Label.POOL_TYPE, Label.POOL_NAME);
   }
 
   PoolMetrics forInstance(String poolType, String poolName, int maxPoolSize) {

@@ -41,10 +41,10 @@ class VertxNetServerMetrics extends AbstractMetrics {
 
   VertxNetServerMetrics(LabelMatchers labelMatchers, MeterRegistry registry, MetricsCategory domain, String baseName) {
     super(labelMatchers, registry, domain, baseName);
-    connections = longGauges("connections", "Number of opened connections to the server", Labels.LOCAL, Labels.REMOTE);
-    bytesReceived = summaries("bytesReceived", "Number of bytes received by the server", Labels.LOCAL, Labels.REMOTE);
-    bytesSent = summaries("bytesSent", "Number of bytes sent by the server", Labels.LOCAL, Labels.REMOTE);
-    errorCount = counters("errors", "Number of errors", Labels.LOCAL, Labels.REMOTE, Labels.CLASS);
+    connections = longGauges("connections", "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
+    bytesReceived = summaries("bytesReceived", "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
+    bytesSent = summaries("bytesSent", "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
+    errorCount = counters("errors", "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS);
   }
 
   TCPMetrics forAddress(SocketAddress localAddress) {

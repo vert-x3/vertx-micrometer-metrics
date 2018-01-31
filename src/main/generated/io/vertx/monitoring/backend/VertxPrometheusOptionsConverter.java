@@ -36,6 +36,9 @@ public class VertxPrometheusOptionsConverter {
     if (json.getValue("enabled") instanceof Boolean) {
       obj.setEnabled((Boolean)json.getValue("enabled"));
     }
+    if (json.getValue("startEmbeddedServer") instanceof Boolean) {
+      obj.setStartEmbeddedServer((Boolean)json.getValue("startEmbeddedServer"));
+    }
   }
 
   public static void toJson(VertxPrometheusOptions obj, JsonObject json) {
@@ -46,5 +49,6 @@ public class VertxPrometheusOptionsConverter {
       json.put("embeddedServerOptions", obj.getEmbeddedServerOptions().toJson());
     }
     json.put("enabled", obj.isEnabled());
+    json.put("startEmbeddedServer", obj.isStartEmbeddedServer());
   }
 }

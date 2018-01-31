@@ -42,10 +42,10 @@ class VertxNetClientMetrics extends AbstractMetrics {
 
   VertxNetClientMetrics(LabelMatchers labelMatchers, MeterRegistry registry, MetricsCategory domain, String baseName) {
     super(labelMatchers, registry, domain, baseName);
-    connections = longGauges("connections", "Number of connections to the remote host currently opened", Labels.LOCAL, Labels.REMOTE);
-    bytesReceived = summaries("bytesReceived", "Number of bytes received from the remote host", Labels.LOCAL, Labels.REMOTE);
-    bytesSent = summaries("bytesSent", "Number of bytes sent to the remote host", Labels.LOCAL, Labels.REMOTE);
-    errorCount = counters("errors", "Number of errors", Labels.LOCAL, Labels.REMOTE, Labels.CLASS);
+    connections = longGauges("connections", "Number of connections to the remote host currently opened", Label.LOCAL, Label.REMOTE);
+    bytesReceived = summaries("bytesReceived", "Number of bytes received from the remote host", Label.LOCAL, Label.REMOTE);
+    bytesSent = summaries("bytesSent", "Number of bytes sent to the remote host", Label.LOCAL, Label.REMOTE);
+    errorCount = counters("errors", "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS);
   }
 
   TCPMetrics forAddress(String localAddress) {

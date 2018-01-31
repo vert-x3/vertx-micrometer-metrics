@@ -24,15 +24,6 @@ import java.util.Arrays;
  * @author Joel Takvorian
  */
 public final class Labels {
-  public static final String LOCAL = "local";
-  public static final String REMOTE = "remote";
-  public static final String PATH = "path";
-  public static final String CLASS = "class";
-  public static final String ADDRESS = "address";
-  public static final String SIDE = "side";
-  public static final String METHOD = "method";
-  public static final String CODE = "code";
-
   private Labels() {
   }
 
@@ -41,7 +32,7 @@ public final class Labels {
   }
 
   public static String getSide(boolean local) {
-    return local ? LOCAL : REMOTE;
+    return local ? "local" : "remote";
   }
 
   public static class Values {
@@ -55,8 +46,8 @@ public final class Labels {
     public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
-      Values labelsKey = (Values) o;
-      return Arrays.equals(values, labelsKey.values);
+      Values otherValues = (Values) o;
+      return Arrays.equals(values, otherValues.values);
     }
 
     @Override

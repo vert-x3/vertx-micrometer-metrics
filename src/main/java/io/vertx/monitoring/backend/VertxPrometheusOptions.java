@@ -34,11 +34,17 @@ public class VertxPrometheusOptions {
   public static final boolean DEFAULT_ENABLED = false;
 
   /**
+   * Default value for starting an embedded server = false.
+   */
+  public static final boolean DEFAULT_START_EMBEDDED_SERVER = false;
+
+  /**
    * The default metrics endpoint = /metrics when using an embedded server.
    */
   public static final String DEFAULT_EMBEDDED_SERVER_ENDPOINT = "/metrics";
 
   private boolean enabled;
+  private boolean startEmbeddedServer;
   private HttpServerOptions embeddedServerOptions;
   private String embeddedServerEndpoint;
 
@@ -47,6 +53,7 @@ public class VertxPrometheusOptions {
    */
   public VertxPrometheusOptions() {
     enabled = DEFAULT_ENABLED;
+    startEmbeddedServer = DEFAULT_START_EMBEDDED_SERVER;
     embeddedServerEndpoint = DEFAULT_EMBEDDED_SERVER_ENDPOINT;
   }
 
@@ -57,6 +64,7 @@ public class VertxPrometheusOptions {
    */
   public VertxPrometheusOptions(VertxPrometheusOptions other) {
     enabled = other.enabled;
+    startEmbeddedServer = other.startEmbeddedServer;
     embeddedServerEndpoint = other.embeddedServerEndpoint != null ? other.embeddedServerEndpoint : DEFAULT_EMBEDDED_SERVER_ENDPOINT;
     if (other.embeddedServerOptions != null) {
       embeddedServerOptions = new HttpServerOptions(other.embeddedServerOptions);
@@ -85,12 +93,24 @@ public class VertxPrometheusOptions {
     return this;
   }
 
+  public boolean isStartEmbeddedServer() {
+    return startEmbeddedServer;
+  }
+
+  /**
+   * When true, an embedded server will start to expose metrics with Prometheus format.
+   */
+  public VertxPrometheusOptions setStartEmbeddedServer(boolean startEmbeddedServer) {
+    this.startEmbeddedServer = startEmbeddedServer;
+    return this;
+  }
+
   public HttpServerOptions getEmbeddedServerOptions() {
     return embeddedServerOptions;
   }
 
   /**
-   * When set, an embedded server will start to expose metrics with Prometheus format
+   * HTTP server options for the embedded server
    * @param embeddedServerOptions the server options
    */
   public VertxPrometheusOptions setEmbeddedServerOptions(HttpServerOptions embeddedServerOptions) {

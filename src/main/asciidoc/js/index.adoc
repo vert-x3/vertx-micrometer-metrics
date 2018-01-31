@@ -173,6 +173,7 @@ var vertx = Vertx.vertx({
   "metricsOptions" : {
     "prometheusOptions" : {
       "enabled" : true,
+      "startEmbeddedServer" : true,
       "embeddedServerOptions" : {
         "port" : 8080
       },

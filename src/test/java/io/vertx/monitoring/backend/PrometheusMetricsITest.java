@@ -48,6 +48,7 @@ public class PrometheusMetricsITest {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new VertxMonitoringOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
         .setEnabled(true)));
 
@@ -63,6 +64,7 @@ public class PrometheusMetricsITest {
         });
       });
     req.end();
+    async.awaitSuccess(10000);
   }
 
   @Test
@@ -92,6 +94,7 @@ public class PrometheusMetricsITest {
         });
       });
     req.end();
+    async.awaitSuccess(10000);
   }
 
   @Test
@@ -99,6 +102,7 @@ public class PrometheusMetricsITest {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new VertxMonitoringOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
         .addDisabledMetricsCategory(MetricsCategory.HTTP_SERVER)
         .setEnabled(true)));
@@ -116,6 +120,7 @@ public class PrometheusMetricsITest {
         });
       });
     req.end();
+    async.awaitSuccess(10000);
   }
 
   @Test
@@ -123,6 +128,7 @@ public class PrometheusMetricsITest {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new VertxMonitoringOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
         .setEnabled(true)));
 
@@ -150,5 +156,6 @@ public class PrometheusMetricsITest {
         });
       });
     req.end();
+    async.awaitSuccess(10000);
   }
 }

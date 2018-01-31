@@ -57,23 +57,23 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
     return baseName;
   }
 
-  Counters counters(String name, String description, String... keys) {
+  Counters counters(String name, String description, Label... keys) {
     return new Counters(domain, baseName + name, description, registry, keys);
   }
 
-  Gauges<LongAdder> longGauges(String name, String description, String... keys) {
+  Gauges<LongAdder> longGauges(String name, String description, Label... keys) {
     return new Gauges<>(domain, baseName + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
   }
 
-  Gauges<AtomicReference<Double>> doubleGauges(String name, String description, String... keys) {
+  Gauges<AtomicReference<Double>> doubleGauges(String name, String description, Label... keys) {
     return new Gauges<>(domain, baseName + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
   }
 
-  Summaries summaries(String name, String description, String... keys) {
+  Summaries summaries(String name, String description, Label... keys) {
     return new Summaries(domain, baseName + name, description, registry, keys);
   }
 
-  Timers timers(String name, String description, String... keys) {
+  Timers timers(String name, String description, Label... keys) {
     return new Timers(domain, baseName + name, description, registry, keys);
   }
 }

@@ -20,6 +20,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.noop.NoopTimer;
+import io.vertx.monitoring.Label;
 import io.vertx.monitoring.MetricsCategory;
 import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.Labels;
@@ -38,7 +39,7 @@ public class Timers {
   private final MetricsCategory domain;
   private final String name;
   private final String description;
-  private final String[] keys;
+  private final Label[] keys;
   private final MeterRegistry registry;
   private final Map<Labels.Values, Timer> timers = new ConcurrentHashMap<>();
 
@@ -46,7 +47,7 @@ public class Timers {
                 String name,
                 String description,
                 MeterRegistry registry,
-                String... keys) {
+                Label... keys) {
     this.domain = domain;
     this.name = name;
     this.description = description;
