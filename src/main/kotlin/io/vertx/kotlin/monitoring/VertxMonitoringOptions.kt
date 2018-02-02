@@ -3,6 +3,7 @@ package io.vertx.kotlin.monitoring
 import io.vertx.monitoring.VertxMonitoringOptions
 import io.vertx.monitoring.MetricsCategory
 import io.vertx.monitoring.backend.VertxInfluxDbOptions
+import io.vertx.monitoring.backend.VertxJmxMetricsOptions
 import io.vertx.monitoring.backend.VertxPrometheusOptions
 import io.vertx.monitoring.match.Match
 
@@ -10,14 +11,15 @@ import io.vertx.monitoring.match.Match
  * A function providing a DSL for building [io.vertx.monitoring.VertxMonitoringOptions] objects.
  *
  * Vert.x monitoring configuration.<br/>
- * It is required to set either <code>influxDbOptions</code> or <code>prometheusOptions</code>, but not both,
+ * It is required to set either <code>influxDbOptions</code>, <code>prometheusOptions</code> or {@code jmxMetricsOptions]
  * in order to actually report metrics.
  *
  * @param disabledMetricsCategories  Sets metrics types that are disabled.
  * @param enabled  Set whether metrics will be enabled on the Vert.x instance. Metrics are not enabled by default.
- * @param influxDbOptions  Set InfluxDB options. Setting either InfluxDB or Prometheus options is mandatory in order to effectively report metrics.
+ * @param influxDbOptions  Set InfluxDB options. Setting a registry backend option is mandatory in order to effectively report metrics.
+ * @param jmxMetricsOptions  Set JMX metrics options. Setting a registry backend option is mandatory in order to effectively report metrics.
  * @param labelMatchs  Add a rule for label matching.
- * @param prometheusOptions  Set Prometheus options. Setting either InfluxDB or Prometheus options is mandatory in order to effectively report metrics.
+ * @param prometheusOptions  Set Prometheus options. Setting a registry backend option is mandatory in order to effectively report metrics.
  * @param registryName  Set a name for the metrics registry, so that a new registry will be created and associated with this name. If <code>registryName</code> is not provided (or null), a default registry will be used. If the same name is given to several Vert.x instances (within the same JVM), they will share the same registry.
  *
  * <p/>
@@ -27,6 +29,7 @@ fun VertxMonitoringOptions(
   disabledMetricsCategories: Iterable<MetricsCategory>? = null,
   enabled: Boolean? = null,
   influxDbOptions: io.vertx.monitoring.backend.VertxInfluxDbOptions? = null,
+  jmxMetricsOptions: io.vertx.monitoring.backend.VertxJmxMetricsOptions? = null,
   labelMatchs: Iterable<io.vertx.monitoring.match.Match>? = null,
   prometheusOptions: io.vertx.monitoring.backend.VertxPrometheusOptions? = null,
   registryName: String? = null): VertxMonitoringOptions = io.vertx.monitoring.VertxMonitoringOptions().apply {
@@ -39,6 +42,9 @@ fun VertxMonitoringOptions(
   }
   if (influxDbOptions != null) {
     this.setInfluxDbOptions(influxDbOptions)
+  }
+  if (jmxMetricsOptions != null) {
+    this.setJmxMetricsOptions(jmxMetricsOptions)
   }
   if (labelMatchs != null) {
     for (item in labelMatchs) {

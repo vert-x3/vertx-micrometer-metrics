@@ -18,18 +18,17 @@ package io.vertx.monitoring.backend;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.influx.InfluxMeterRegistry;
+import io.micrometer.jmx.JmxMeterRegistry;
 import io.vertx.core.eventbus.EventBus;
 
 /**
  * @author Joel Takvorian
  */
-public final class InfluxDbBackendRegistry implements BackendRegistry {
-  private final InfluxMeterRegistry registry;
+public final class JmxBackendRegistry implements BackendRegistry {
+  private final JmxMeterRegistry registry;
 
-  public InfluxDbBackendRegistry(VertxInfluxDbOptions options) {
-    registry = new InfluxMeterRegistry(options, Clock.SYSTEM);
-    registry.stop();
+  public JmxBackendRegistry(VertxJmxMetricsOptions options) {
+    registry = new JmxMeterRegistry(options, Clock.SYSTEM);
   }
 
   @Override
@@ -39,7 +38,6 @@ public final class InfluxDbBackendRegistry implements BackendRegistry {
 
   @Override
   public void eventBusInitialized(EventBus bus) {
-    registry.start();
   }
 
   @Override

@@ -15,6 +15,7 @@
  */
 package io.vertx.monitoring.backend;
 
+import io.micrometer.core.lang.Nullable;
 import io.micrometer.influx.InfluxConfig;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;

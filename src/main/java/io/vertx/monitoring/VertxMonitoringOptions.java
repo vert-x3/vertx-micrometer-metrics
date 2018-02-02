@@ -21,6 +21,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.monitoring.backend.VertxInfluxDbOptions;
+import io.vertx.monitoring.backend.VertxJmxMetricsOptions;
 import io.vertx.monitoring.backend.VertxPrometheusOptions;
 import io.vertx.monitoring.match.Match;
 import io.vertx.monitoring.match.MatchType;
@@ -33,7 +34,7 @@ import java.util.Set;
 
 /**
  * Vert.x monitoring configuration.<br/>
- * It is required to set either {@code influxDbOptions} or {@code prometheusOptions}, but not both,
+ * It is required to set either {@code influxDbOptions}, {@code prometheusOptions} or {@code jmxMetricsOptions]
  * in order to actually report metrics.
  *
  * @author Joel Takvorian
@@ -76,6 +77,7 @@ public class VertxMonitoringOptions extends MetricsOptions {
   private List<Match> labelMatchs;
   private VertxInfluxDbOptions influxDbOptions;
   private VertxPrometheusOptions prometheusOptions;
+  private VertxJmxMetricsOptions jmxMetricsOptions;
 
   public VertxMonitoringOptions() {
     disabledMetricsCategories = EnumSet.noneOf(MetricsCategory.class);
@@ -93,6 +95,9 @@ public class VertxMonitoringOptions extends MetricsOptions {
     }
     if (other.prometheusOptions != null) {
       prometheusOptions = new VertxPrometheusOptions(other.prometheusOptions);
+    }
+    if (other.jmxMetricsOptions != null) {
+      jmxMetricsOptions = new VertxJmxMetricsOptions(other.jmxMetricsOptions);
     }
   }
 
@@ -210,7 +215,7 @@ public class VertxMonitoringOptions extends MetricsOptions {
 
   /**
    * Set InfluxDB options.
-   * Setting either InfluxDB or Prometheus options is mandatory in order to effectively report metrics.
+   * Setting a registry backend option is mandatory in order to effectively report metrics.
    * @param influxDbOptions backend options for InfluxDB
    */
   public VertxMonitoringOptions setInfluxDbOptions(VertxInfluxDbOptions influxDbOptions) {
@@ -224,11 +229,25 @@ public class VertxMonitoringOptions extends MetricsOptions {
 
   /**
    * Set Prometheus options.
-   * Setting either InfluxDB or Prometheus options is mandatory in order to effectively report metrics.
+   * Setting a registry backend option is mandatory in order to effectively report metrics.
    * @param prometheusOptions backend options for Prometheus
    */
   public VertxMonitoringOptions setPrometheusOptions(VertxPrometheusOptions prometheusOptions) {
     this.prometheusOptions = prometheusOptions;
+    return this;
+  }
+
+  public VertxJmxMetricsOptions getJmxMetricsOptions() {
+    return jmxMetricsOptions;
+  }
+
+  /**
+   * Set JMX metrics options.
+   * Setting a registry backend option is mandatory in order to effectively report metrics.
+   * @param jmxMetricsOptions backend options for JMX reporting
+   */
+  public VertxMonitoringOptions setJmxMetricsOptions(VertxJmxMetricsOptions jmxMetricsOptions) {
+    this.jmxMetricsOptions = jmxMetricsOptions;
     return this;
   }
 }

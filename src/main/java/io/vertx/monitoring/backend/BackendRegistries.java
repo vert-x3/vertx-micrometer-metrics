@@ -50,6 +50,8 @@ public final class BackendRegistries {
         reg = new InfluxDbBackendRegistry(options.getInfluxDbOptions());
       } else if (options.getPrometheusOptions() != null && options.getPrometheusOptions().isEnabled()) {
         reg = new PrometheusBackendRegistry(vertx, options.getPrometheusOptions());
+      } else if (options.getJmxMetricsOptions() != null && options.getJmxMetricsOptions().isEnabled()) {
+        reg = new JmxBackendRegistry(options.getJmxMetricsOptions());
       } else {
         // No backend setup, use global registry
         reg = NoopBackendRegistry.INSTANCE;

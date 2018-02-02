@@ -78,24 +78,24 @@ public class VertxEventBusMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.eventbus.");
     assertThat(datapoints).containsOnly(
-      dp("vertx.eventbus.handlers[address=testSubject]$Value", instances),
-      dp("vertx.eventbus.pending[address=no handler,side=local]$Value", 0),
-      dp("vertx.eventbus.pending[address=testSubject,side=local]$Value", 0),
-      dp("vertx.eventbus.published[address=no handler,side=local]$Count", 2),
-      dp("vertx.eventbus.published[address=testSubject,side=local]$Count", 8),
-      dp("vertx.eventbus.received[address=no handler,side=local]$Count", 2),
-      dp("vertx.eventbus.received[address=testSubject,side=local]$Count", 8),
-      dp("vertx.eventbus.delivered[address=testSubject,side=local]$Count", 8),
-      dp("vertx.eventbus.replyFailures[address=no handler,failure=NO_HANDLERS]$Count", 2),
-      dp("vertx.eventbus.errors[address=testSubject,class=RuntimeException]$Count", 2 * instances));
+      dp("vertx.eventbus.handlers[address=testSubject]$VALUE", instances),
+      dp("vertx.eventbus.pending[address=no handler,side=local]$VALUE", 0),
+      dp("vertx.eventbus.pending[address=testSubject,side=local]$VALUE", 0),
+      dp("vertx.eventbus.published[address=no handler,side=local]$COUNT", 2),
+      dp("vertx.eventbus.published[address=testSubject,side=local]$COUNT", 8),
+      dp("vertx.eventbus.received[address=no handler,side=local]$COUNT", 2),
+      dp("vertx.eventbus.received[address=testSubject,side=local]$COUNT", 8),
+      dp("vertx.eventbus.delivered[address=testSubject,side=local]$COUNT", 8),
+      dp("vertx.eventbus.replyFailures[address=no handler,failure=NO_HANDLERS]$COUNT", 2),
+      dp("vertx.eventbus.errors[address=testSubject,class=RuntimeException]$COUNT", 2 * instances));
 
     List<RegistryInspector.Datapoint> timersDp = RegistryInspector.listTimers("vertx.eventbus.");
     assertThat(timersDp)
       .usingFieldByFieldElementComparator()
-      .usingComparatorForElementFieldsWithType(new DoubleComparator(0.1), Double.class)
+      .usingComparatorForElementFieldsWithType(new DoubleComparator(1.0), Double.class)
       .containsOnly(
-        dp("vertx.eventbus.processingTime[address=testSubject]$TotalTime", 180d * instances / 1000d),
-        dp("vertx.eventbus.processingTime[address=testSubject]$Count", 8d * instances),
-        dp("vertx.eventbus.processingTime[address=testSubject]$Max", 30d / 1000d));
+        dp("vertx.eventbus.processingTime[address=testSubject]$TOTAL_TIME", 180d * instances / 1000d),
+        dp("vertx.eventbus.processingTime[address=testSubject]$COUNT", 8d * instances),
+        dp("vertx.eventbus.processingTime[address=testSubject]$MAX", 30d / 1000d));
   }
 }

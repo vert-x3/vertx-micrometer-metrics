@@ -47,9 +47,9 @@ public class VertxDatagramSocketMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.datagram.");
     assertThat(datapoints).containsOnly(
-      dp("vertx.datagram.bytesSent[]$Count", 5),
-      dp("vertx.datagram.bytesSent[]$Total", 45),  // 45 = size("some text") * loops
-      dp("vertx.datagram.bytesReceived[local=localhost:9192]$Count", 5),
-      dp("vertx.datagram.bytesReceived[local=localhost:9192]$Total", 45));
+      dp("vertx.datagram.bytesSent[]$COUNT", 5),
+      dp("vertx.datagram.bytesSent[]$TOTAL", 45),  // 45 = size("some text") * loops
+      dp("vertx.datagram.bytesReceived[local=localhost:9192]$COUNT", 5),
+      dp("vertx.datagram.bytesReceived[local=localhost:9192]$TOTAL", 45));
   }
 }

@@ -95,15 +95,15 @@ public class MetricsServiceImpl implements MetricsService {
     meter.getId().getTags().forEach(tag -> tags.put(tag.getKey(), tag.getValue()));
     JsonObject obj = new JsonObject().put("tags", tags);
     switch (meter.getId().getType()) {
-      case Counter:
+      case COUNTER:
         return counterToJson(obj, (Counter)meter);
-      case Gauge:
+      case GAUGE:
         return gaugeToJson(obj, (Gauge)meter);
-      case Timer:
+      case TIMER:
         return timerToJson(obj, (Timer)meter);
-      case DistributionSummary:
+      case DISTRIBUTION_SUMMARY:
         return summaryToJson(obj, (DistributionSummary)meter);
-      case Other:
+      case OTHER:
       default:
         return obj.put("type", "unknown");
     }

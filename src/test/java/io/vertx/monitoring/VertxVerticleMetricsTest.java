@@ -46,7 +46,7 @@ public class VertxVerticleMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.verticle");
     assertThat(datapoints).containsOnly(
-      dp(metricName + "$Value", 3));
+      dp(metricName + "$VALUE", 3));
 
     Async async2 = context.async();
     vertx.deployVerticle(SampleVerticle::new, new DeploymentOptions().setInstances(4), res -> {
@@ -60,7 +60,7 @@ public class VertxVerticleMetricsTest {
 
     datapoints = RegistryInspector.listWithoutTimers("vertx.verticle");
     assertThat(datapoints).containsOnly(
-      dp(metricName + "$Value", 7));
+      dp(metricName + "$VALUE", 7));
 
     Async async3 = context.async();
     vertx.undeploy(deploymentRef.get(), res -> {
@@ -74,7 +74,7 @@ public class VertxVerticleMetricsTest {
 
     datapoints = RegistryInspector.listWithoutTimers("vertx.verticle");
     assertThat(datapoints).containsOnly(
-      dp(metricName + "$Value", 4));
+      dp(metricName + "$VALUE", 4));
   }
 
   private static class SampleVerticle extends AbstractVerticle {}

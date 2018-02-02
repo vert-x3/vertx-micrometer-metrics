@@ -81,11 +81,11 @@ public class VertxNetClientServerMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.net.client.", registryName);
     assertThat(datapoints).containsOnly(
-        dp("vertx.net.client.connections[local=?,remote=localhost:9194]$Value", 0),
-        dp("vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$Count", concurrentClients * SENT_COUNT),
-        dp("vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$Total", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-        dp("vertx.net.client.bytesSent[local=?,remote=localhost:9194]$Count", concurrentClients * SENT_COUNT),
-        dp("vertx.net.client.bytesSent[local=?,remote=localhost:9194]$Total", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length));
+        dp("vertx.net.client.connections[local=?,remote=localhost:9194]$VALUE", 0),
+        dp("vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT),
+        dp("vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+        dp("vertx.net.client.bytesSent[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT),
+        dp("vertx.net.client.bytesSent[local=?,remote=localhost:9194]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length));
   }
 
   @Test
@@ -94,11 +94,11 @@ public class VertxNetClientServerMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.net.server.", registryName);
     assertThat(datapoints).containsOnly(
-      dp("vertx.net.server.connections[local=localhost:9194,remote=_]$Value", 0),
-      dp("vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$Count", concurrentClients * SENT_COUNT),
-      dp("vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$Total", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.net.server.bytesSent[local=localhost:9194,remote=_]$Count", concurrentClients * SENT_COUNT),
-      dp("vertx.net.server.bytesSent[local=localhost:9194,remote=_]$Total", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length));
+      dp("vertx.net.server.connections[local=localhost:9194,remote=_]$VALUE", 0),
+      dp("vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT),
+      dp("vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+      dp("vertx.net.server.bytesSent[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT),
+      dp("vertx.net.server.bytesSent[local=localhost:9194,remote=_]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length));
   }
 
   private void runClientRequests(TestContext ctx) {

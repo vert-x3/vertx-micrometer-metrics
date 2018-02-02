@@ -41,6 +41,9 @@ public class VertxMonitoringOptionsConverter {
     if (json.getValue("influxDbOptions") instanceof JsonObject) {
       obj.setInfluxDbOptions(new io.vertx.monitoring.backend.VertxInfluxDbOptions((JsonObject)json.getValue("influxDbOptions")));
     }
+    if (json.getValue("jmxMetricsOptions") instanceof JsonObject) {
+      obj.setJmxMetricsOptions(new io.vertx.monitoring.backend.VertxJmxMetricsOptions((JsonObject)json.getValue("jmxMetricsOptions")));
+    }
     if (json.getValue("labelMatchs") instanceof JsonArray) {
       json.getJsonArray("labelMatchs").forEach(item -> {
         if (item instanceof JsonObject)

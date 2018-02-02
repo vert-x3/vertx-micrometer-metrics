@@ -33,6 +33,7 @@ import io.vertx.monitoring.MetricsCategory;
 import io.vertx.monitoring.VertxMonitoringOptions;
 import io.vertx.monitoring.backend.BackendRegistries;
 import io.vertx.monitoring.backend.VertxInfluxDbOptions;
+import io.vertx.monitoring.backend.VertxJmxMetricsOptions;
 import io.vertx.monitoring.backend.VertxPrometheusOptions;
 import io.vertx.monitoring.match.Match;
 import io.vertx.monitoring.match.MatchType;
@@ -105,6 +106,22 @@ public class MetricsExamples {
       }
     });
     vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+  }
+
+  public void setupMinimalJMX() {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new VertxMonitoringOptions()
+        .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true))
+        .setEnabled(true)));
+  }
+
+  public void setupJMXWithStepAndDomain() {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new VertxMonitoringOptions()
+        .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)
+          .setStep(5)
+          .setDomain("my.metrics.domain"))
+        .setEnabled(true)));
   }
 
   public void accessDefaultRegistry() {

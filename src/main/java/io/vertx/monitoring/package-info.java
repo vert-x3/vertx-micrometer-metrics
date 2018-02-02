@@ -25,7 +25,7 @@
  * * Vert.x core tools monitoring: TCP/HTTP client and servers, {@link io.vertx.core.datagram.DatagramSocket},
  * {@link io.vertx.core.eventbus.EventBus} and pools
  * * User defined metrics through micrometer
- * * Reporting to https://www.influxdata.com/[InfluxDB] or https://prometheus.io/[Prometheus].
+ * * Reporting to https://www.influxdata.com/[InfluxDB], https://prometheus.io/[Prometheus] or JMX.
  *
  * == InfluxDB
  *
@@ -51,7 +51,7 @@
  * <dependency>
  *   <groupId>io.micrometer</groupId>
  *   <artifactId>micrometer-registry-influx</artifactId>
- *   <version>1.0.0-rc.7</version>
+ *   <version>1.0.0-rc.9</version>
  * </dependency>
  * ----
  *
@@ -60,10 +60,8 @@
  * [source,groovy,subs="+attributes"]
  * ----
  * compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
- * compile 'io.micrometer:micrometer-registry-influx:1.0.0-rc.7'
+ * compile 'io.micrometer:micrometer-registry-influx:1.0.0-rc.9'
  * ----
- *
- * Please refer to {@link io.vertx.monitoring.VertxMonitoringOptions} for an exhaustive list of options.
  *
  * === Configuration examples
  *
@@ -111,7 +109,7 @@
  * <dependency>
  *   <groupId>io.micrometer</groupId>
  *   <artifactId>micrometer-registry-prometheus</artifactId>
- *   <version>1.0.0-rc.7</version>
+ *   <version>1.0.0-rc.9</version>
  * </dependency>
  * <dependency>
  *   <groupId>io.vertx</groupId>
@@ -125,11 +123,9 @@
  * [source,groovy,subs="+attributes"]
  * ----
  * compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
- * compile 'io.micrometer:micrometer-registry-prometheus:1.0.0-rc.7'
+ * compile 'io.micrometer:micrometer-registry-prometheus:1.0.0-rc.9'
  * compile 'io.vertx:vertx-web:${maven.version}'
  * ----
- *
- * Please refer to {@link io.vertx.monitoring.VertxMonitoringOptions} for an exhaustive list of options.
  *
  * === Configuration examples
  *
@@ -156,7 +152,58 @@
  * {@link examples.MetricsExamples#setupPrometheusBoundRouter()}
  * ----
  *
+ * == JMX
+ *
+ * === Getting started
+ *
+ * The modules _${maven.artifactId}_ and _micrometer-registry-jmx_ must be present in the classpath.
+ *
+ * Maven users should add this to their project POM file:
+ *
+ * [source,xml,subs="+attributes"]
+ * ----
+ * <dependency>
+ *   <groupId>${maven.groupId}</groupId>
+ *   <artifactId>${maven.artifactId}</artifactId>
+ *   <version>${maven.version}</version>
+ * </dependency>
+ * <dependency>
+ *   <groupId>io.micrometer</groupId>
+ *   <artifactId>micrometer-registry-jmx</artifactId>
+ *   <version>1.0.0-rc.9</version>
+ * </dependency>
+ * ----
+ *
+ * And Gradle users, to their build file:
+ *
+ * [source,groovy,subs="+attributes"]
+ * ----
+ * compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
+ * compile 'io.micrometer:micrometer-registry-jmx:1.0.0-rc.9'
+ * ----
+ *
+ * === Configuration examples
+ *
+ * Vert.x does not enable SPI implementations by default. You must enable metric collection in the Vert.x options
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.MetricsExamples#setupMinimalJMX()}
+ * ----
+ *
+ * ==== With step and domain
+ *
+ * In Micrometer, {@code step} refers to the reporting period, in seconds. {@code domain} is the JMX domain under which
+ * MBeans are registered.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.MetricsExamples#setupJMXWithStepAndDomain()}
+ * ----
+ *
  * == Advanced usage
+ *
+ * Please refer to {@link io.vertx.monitoring.VertxMonitoringOptions} for an exhaustive list of options.
  *
  * === Disable some metrics categories
  *

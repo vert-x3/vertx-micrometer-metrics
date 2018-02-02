@@ -52,10 +52,10 @@ public class VertxPoolMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.pool.");
     assertThat(datapoints).containsOnly(
-      dp("vertx.pool.queue.size[pool_name=test-worker,pool_type=worker]$Value", 0),
-      dp("vertx.pool.inUse[pool_name=test-worker,pool_type=worker]$Value", 0),
-      dp("vertx.pool.ratio[pool_name=test-worker,pool_type=worker]$Value", 0),
-      dp("vertx.pool.completed[pool_name=test-worker,pool_type=worker]$Count", taskCount));
+      dp("vertx.pool.queue.size[pool_name=test-worker,pool_type=worker]$VALUE", 0),
+      dp("vertx.pool.inUse[pool_name=test-worker,pool_type=worker]$VALUE", 0),
+      dp("vertx.pool.ratio[pool_name=test-worker,pool_type=worker]$VALUE", 0),
+      dp("vertx.pool.completed[pool_name=test-worker,pool_type=worker]$COUNT", taskCount));
 
     List<RegistryInspector.Datapoint> timersDp = RegistryInspector.listTimers("vertx.pool.")
       .stream().filter(dp -> dp.id().startsWith("vertx.pool.")).collect(Collectors.toList());
@@ -64,9 +64,9 @@ public class VertxPoolMetricsTest {
       .usingComparatorForElementFieldsWithType(new DoubleComparator(0.1), Double.class)
       .hasSize(6)
       .contains(
-        dp("vertx.pool.queue.delay[pool_name=test-worker,pool_type=worker]$Count", taskCount),
-        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$TotalTime", taskCount * sleepMillis / 1000d),
-        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$Count", taskCount),
-        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$Max", sleepMillis / 1000d));
+        dp("vertx.pool.queue.delay[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
+        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$TOTAL_TIME", taskCount * sleepMillis / 1000d),
+        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
+        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$MAX", sleepMillis / 1000d));
   }
 }
