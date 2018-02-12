@@ -20,15 +20,12 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.vertx.monitoring.Label;
-import io.vertx.monitoring.Labels;
 import io.vertx.monitoring.MetricsCategory;
 import io.vertx.monitoring.match.LabelMatchers;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 
@@ -43,7 +40,7 @@ public class Gauges<T> {
   private final Supplier<T> tSupplier;
   private final ToDoubleFunction<T> dGetter;
   private final MeterRegistry registry;
-  private final Map<Labels.Values, T> gauges = new ConcurrentHashMap<>();
+  private final Map<List<Tag>, T> gauges = new ConcurrentHashMap<>();
 
   public Gauges(MetricsCategory domain,
                 String name,
@@ -62,11 +59,14 @@ public class Gauges<T> {
   }
 
   public T get(LabelMatchers labelMatchers, String... values) {
-    return gauges.computeIfAbsent(new Labels.Values(values), v -> {
+    // Unlike other metric types, gauge object reference cannot be retrieved from the Gauge object
+    // so we need to store the object reference in our cache map.
+    // As a side effect, label matchers must be executed before accessing that map to resolve any
+    // potential alias.
+    List<Tag> tags = labelMatchers.toTags(domain, keys, values);
+    return gauges.computeIfAbsent(tags, v -> {
       // Create a new Gauge for this handler
       T t = tSupplier.get();
-      // Match labels. If match fails, do not store a new gauge
-      List<Tag> tags = labelMatchers.toTags(domain, keys, values);
       if (tags != null) {
         Gauge.builder(name, t, dGetter)
           .description(description)
