@@ -28,10 +28,10 @@ public class VertxMonitoringOptionsConverter {
 
   public static void fromJson(JsonObject json, VertxMonitoringOptions obj) {
     if (json.getValue("disabledMetricsCategories") instanceof JsonArray) {
-      java.util.LinkedHashSet<io.vertx.monitoring.MetricsCategory> list = new java.util.LinkedHashSet<>();
+      java.util.LinkedHashSet<io.vertx.monitoring.MetricsDomain> list = new java.util.LinkedHashSet<>();
       json.getJsonArray("disabledMetricsCategories").forEach( item -> {
         if (item instanceof String)
-          list.add(io.vertx.monitoring.MetricsCategory.valueOf((String)item));
+          list.add(io.vertx.monitoring.MetricsDomain.valueOf((String)item));
       });
       obj.setDisabledMetricsCategories(list);
     }

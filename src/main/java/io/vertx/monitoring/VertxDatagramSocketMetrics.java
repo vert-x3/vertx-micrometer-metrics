@@ -20,7 +20,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.core.spi.metrics.DatagramSocketMetrics;
-import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.meters.Counters;
 import io.vertx.monitoring.meters.Summaries;
 
@@ -34,8 +33,8 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
 
   private volatile String localAddress;
 
-  VertxDatagramSocketMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
-    super(labelMatchers, registry, MetricsCategory.DATAGRAM_SOCKET, "vertx.datagram.");
+  VertxDatagramSocketMetrics(MeterRegistry registry) {
+    super(registry, MetricsDomain.DATAGRAM_SOCKET);
     bytesReceived = summaries("bytesReceived", "Total number of datagram bytes received", Label.LOCAL);
     bytesSent = summaries("bytesSent", "Total number of datagram bytes sent");
     errorCount = counters("errors", "Total number of datagram errors", Label.CLASS);
@@ -49,18 +48,18 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
   @Override
   public void bytesRead(Void socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
     if (localAddress != null) {
-      bytesReceived.get(labelMatchers, localAddress).record(numberOfBytes);
+      bytesReceived.get(localAddress).record(numberOfBytes);
     }
   }
 
   @Override
   public void bytesWritten(Void socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
-    bytesSent.get(labelMatchers).record(numberOfBytes);
+    bytesSent.get().record(numberOfBytes);
   }
 
   @Override
   public void exceptionOccurred(Void socketMetric, SocketAddress remoteAddress, Throwable t) {
-    errorCount.get(labelMatchers, t.getClass().getSimpleName()).increment();
+    errorCount.get(t.getClass().getSimpleName()).increment();
   }
 
   @Override

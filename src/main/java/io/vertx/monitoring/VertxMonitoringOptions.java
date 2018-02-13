@@ -51,7 +51,7 @@ public class VertxMonitoringOptions extends MetricsOptions {
    * Default label match for public http server: exclude remote label
    */
   public static final Match DEFAULT_HTTP_SERVER_MATCH = new Match()
-    .setDomain(MetricsCategory.HTTP_SERVER)
+    .setDomain(MetricsDomain.HTTP_SERVER)
     .setLabel("remote")
     .setType(MatchType.REGEX)
     .setValue(".*")
@@ -61,7 +61,7 @@ public class VertxMonitoringOptions extends MetricsOptions {
    * Default label match for public net server: exclude remote label
    */
   public static final Match DEFAULT_NET_SERVER_MATCH = new Match()
-    .setDomain(MetricsCategory.NET_SERVER)
+    .setDomain(MetricsDomain.NET_SERVER)
     .setLabel("remote")
     .setType(MatchType.REGEX)
     .setValue(".*")
@@ -72,7 +72,7 @@ public class VertxMonitoringOptions extends MetricsOptions {
    */
   public static final List<Match> DEFAULT_LABEL_MATCHES = Arrays.asList(DEFAULT_HTTP_SERVER_MATCH, DEFAULT_NET_SERVER_MATCH);
 
-  private Set<MetricsCategory> disabledMetricsCategories;
+  private Set<MetricsDomain> disabledMetricsCategories;
   private String registryName;
   private List<Match> labelMatchs;
   private VertxInfluxDbOptions influxDbOptions;
@@ -80,14 +80,14 @@ public class VertxMonitoringOptions extends MetricsOptions {
   private VertxJmxMetricsOptions jmxMetricsOptions;
 
   public VertxMonitoringOptions() {
-    disabledMetricsCategories = EnumSet.noneOf(MetricsCategory.class);
+    disabledMetricsCategories = EnumSet.noneOf(MetricsDomain.class);
     registryName = DEFAULT_REGISTRY_NAME;
     labelMatchs = new ArrayList<>(DEFAULT_LABEL_MATCHES);
   }
 
   public VertxMonitoringOptions(VertxMonitoringOptions other) {
     super(other);
-    disabledMetricsCategories = other.disabledMetricsCategories != null ? EnumSet.copyOf(other.disabledMetricsCategories) : EnumSet.noneOf(MetricsCategory.class);
+    disabledMetricsCategories = other.disabledMetricsCategories != null ? EnumSet.copyOf(other.disabledMetricsCategories) : EnumSet.noneOf(MetricsDomain.class);
     registryName = other.registryName;
     labelMatchs = new ArrayList<>(other.labelMatchs);
     if (other.influxDbOptions != null) {
@@ -130,7 +130,7 @@ public class VertxMonitoringOptions extends MetricsOptions {
   /**
    * @return the disabled metrics types.
    */
-  public Set<MetricsCategory> getDisabledMetricsCategories() {
+  public Set<MetricsDomain> getDisabledMetricsCategories() {
     return disabledMetricsCategories;
   }
 
@@ -140,7 +140,7 @@ public class VertxMonitoringOptions extends MetricsOptions {
    * @param disabledMetricsCategories to specify the set of metrics types to be disabled.
    * @return a reference to this, so that the API can be used fluently
    */
-  public VertxMonitoringOptions setDisabledMetricsCategories(Set<MetricsCategory> disabledMetricsCategories) {
+  public VertxMonitoringOptions setDisabledMetricsCategories(Set<MetricsDomain> disabledMetricsCategories) {
     this.disabledMetricsCategories = disabledMetricsCategories;
     return this;
   }
@@ -149,21 +149,21 @@ public class VertxMonitoringOptions extends MetricsOptions {
    * Set metric that will not be registered. Schedulers will check the set {@code disabledMetricsCategories} when
    * registering metrics suppliers
    *
-   * @param metricsCategory the type of metrics
+   * @param metricsDomain the type of metrics
    * @return a reference to this, so that the API can be used fluently
    */
   @GenIgnore
-  public VertxMonitoringOptions addDisabledMetricsCategory(MetricsCategory metricsCategory) {
+  public VertxMonitoringOptions addDisabledMetricsCategory(MetricsDomain metricsDomain) {
     if (disabledMetricsCategories == null) {
-      disabledMetricsCategories = EnumSet.noneOf(MetricsCategory.class);
+      disabledMetricsCategories = EnumSet.noneOf(MetricsDomain.class);
     }
-    this.disabledMetricsCategories.add(metricsCategory);
+    this.disabledMetricsCategories.add(metricsDomain);
     return this;
   }
 
   @GenIgnore
-  public boolean isMetricsCategoryDisabled(MetricsCategory metricsCategory) {
-    return disabledMetricsCategories != null && disabledMetricsCategories.contains(metricsCategory);
+  public boolean isMetricsCategoryDisabled(MetricsDomain metricsDomain) {
+    return disabledMetricsCategories != null && disabledMetricsCategories.contains(metricsDomain);
   }
 
   public String getRegistryName() {

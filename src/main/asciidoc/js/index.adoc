@@ -286,12 +286,12 @@ var vertx = Vertx.vertx({
 
 Please refer to `link:../dataobjects.html#VertxMonitoringOptions[VertxMonitoringOptions]` for an exhaustive list of options.
 
-=== Disable some metrics categories
+=== Disable some metric domains
 
 Restricting the Vert.x modules being monitored can be done using
 `link:todo[disabledMetricsCategories]`.
 
-For a full list of categories, see `link:../enums.html#MetricsCategory[MetricsCategory]`
+For a full list of domains, see `link:../enums.html#MetricsDomain[MetricsDomain]`
 
 === User-defined metrics
 
@@ -400,6 +400,18 @@ var vertx = Vertx.vertx({
 ----
 
 Here, any value for the label "remote" will be replaced with "_".
+
+Label matching uses Micrometer's `MeterFilter` under the hood. This API can be accessed directly as well:
+
+[source,js]
+----
+var registry = Java.type("io.vertx.monitoring.backend.BackendRegistries").getDefaultNow();
+
+registry.config().meterFilter(Java.type("io.micrometer.core.instrument.config.MeterFilter").ignoreTags("address", "remote")).meterFilter(Java.type("io.micrometer.core.instrument.config.MeterFilter").renameTag("vertx.verticle", "deployed", "instances"));
+
+----
+
+_See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]._
 
 === Snapshots
 
@@ -720,7 +732,7 @@ NOTE: Vert.x creates two worker pools upfront, _worker-thread_ and _internal-blo
 |Description
 
 |Gauge
-|`vertx_verticle{name=<name>}`
+|`vertx_verticle_deployed{name=<name>}`
 |Number of verticle instances deployed.
 
 |===

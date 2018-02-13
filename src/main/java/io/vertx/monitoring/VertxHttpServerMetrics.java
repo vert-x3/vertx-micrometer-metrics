@@ -22,7 +22,6 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
-import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.meters.Counters;
 import io.vertx.monitoring.meters.Gauges;
 import io.vertx.monitoring.meters.Timers;
@@ -39,8 +38,8 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
   private final Timers processingTime;
   private final Gauges<LongAdder> wsConnections;
 
-  VertxHttpServerMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
-    super(labelMatchers, registry, MetricsCategory.HTTP_SERVER, "vertx.http.server.");
+  VertxHttpServerMetrics(MeterRegistry registry) {
+    super(registry, MetricsDomain.HTTP_SERVER);
     requests = longGauges("requests", "Number of requests being processed", Label.LOCAL, Label.REMOTE, Label.PATH);
     requestCount = counters("requestCount", "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.PATH, Label.METHOD, Label.CODE);
     requestResetCount = counters("requestResetCount", "Number of requests reset", Label.LOCAL, Label.REMOTE, Label.PATH);
@@ -62,29 +61,29 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     @Override
     public Handler requestBegin(String remote, HttpServerRequest request) {
       Handler handler = new Handler(remote, request.path(), request.method().name());
-      requests.get(labelMatchers, local, remote, handler.path).increment();
-      handler.timer = processingTime.start(labelMatchers, local, remote, handler.path);
+      requests.get(local, remote, handler.path).increment();
+      handler.timer = processingTime.start(local, remote, handler.path);
       return handler;
     }
 
     @Override
     public void requestReset(Handler handler) {
-      requestResetCount.get(labelMatchers, local, handler.address, handler.path).increment();
-      requests.get(labelMatchers, local, handler.address, handler.path).decrement();
+      requestResetCount.get(local, handler.address, handler.path).increment();
+      requests.get(local, handler.address, handler.path).decrement();
     }
 
     @Override
     public Handler responsePushed(String remote, HttpMethod method, String uri, HttpServerResponse response) {
       Handler handler = new Handler(remote, uri, method.name());
-      requests.get(labelMatchers, local, remote, handler.path).increment();
+      requests.get(local, remote, handler.path).increment();
       return handler;
     }
 
     @Override
     public void responseEnd(Handler handler, HttpServerResponse response) {
       handler.timer.end();
-      requestCount.get(labelMatchers, local, handler.address, handler.path, handler.method, String.valueOf(response.getStatusCode())).increment();
-      requests.get(labelMatchers, local, handler.address, handler.path).decrement();
+      requestCount.get(local, handler.address, handler.path, handler.method, String.valueOf(response.getStatusCode())).increment();
+      requests.get(local, handler.address, handler.path).decrement();
     }
 
     @Override
@@ -94,13 +93,13 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
 
     @Override
     public String connected(String remote, ServerWebSocket serverWebSocket) {
-      wsConnections.get(labelMatchers, local, remote).increment();
+      wsConnections.get(local, remote).increment();
       return remote;
     }
 
     @Override
     public void disconnected(String remote) {
-      wsConnections.get(labelMatchers, local, remote).decrement();
+      wsConnections.get(local, remote).decrement();
     }
 
     @Override

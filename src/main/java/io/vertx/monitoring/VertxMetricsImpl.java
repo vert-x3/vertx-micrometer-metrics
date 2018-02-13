@@ -38,11 +38,10 @@ import io.vertx.core.spi.metrics.TCPMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.monitoring.backend.BackendRegistries;
 import io.vertx.monitoring.backend.BackendRegistry;
-import io.vertx.monitoring.match.LabelMatchers;
 
 import java.util.Optional;
 
-import static io.vertx.monitoring.MetricsCategory.*;
+import static io.vertx.monitoring.MetricsDomain.*;
 
 /**
  * Metrics SPI implementation for Micrometer.
@@ -64,28 +63,28 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   /**
    * @param options Vertx Prometheus options
    */
-  public VertxMetricsImpl(VertxMonitoringOptions options, LabelMatchers labelMatchers, BackendRegistry backendRegistry) {
-    super(labelMatchers, backendRegistry.getMeterRegistry(), null, null);
+  public VertxMetricsImpl(VertxMonitoringOptions options, BackendRegistry backendRegistry) {
+    super(backendRegistry.getMeterRegistry(), null);
     this.backendRegistry = backendRegistry;
     registryName = options.getRegistryName();
     MeterRegistry registry = backendRegistry.getMeterRegistry();
 
     eventBusMetrics = options.isMetricsCategoryDisabled(EVENT_BUS) ? Optional.empty()
-      : Optional.of(new VertxEventBusMetrics(labelMatchers, registry));
+      : Optional.of(new VertxEventBusMetrics(registry));
     datagramSocketMetrics = options.isMetricsCategoryDisabled(DATAGRAM_SOCKET) ? Optional.empty()
-      : Optional.of(new VertxDatagramSocketMetrics(labelMatchers, registry));
+      : Optional.of(new VertxDatagramSocketMetrics(registry));
     netClientMetrics = options.isMetricsCategoryDisabled(NET_CLIENT) ? Optional.empty()
-      : Optional.of(new VertxNetClientMetrics(labelMatchers, registry));
+      : Optional.of(new VertxNetClientMetrics(registry));
     netServerMetrics = options.isMetricsCategoryDisabled(NET_SERVER) ? Optional.empty()
-      : Optional.of(new VertxNetServerMetrics(labelMatchers, registry));
+      : Optional.of(new VertxNetServerMetrics(registry));
     httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? Optional.empty()
-      : Optional.of(new VertxHttpClientMetrics(labelMatchers, registry));
+      : Optional.of(new VertxHttpClientMetrics(registry));
     httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? Optional.empty()
-      : Optional.of(new VertxHttpServerMetrics(labelMatchers, registry));
+      : Optional.of(new VertxHttpServerMetrics(registry));
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? Optional.empty()
-      : Optional.of(new VertxPoolMetrics(labelMatchers, registry));
+      : Optional.of(new VertxPoolMetrics(registry));
     verticleMetrics = options.isMetricsCategoryDisabled(VERTICLES) ? Optional.empty()
-      : Optional.of(new VertxVerticleMetrics(labelMatchers, registry));
+      : Optional.of(new VertxVerticleMetrics(registry));
   }
 
   @Override

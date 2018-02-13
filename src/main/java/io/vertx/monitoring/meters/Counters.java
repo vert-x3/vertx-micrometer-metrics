@@ -18,14 +18,9 @@ package io.vertx.monitoring.meters;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.noop.NoopCounter;
 import io.vertx.monitoring.Label;
-import io.vertx.monitoring.MetricsCategory;
-import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.Labels;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,38 +28,28 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Joel Takvorian
  */
 public class Counters {
-  private static final Counter NOOP_COUNTER = new NoopCounter(null);
-
-  private final MetricsCategory domain;
   private final String name;
   private final String description;
   private final Label[] keys;
   private final MeterRegistry registry;
   private final Map<Labels.Values, Counter> counters = new ConcurrentHashMap<>();
 
-  public Counters(MetricsCategory domain,
-                  String name,
+  public Counters(String name,
                   String description,
                   MeterRegistry registry,
                   Label... keys) {
-    this.domain = domain;
     this.name = name;
     this.description = description;
     this.registry = registry;
     this.keys = keys;
   }
 
-  public Counter get(LabelMatchers labelMatchers, String... values) {
+  public Counter get(String... values) {
     return counters.computeIfAbsent(new Labels.Values(values), v -> {
-      // Match labels. If match fails, do not store a new counter
-      List<Tag> tags = labelMatchers.toTags(domain, keys, values);
-      if (tags == null) {
-        return NOOP_COUNTER;
-      }
       // Create a new Counter
       return Counter.builder(name)
         .description(description)
-        .tags(tags)
+        .tags(Labels.toTags(keys, values))
         .register(registry);
     });
   }

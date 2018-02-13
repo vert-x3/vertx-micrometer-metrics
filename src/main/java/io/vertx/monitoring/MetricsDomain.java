@@ -19,41 +19,51 @@ import io.vertx.codegen.annotations.VertxGen;
 
 
 /**
- * Metrics types for each metrics.
+ * Metric domains with their associated prefixes.
  */
 @VertxGen
-public enum MetricsCategory {
+public enum MetricsDomain {
 
   /**
    * Net server metrics.
    */
-  NET_SERVER,
+  NET_SERVER("vertx.net.server."),
   /**
    * Net client metrics.
    */
-  NET_CLIENT,
+  NET_CLIENT("vertx.net.client."),
   /**
    * Http server metrics.
    */
-  HTTP_SERVER,
+  HTTP_SERVER("vertx.http.server."),
   /**
    * Http client metrics.
    */
-  HTTP_CLIENT,
+  HTTP_CLIENT("vertx.http.client."),
   /**
    * Datagram socket metrics.
    */
-  DATAGRAM_SOCKET,
+  DATAGRAM_SOCKET("vertx.datagram."),
   /**
    * Event bus metrics.
    */
-  EVENT_BUS,
+  EVENT_BUS("vertx.eventbus."),
   /**
    * Named pools metrics.
    */
-  NAMED_POOLS,
+  NAMED_POOLS("vertx.pool."),
   /**
    * Verticle metrics.
    */
-  VERTICLES
+  VERTICLES("vertx.verticle.");
+
+  private String prefix;
+
+  MetricsDomain(String prefix) {
+    this.prefix = prefix;
+  }
+
+  public String getPrefix() {
+    return prefix;
+  }
 }

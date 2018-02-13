@@ -18,7 +18,6 @@ package io.vertx.monitoring;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
-import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.meters.Counters;
 import io.vertx.monitoring.meters.Gauges;
 import io.vertx.monitoring.meters.Summaries;
@@ -42,8 +41,8 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   private final Summaries bytesRead;
   private final Summaries bytesWritten;
 
-  VertxEventBusMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
-    super(labelMatchers, registry, MetricsCategory.EVENT_BUS, "vertx.eventbus.");
+  VertxEventBusMetrics(MeterRegistry registry) {
+    super(registry, MetricsDomain.EVENT_BUS);
     handlers = longGauges("handlers", "Number of event bus handlers in use", Label.ADDRESS);
     pending = longGauges("pending", "Number of messages not processed yet", Label.ADDRESS, Label.SIDE);
     published = counters("published", "Number of messages published (publish / subscribe)", Label.ADDRESS, Label.SIDE);
@@ -59,13 +58,13 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   @Override
   public Handler handlerRegistered(String address, String repliedAddress) {
-    handlers.get(labelMatchers, address).increment();
+    handlers.get(address).increment();
     return new Handler(address);
   }
 
   @Override
   public void handlerUnregistered(Handler handler) {
-    handlers.get(labelMatchers, handler.address).decrement();
+    handlers.get(handler.address).decrement();
   }
 
   @Override
@@ -74,50 +73,50 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   @Override
   public void beginHandleMessage(Handler handler, boolean local) {
-    pending.get(labelMatchers, handler.address, Labels.getSide(local)).decrement();
-    handler.timer = processTime.start(labelMatchers, handler.address);
+    pending.get(handler.address, Labels.getSide(local)).decrement();
+    handler.timer = processTime.start(handler.address);
   }
 
   @Override
   public void endHandleMessage(Handler handler, Throwable failure) {
     handler.timer.end();
     if (failure != null) {
-      errorCount.get(labelMatchers, handler.address, failure.getClass().getSimpleName()).increment();
+      errorCount.get(handler.address, failure.getClass().getSimpleName()).increment();
     }
   }
 
   @Override
   public void messageSent(String address, boolean publish, boolean local, boolean remote) {
     if (publish) {
-      published.get(labelMatchers, address, Labels.getSide(local)).increment();
+      published.get( address, Labels.getSide(local)).increment();
     } else {
-      sent.get(labelMatchers, address, Labels.getSide(local)).increment();
+      sent.get(address, Labels.getSide(local)).increment();
     }
   }
 
   @Override
   public void messageReceived(String address, boolean publish, boolean local, int handlers) {
     String origin = Labels.getSide(local);
-    pending.get(labelMatchers, address, origin).add(handlers);
-    received.get(labelMatchers, address, origin).increment();
+    pending.get(address, origin).add(handlers);
+    received.get(address, origin).increment();
     if (handlers > 0) {
-      delivered.get(labelMatchers, address, origin).increment();
+      delivered.get(address, origin).increment();
     }
   }
 
   @Override
   public void messageWritten(String address, int numberOfBytes) {
-    bytesWritten.get(labelMatchers, address).record(numberOfBytes);
+    bytesWritten.get(address).record(numberOfBytes);
   }
 
   @Override
   public void messageRead(String address, int numberOfBytes) {
-    bytesRead.get(labelMatchers, address).record(numberOfBytes);
+    bytesRead.get(address).record(numberOfBytes);
   }
 
   @Override
   public void replyFailure(String address, ReplyFailure failure) {
-    replyFailures.get(labelMatchers, address, failure.name()).increment();
+    replyFailures.get(address, failure.name()).increment();
   }
 
   @Override

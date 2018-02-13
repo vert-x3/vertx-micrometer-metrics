@@ -17,7 +17,6 @@
 package io.vertx.monitoring;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.meters.Counters;
 import io.vertx.monitoring.meters.Gauges;
 import io.vertx.monitoring.meters.Summaries;
@@ -32,16 +31,12 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Joel Takvorian
  */
 public abstract class AbstractMetrics implements MicrometerMetrics {
-  protected final LabelMatchers labelMatchers;
   protected final MeterRegistry registry;
-  protected final MetricsCategory domain;
-  protected final String baseName;
+  protected final MetricsDomain domain;
 
-  AbstractMetrics(LabelMatchers labelMatchers, MeterRegistry registry, MetricsCategory domain, String baseName) {
-    this.labelMatchers = labelMatchers;
+  AbstractMetrics(MeterRegistry registry, MetricsDomain domain) {
     this.registry = registry;
     this.domain = domain;
-    this.baseName = baseName;
   }
 
   /**
@@ -54,26 +49,26 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
 
   @Override
   public String baseName() {
-    return baseName;
+    return domain == null ? null : domain.getPrefix();
   }
 
   Counters counters(String name, String description, Label... keys) {
-    return new Counters(domain, baseName + name, description, registry, keys);
+    return new Counters(domain.getPrefix() + name, description, registry, keys);
   }
 
   Gauges<LongAdder> longGauges(String name, String description, Label... keys) {
-    return new Gauges<>(domain, baseName + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
+    return new Gauges<>(domain.getPrefix() + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
   }
 
   Gauges<AtomicReference<Double>> doubleGauges(String name, String description, Label... keys) {
-    return new Gauges<>(domain, baseName + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
+    return new Gauges<>(domain.getPrefix() + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
   }
 
   Summaries summaries(String name, String description, Label... keys) {
-    return new Summaries(domain, baseName + name, description, registry, keys);
+    return new Summaries(domain.getPrefix() + name, description, registry, keys);
   }
 
   Timers timers(String name, String description, Label... keys) {
-    return new Timers(domain, baseName + name, description, registry, keys);
+    return new Timers(domain.getPrefix() + name, description, registry, keys);
   }
 }

@@ -19,7 +19,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.core.spi.metrics.TCPMetrics;
-import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.meters.Counters;
 import io.vertx.monitoring.meters.Gauges;
 import io.vertx.monitoring.meters.Summaries;
@@ -35,12 +34,12 @@ class VertxNetServerMetrics extends AbstractMetrics {
   private final Summaries bytesSent;
   private final Counters errorCount;
 
-  VertxNetServerMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
-    this(labelMatchers, registry, MetricsCategory.NET_SERVER, "vertx.net.server.");
+  VertxNetServerMetrics(MeterRegistry registry) {
+    this(registry, MetricsDomain.NET_SERVER);
   }
 
-  VertxNetServerMetrics(LabelMatchers labelMatchers, MeterRegistry registry, MetricsCategory domain, String baseName) {
-    super(labelMatchers, registry, domain, baseName);
+  VertxNetServerMetrics(MeterRegistry registry, MetricsDomain domain) {
+    super(registry, domain);
     connections = longGauges("connections", "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
     bytesReceived = summaries("bytesReceived", "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
     bytesSent = summaries("bytesSent", "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
@@ -62,28 +61,28 @@ class VertxNetServerMetrics extends AbstractMetrics {
     @Override
     public String connected(SocketAddress remoteAddress, String remoteName) {
       String remote = Labels.fromAddress(new SocketAddressImpl(remoteAddress.port(), remoteName));
-      connections.get(labelMatchers, local, remote).increment();
+      connections.get(local, remote).increment();
       return remote;
     }
 
     @Override
     public void disconnected(String remote, SocketAddress remoteAddress) {
-      connections.get(labelMatchers, local, remote).decrement();
+      connections.get(local, remote).decrement();
     }
 
     @Override
     public void bytesRead(String remote, SocketAddress remoteAddress, long numberOfBytes) {
-      bytesReceived.get(labelMatchers, local, remote).record(numberOfBytes);
+      bytesReceived.get(local, remote).record(numberOfBytes);
     }
 
     @Override
     public void bytesWritten(String remote, SocketAddress remoteAddress, long numberOfBytes) {
-      bytesSent.get(labelMatchers, local, remote).record(numberOfBytes);
+      bytesSent.get(local, remote).record(numberOfBytes);
     }
 
     @Override
     public void exceptionOccurred(String remote, SocketAddress remoteAddress, Throwable t) {
-      errorCount.get(labelMatchers, local, remote, t.getClass().getSimpleName()).increment();
+      errorCount.get(local, remote, t.getClass().getSimpleName()).increment();
     }
 
     @Override
@@ -102,7 +101,7 @@ class VertxNetServerMetrics extends AbstractMetrics {
 
     @Override
     public String baseName() {
-      return baseName;
+      return domain.getPrefix();
     }
   }
 }

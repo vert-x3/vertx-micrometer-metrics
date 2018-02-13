@@ -1,7 +1,7 @@
 package io.vertx.kotlin.monitoring.match
 
 import io.vertx.monitoring.match.Match
-import io.vertx.monitoring.MetricsCategory
+import io.vertx.monitoring.MetricsDomain
 import io.vertx.monitoring.match.MatchType
 
 /**
@@ -20,7 +20,7 @@ import io.vertx.monitoring.match.MatchType
  */
 fun Match(
   alias: String? = null,
-  domain: MetricsCategory? = null,
+  domain: MetricsDomain? = null,
   label: String? = null,
   type: MatchType? = null,
   value: String? = null): Match = io.vertx.monitoring.match.Match().apply {

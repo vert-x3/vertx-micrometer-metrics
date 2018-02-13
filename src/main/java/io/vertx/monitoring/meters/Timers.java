@@ -17,15 +17,10 @@
 package io.vertx.monitoring.meters;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.noop.NoopTimer;
 import io.vertx.monitoring.Label;
-import io.vertx.monitoring.MetricsCategory;
-import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.Labels;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -34,44 +29,34 @@ import java.util.concurrent.TimeUnit;
  * @author Joel Takvorian
  */
 public class Timers {
-  private static final Timer NOOP_TIMER = new NoopTimer(null);
-
-  private final MetricsCategory domain;
   private final String name;
   private final String description;
   private final Label[] keys;
   private final MeterRegistry registry;
   private final Map<Labels.Values, Timer> timers = new ConcurrentHashMap<>();
 
-  public Timers(MetricsCategory domain,
-                String name,
+  public Timers(String name,
                 String description,
                 MeterRegistry registry,
                 Label... keys) {
-    this.domain = domain;
     this.name = name;
     this.description = description;
     this.registry = registry;
     this.keys = keys;
   }
 
-  public Timer get(LabelMatchers labelMatchers, String... values) {
+  public Timer get(String... values) {
     return timers.computeIfAbsent(new Labels.Values(values), v -> {
-      // Match labels. If match fails, do not store a new Timer
-      List<Tag> tags = labelMatchers.toTags(domain, keys, values);
-      if (tags == null) {
-        return NOOP_TIMER;
-      }
       // Create a new Timer
       return Timer.builder(name)
         .description(description)
-        .tags(tags)
+        .tags(Labels.toTags(keys, values))
         .register(registry);
     });
   }
 
-  public EventTiming start(LabelMatchers labelMatchers, String... values) {
-    Timer t = get(labelMatchers, values);
+  public EventTiming start(String... values) {
+    Timer t = get(values);
     return new EventTiming(t);
   }
 

@@ -2,7 +2,7 @@ package io.vertx.monitoring.match;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
-import io.vertx.monitoring.MetricsCategory;
+import io.vertx.monitoring.MetricsDomain;
 
 /**
  * A match for a value.
@@ -11,13 +11,12 @@ import io.vertx.monitoring.MetricsCategory;
  */
 @DataObject
 public class Match {
-
   /**
    * The default value : {@link MatchType#EQUALS}
    */
   public static final MatchType DEFAULT_TYPE = MatchType.EQUALS;
 
-  private MetricsCategory domain;
+  private MetricsDomain domain;
   private String label;
   private String value;
   private MatchType type;
@@ -49,7 +48,7 @@ public class Match {
    */
   public Match(JsonObject json) {
     if (json.containsKey("domain")) {
-      domain = MetricsCategory.valueOf(json.getString("domain"));
+      domain = MetricsDomain.valueOf(json.getString("domain"));
     }
     label = json.getString("label");
     value = json.getString("value");
@@ -60,7 +59,7 @@ public class Match {
   /**
    * @return the label domain
    */
-  public MetricsCategory getDomain() {
+  public MetricsDomain getDomain() {
     return domain;
   }
 
@@ -70,7 +69,7 @@ public class Match {
    * @param domain the label domain
    * @return a reference to this, so the API can be used fluently
    */
-  public Match setDomain(MetricsCategory domain) {
+  public Match setDomain(MetricsDomain domain) {
     this.domain = domain;
     return this;
   }

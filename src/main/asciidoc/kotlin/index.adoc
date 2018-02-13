@@ -252,12 +252,12 @@ var vertx = Vertx.vertx(VertxOptions(
 
 Please refer to `link:../../apidocs/io/vertx/monitoring/VertxMonitoringOptions.html[VertxMonitoringOptions]` for an exhaustive list of options.
 
-=== Disable some metrics categories
+=== Disable some metric domains
 
 Restricting the Vert.x modules being monitored can be done using
 `link:../../apidocs/io/vertx/monitoring/VertxMonitoringOptions.html#disabledMetricsCategories[disabledMetricsCategories]`.
 
-For a full list of categories, see `link:../../apidocs/io/vertx/monitoring/MetricsCategory.html[MetricsCategory]`
+For a full list of domains, see `link:../../apidocs/io/vertx/monitoring/MetricsDomain.html[MetricsDomain]`
 
 === User-defined metrics
 
@@ -321,7 +321,7 @@ var vertx = Vertx.vertx(VertxOptions(
     prometheusOptions = VertxPrometheusOptions(
       enabled = true),
     labelMatchs = listOf(Match(
-      domain = MetricsCategory.HTTP_SERVER,
+      domain = MetricsDomain.HTTP_SERVER,
       label = "local",
       value = "localhost:8080")),
     enabled = true)))
@@ -348,6 +348,18 @@ var vertx = Vertx.vertx(VertxOptions(
 ----
 
 Here, any value for the label "remote" will be replaced with "_".
+
+Label matching uses Micrometer's `MeterFilter` under the hood. This API can be accessed directly as well:
+
+[source,kotlin]
+----
+var registry = io.vertx.monitoring.backend.BackendRegistries.getDefaultNow()
+
+registry.config().meterFilter(io.micrometer.core.instrument.config.MeterFilter.ignoreTags("address", "remote")).meterFilter(io.micrometer.core.instrument.config.MeterFilter.renameTag("vertx.verticle", "deployed", "instances"))
+
+----
+
+_See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]._
 
 === Snapshots
 
@@ -665,7 +677,7 @@ NOTE: Vert.x creates two worker pools upfront, _worker-thread_ and _internal-blo
 |Description
 
 |Gauge
-|`vertx_verticle{name=<name>}`
+|`vertx_verticle_deployed{name=<name>}`
 |Number of verticle instances deployed.
 
 |===

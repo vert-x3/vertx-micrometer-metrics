@@ -22,7 +22,6 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpClientMetrics;
-import io.vertx.monitoring.match.LabelMatchers;
 import io.vertx.monitoring.meters.Counters;
 import io.vertx.monitoring.meters.Gauges;
 import io.vertx.monitoring.meters.Timers;
@@ -39,8 +38,8 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
   private final Counters responseCount;
   private final Gauges<LongAdder> wsConnections;
 
-  VertxHttpClientMetrics(LabelMatchers labelMatchers, MeterRegistry registry) {
-    super(labelMatchers, registry, MetricsCategory.HTTP_CLIENT, "vertx.http.client.");
+  VertxHttpClientMetrics(MeterRegistry registry) {
+    super(registry, MetricsDomain.HTTP_CLIENT);
     requests = longGauges("requests", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.PATH);
     requestCount = counters("requestCount", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.PATH, Label.METHOD);
     responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.PATH);
@@ -87,9 +86,9 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     @Override
     public Handler requestBegin(Void endpointMetric, String remote, SocketAddress localAddress, SocketAddress remoteAddress, HttpClientRequest request) {
       Handler handler = new Handler(remote, request.path());
-      requests.get(labelMatchers, local, remote, handler.path).increment();
-      requestCount.get(labelMatchers, local, remote, handler.path, request.method().name()).increment();
-      handler.timer = responseTime.start(labelMatchers, local, remote, handler.path);
+      requests.get(local, remote, handler.path).increment();
+      requestCount.get(local, remote, handler.path, request.method().name()).increment();
+      handler.timer = responseTime.start(local, remote, handler.path);
       return handler;
     }
 
@@ -108,25 +107,25 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
     @Override
     public void requestReset(Handler handler) {
-      requests.get(labelMatchers, local, handler.address, handler.path).decrement();
+      requests.get(local, handler.address, handler.path).decrement();
     }
 
     @Override
     public void responseEnd(Handler handler, HttpClientResponse response) {
-      requests.get(labelMatchers, local, handler.address, handler.path).decrement();
-      responseCount.get(labelMatchers, local, handler.address, handler.path, String.valueOf(response.statusCode()));
+      requests.get(local, handler.address, handler.path).decrement();
+      responseCount.get(local, handler.address, handler.path, String.valueOf(response.statusCode()));
       handler.timer.end();
     }
 
     @Override
     public String connected(Void endpointMetric, String remote, WebSocket webSocket) {
-      wsConnections.get(labelMatchers, local, remote).increment();
+      wsConnections.get(local, remote).increment();
       return remote;
     }
 
     @Override
     public void disconnected(String remote) {
-      wsConnections.get(labelMatchers, local, remote).decrement();
+      wsConnections.get(local, remote).decrement();
     }
 
     @Override

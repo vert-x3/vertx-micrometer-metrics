@@ -22,7 +22,6 @@ import io.vertx.core.spi.VertxMetricsFactory;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.monitoring.backend.BackendRegistries;
 import io.vertx.monitoring.backend.BackendRegistry;
-import io.vertx.monitoring.match.LabelMatchers;
 
 /**
  * @author Joel Takvorian
@@ -37,9 +36,8 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
     } else {
       options = new VertxMonitoringOptions(metricsOptions.toJson());
     }
-    LabelMatchers labelMatchers = new LabelMatchers(options.getLabelMatchs());
     BackendRegistry backendRegistry = BackendRegistries.setupBackend(vertx, options);
-    return new VertxMetricsImpl(options, labelMatchers, backendRegistry);
+    return new VertxMetricsImpl(options, backendRegistry);
   }
 
   @Override

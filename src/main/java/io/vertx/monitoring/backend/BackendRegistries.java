@@ -16,12 +16,19 @@
  */
 package io.vertx.monitoring.backend;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.Vertx;
+import io.vertx.monitoring.MetricsDomain;
 import io.vertx.monitoring.VertxMonitoringOptions;
+import io.vertx.monitoring.match.Match;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * {@link BackendRegistries} is responsible for managing registries related to particular monitoring backends (influxdb, prometheus...)
@@ -56,6 +63,7 @@ public final class BackendRegistries {
         // No backend setup, use global registry
         reg = NoopBackendRegistry.INSTANCE;
       }
+      registerMatchers(reg.getMeterRegistry(), options.getLabelMatchs());
       return reg;
     });
   }
@@ -93,5 +101,75 @@ public final class BackendRegistries {
     if (reg != null) {
       reg.close();
     }
+  }
+
+  public static void registerMatchers(MeterRegistry registry, List<Match> matches) {
+    matches.forEach(m -> {
+      switch (m.getType()) {
+        case EQUALS:
+          if (m.getAlias() == null) {
+            // Exact match => accept
+            registry.config().meterFilter(MeterFilter.accept(id -> {
+              if (m.getDomain() != null && !id.getName().startsWith(m.getDomain().getPrefix())) {
+                // If domain has been specified and we're not in that domain, ignore rule
+                return true;
+              }
+              String tagValue = id.getTag(m.getLabel());
+              return m.getValue().equals(tagValue);
+            }));
+          } else {
+            // Exact match => alias
+            registry.config().meterFilter(replaceTagValues(
+              m.getDomain(),
+              m.getLabel(),
+              val -> {
+                if (m.getValue().equals(val)) {
+                  return m.getAlias();
+                }
+                return val;
+              }
+            ));
+          }
+          break;
+        case REGEX:
+          Pattern pattern = Pattern.compile(m.getValue());
+          if (m.getAlias() == null) {
+            // Regex match => accept
+            registry.config().meterFilter(MeterFilter.accept(id -> {
+              if (m.getDomain() != null && !id.getName().startsWith(m.getDomain().getPrefix())) {
+                // If domain has been specified and we're not in that domain, ignore rule
+                return true;
+              }
+              String tagValue = id.getTag(m.getLabel());
+              return pattern.matcher(tagValue).matches();
+            }));
+          } else {
+            // Regex match => alias
+            registry.config().meterFilter(replaceTagValues(
+              m.getDomain(),
+              m.getLabel(),
+              val -> {
+                if (pattern.matcher(val).matches()) {
+                  return m.getAlias();
+                }
+                return val;
+              }
+            ));
+          }
+          break;
+      }
+    });
+  }
+
+  private static MeterFilter replaceTagValues(MetricsDomain domain, String tagKey, Function<String, String> replacement) {
+    return new MeterFilter() {
+      @Override
+      public Meter.Id map(Meter.Id id) {
+        if (domain != null && !id.getName().startsWith(domain.getPrefix())) {
+          return id;
+        }
+        return MeterFilter.replaceTagValues(tagKey, replacement).map(id);
+      }
+    };
   }
 }

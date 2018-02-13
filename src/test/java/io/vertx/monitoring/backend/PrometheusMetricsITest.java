@@ -25,7 +25,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
-import io.vertx.monitoring.MetricsCategory;
+import io.vertx.monitoring.MetricsDomain;
 import io.vertx.monitoring.VertxMonitoringOptions;
 import org.junit.After;
 import org.junit.Test;
@@ -104,7 +104,7 @@ public class PrometheusMetricsITest {
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
           .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-        .addDisabledMetricsCategory(MetricsCategory.HTTP_SERVER)
+        .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
         .setEnabled(true)));
 
     Async async = context.async();

@@ -16,9 +16,13 @@
  */
 package io.vertx.monitoring;
 
+import io.micrometer.core.instrument.Tag;
 import io.vertx.core.net.SocketAddress;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Joel Takvorian
@@ -33,6 +37,18 @@ public final class Labels {
 
   public static String getSide(boolean local) {
     return local ? "local" : "remote";
+  }
+
+  public static List<Tag> toTags(Label[] keys, String[] values) {
+    if (keys.length == 0) {
+      return Collections.emptyList();
+    }
+    List<Tag> tags = new ArrayList<>(keys.length);
+    for (int i = 0; i < keys.length; i++) {
+      String lowKey = keys[i].toString().toLowerCase();
+      tags.add(Tag.of(lowKey, values[i]));
+    }
+    return tags;
   }
 
   public static class Values {

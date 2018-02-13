@@ -21,6 +21,7 @@ import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -29,7 +30,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
-import io.vertx.monitoring.MetricsCategory;
+import io.vertx.monitoring.MetricsDomain;
 import io.vertx.monitoring.VertxMonitoringOptions;
 import io.vertx.monitoring.backend.BackendRegistries;
 import io.vertx.monitoring.backend.VertxInfluxDbOptions;
@@ -155,7 +156,7 @@ public class MetricsExamples {
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
         .addLabelMatch(new Match()
           // Restrict HTTP server metrics to those with label "local=localhost:8080" only
-          .setDomain(MetricsCategory.HTTP_SERVER)
+          .setDomain(MetricsDomain.HTTP_SERVER)
           .setLabel("local")
           .setValue("localhost:8080"))
         .setEnabled(true)));
@@ -172,6 +173,13 @@ public class MetricsExamples {
           .setValue(".*")
           .setAlias("_"))
         .setEnabled(true)));
+  }
+
+  public void useMicrometerFilters() {
+    MeterRegistry registry = BackendRegistries.getDefaultNow();
+
+    registry.config().meterFilter(MeterFilter.ignoreTags("address", "remote"))
+      .meterFilter(MeterFilter.renameTag("vertx.verticle", "deployed", "instances"));
   }
 
   public void createFullSnapshot() {

@@ -1,7 +1,7 @@
 package io.vertx.kotlin.monitoring
 
 import io.vertx.monitoring.VertxMonitoringOptions
-import io.vertx.monitoring.MetricsCategory
+import io.vertx.monitoring.MetricsDomain
 import io.vertx.monitoring.backend.VertxInfluxDbOptions
 import io.vertx.monitoring.backend.VertxJmxMetricsOptions
 import io.vertx.monitoring.backend.VertxPrometheusOptions
@@ -26,7 +26,7 @@ import io.vertx.monitoring.match.Match
  * NOTE: This function has been automatically generated from the [io.vertx.monitoring.VertxMonitoringOptions original] using Vert.x codegen.
  */
 fun VertxMonitoringOptions(
-  disabledMetricsCategories: Iterable<MetricsCategory>? = null,
+  disabledMetricsCategories: Iterable<MetricsDomain>? = null,
   enabled: Boolean? = null,
   influxDbOptions: io.vertx.monitoring.backend.VertxInfluxDbOptions? = null,
   jmxMetricsOptions: io.vertx.monitoring.backend.VertxJmxMetricsOptions? = null,

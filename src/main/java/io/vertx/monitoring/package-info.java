@@ -205,12 +205,12 @@
  *
  * Please refer to {@link io.vertx.monitoring.VertxMonitoringOptions} for an exhaustive list of options.
  *
- * === Disable some metrics categories
+ * === Disable some metric domains
  *
  * Restricting the Vert.x modules being monitored can be done using
  * {@link io.vertx.monitoring.VertxMonitoringOptions#disabledMetricsCategories}.
  *
- * For a full list of categories, see {@link io.vertx.monitoring.MetricsCategory}
+ * For a full list of domains, see {@link io.vertx.monitoring.MetricsDomain}
  *
  * === User-defined metrics
  *
@@ -265,6 +265,15 @@
  * ----
  *
  * Here, any value for the label "remote" will be replaced with "_".
+ *
+ * Label matching uses Micrometer's `MeterFilter` under the hood. This API can be accessed directly as well:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.MetricsExamples#useMicrometerFilters()}
+ * ----
+ *
+ * _See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]._
  *
  * === Snapshots
  *
@@ -571,7 +580,7 @@
  * |Description
  *
  * |Gauge
- * |{@code vertx_verticle{name=<name>}}
+ * |{@code vertx_verticle_deployed{name=<name>}}
  * |Number of verticle instances deployed.
  *
  * |===

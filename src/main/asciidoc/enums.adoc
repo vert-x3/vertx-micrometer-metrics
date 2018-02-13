@@ -1,10 +1,10 @@
 = Enums
 
-[[MetricsCategory]]
-== MetricsCategory
+[[MetricsDomain]]
+== MetricsDomain
 
 ++++
- Metrics types for each metrics.
+ Metric domains with their associated prefixes.
 ++++
 '''
 

@@ -16,7 +16,7 @@
 +++
 Set an alias that would replace the label value when it matches.
 +++
-|[[domain]]`domain`|`link:enums.html#MetricsCategory[MetricsCategory]`|
+|[[domain]]`domain`|`link:enums.html#MetricsDomain[MetricsDomain]`|
 +++
 Set the label domain, restricting this rule to a single domain.
 +++
@@ -137,7 +137,7 @@ Push interval steps, in seconds. Default is 10 seconds.
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsCategory[MetricsCategory]`|
+|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsDomain[MetricsDomain]`|
 +++
 Sets metrics types that are disabled.
 +++
