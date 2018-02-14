@@ -1,4 +1,4 @@
-= Vert.x Monitoring
+= Vert.x Micrometer Metrics
 
 This project is an implementation of the Vert.x Metrics Service Provider Interface (SPI).
 
@@ -6,7 +6,7 @@ It uses link:http://micrometer.io/[Micrometer] for managing metrics and reportin
 
 == Features
 
-* Vert.x core tools monitoring: TCP/HTTP client and servers, `link:../../yardoc/Vertx/DatagramSocket.html[DatagramSocket]`,
+* Vert.x core tools micrometer: TCP/HTTP client and servers, `link:../../yardoc/Vertx/DatagramSocket.html[DatagramSocket]`,
 `link:../../yardoc/Vertx/EventBus.html[EventBus]` and pools
 * User defined metrics through micrometer
 * Reporting to https://www.influxdata.com/[InfluxDB], https://prometheus.io/[Prometheus] or JMX.
@@ -21,7 +21,7 @@ NOTE: You can use a standalone InfluxDB server as well.
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-influx_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-influx_ must be present in the classpath.
 
 Maven users should add this to their project POM file:
 
@@ -29,7 +29,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -43,7 +43,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-influx:1.0.0-rc.9'
 ----
 
@@ -109,7 +109,7 @@ Follow the https://prometheus.io/docs/prometheus/latest/getting_started/[instruc
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-prometheus_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-prometheus_ must be present in the classpath.
 You may also probably need _vertx-web_, to expose the metrics.
 
 Maven users should add this to their project POM file:
@@ -118,7 +118,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -137,7 +137,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-prometheus:1.0.0-rc.9'
 compile 'io.vertx:vertx-web:3.5.1-SNAPSHOT'
 ----
@@ -201,7 +201,7 @@ vertx = Vertx::Vertx.vertx({
 # Later on, creating a router
 router = VertxWeb::Router.router(vertx)
 router.route("/metrics").handler() { |routingContext|
-  prometheusRegistry = Java::IoVertxMonitoringBackend::BackendRegistries.get_default_now()
+  prometheusRegistry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
   if (prometheusRegistry != nil)
     response = prometheusRegistry.scrape()
     routingContext.response().end(response)
@@ -217,7 +217,7 @@ vertx.create_http_server().request_handler(&router.method(:accept)).listen(8080)
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-jmx_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-jmx_ must be present in the classpath.
 
 Maven users should add this to their project POM file:
 
@@ -225,7 +225,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -239,7 +239,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-jmx:1.0.0-rc.9'
 ----
 
@@ -284,7 +284,7 @@ vertx = Vertx::Vertx.vertx({
 
 == Advanced usage
 
-Please refer to `link:../dataobjects.html#VertxMonitoringOptions[VertxMonitoringOptions]` for an exhaustive list of options.
+Please refer to `link:../dataobjects.html#MicrometerMetricsOptions[MicrometerMetricsOptions]` for an exhaustive list of options.
 
 === Disable some metric domains
 
@@ -300,7 +300,7 @@ By default, an unique registry is used and will be shared across the Vert.x inst
 
 [source,ruby]
 ----
-registry = Java::IoVertxMonitoringBackend::BackendRegistries.get_default_now()
+registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
 
 ----
 
@@ -321,7 +321,7 @@ vertx = Vertx::Vertx.vertx({
 })
 
 # Later on:
-registry = Java::IoVertxMonitoringBackend::BackendRegistries.get_now("my registry")
+registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_now("my registry")
 
 ----
 
@@ -335,7 +335,7 @@ For instance, to instrument the JVM:
 
 [source,ruby]
 ----
-registry = Java::IoVertxMonitoringBackend::BackendRegistries.get_default_now()
+registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
 
 Java::IoMicrometerCoreInstrumentBinderJvm::ClassLoaderMetrics.new().bind_to(registry)
 Java::IoMicrometerCoreInstrumentBinderJvm::JvmMemoryMetrics.new().bind_to(registry)
@@ -405,7 +405,7 @@ Label matching uses Micrometer's `MeterFilter` under the hood. This API can be a
 
 [source,ruby]
 ----
-registry = Java::IoVertxMonitoringBackend::BackendRegistries.get_default_now()
+registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
 
 registry.config().meter_filter(Java::IoMicrometerCoreInstrumentConfig::MeterFilter.ignore_tags("address", "remote")).meter_filter(Java::IoMicrometerCoreInstrumentConfig::MeterFilter.rename_tag("vertx.verticle", "deployed", "instances"))
 
@@ -415,7 +415,7 @@ _See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]
 
 === Snapshots
 
-A `link:../../yardoc/VertxMonitoring/MetricsService.html[MetricsService]` can be created out of a `link:../../yardoc/Vertx/Measured.html[Measured]` object
+A `link:../../yardoc/VertxMicrometerMetrics/MetricsService.html[MetricsService]` can be created out of a `link:../../yardoc/Vertx/Measured.html[Measured]` object
 in order to take a snapshot of its related metrics and measurements.
 The snapshot is returned as a `link:unavailable[JsonObject]`.
 
@@ -423,8 +423,8 @@ A well known _Measured_ object is simply `link:../../yardoc/Vertx/Vertx.html[Ver
 
 [source,ruby]
 ----
-require 'vertx-monitoring/metrics_service'
-metricsService = VertxMonitoring::MetricsService.create(@vertx)
+require 'vertx-micrometer-metrics/metrics_service'
+metricsService = VertxMicrometerMetrics::MetricsService.create(@vertx)
 metrics = metricsService.get_metrics_snapshot()
 puts metrics
 
@@ -435,9 +435,9 @@ measurable:
 
 [source,ruby]
 ----
-require 'vertx-monitoring/metrics_service'
+require 'vertx-micrometer-metrics/metrics_service'
 server = @vertx.create_http_server()
-metricsService = VertxMonitoring::MetricsService.create(server)
+metricsService = VertxMicrometerMetrics::MetricsService.create(server)
 metrics = metricsService.get_metrics_snapshot()
 puts metrics
 
@@ -447,8 +447,8 @@ Finally it is possible to filter the returned metrics from their base names:
 
 [source,ruby]
 ----
-require 'vertx-monitoring/metrics_service'
-metricsService = VertxMonitoring::MetricsService.create(@vertx)
+require 'vertx-micrometer-metrics/metrics_service'
+metricsService = VertxMicrometerMetrics::MetricsService.create(@vertx)
 # Client + server
 metrics = metricsService.get_metrics_snapshot("vertx.http")
 puts metrics
@@ -457,7 +457,7 @@ puts metrics
 
 == Vert.x core tools metrics
 
-This section lists all the metrics generated by monitoring the Vert.x core tools.
+This section lists all the metrics generated by micrometer the Vert.x core tools.
 
 === Net Client
 
@@ -682,7 +682,7 @@ are registered to the corresponding address.
 
 == Vert.x pool metrics
 
-This section lists all the metrics generated by monitoring Vert.x pools.
+This section lists all the metrics generated by micrometer Vert.x pools.
 
 There are two types currently supported:
 

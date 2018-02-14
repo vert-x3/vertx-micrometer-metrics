@@ -1,23 +1,23 @@
-= vertx-monitoring
+= vertx-micrometer-metrics
 :source-language: java
 
 image::https://vertx.ci.cloudbees.com/buildStatus/icon?job=vert.x3-monitoring[link=https://vertx.ci.cloudbees.com/job/vert.x3-monitoring/]
 
-Vert.x Monitoring contains metrics collection and reporting to various target systems.
+Vert.x Micrometer Metrics contains metrics collection and reporting to various target systems through link:http://micrometer.io/[Micrometer].
 
 The http://vertx.io/docs/vertx-core/java/index.html#_metrics_spi[Vert.x Metrics SPI] allows implementers to
 capture events from Vert.x in order to gather metrics.
+
+Please see the in-source Asciidoc documentation or the main documentation on the web-site for a full description
+of this component:
+
+* link:http://vertx.io/docs/vertx-micrometer-metrics/[web-site docs]
+* link:src/main/asciidoc[in-source docs]
 
 == InfluxDB
 
 This project is an http://www.influxdb.org[InfluxDB] implementation of the Vert.x Metrics SPI: metrics built from Vert.x events will be sent to
 an InfluxDb Timeseries database.
-
-Please see the in-source Asciidoc documentation or the main documentation on the web-site for a full description
-of this component:
-
-* link:http://vertx.io/docs/vertx-monitoring-influxdb/[web-site docs]
-* link:src/main/asciidoc[in-source docs]
 
 === Quick setup
 
@@ -37,12 +37,6 @@ InfluxDB will listen for api requests on port 8086 by default.
 
 This project is an implementation of the Vert.x Metrics SPI for https://prometheus.io/[Prometheus]: metrics built from Vert.x events will be exposed
 on an HTTP endpoint using Prometheus format.
-
-Please see the in-source Asciidoc documentation or the main documentation on the web-site for a full description
-of this component:
-
-* link:http://vertx.io/docs/vertx-monitoring-prometheus/[web-site docs]
-* link:src/main/asciidoc[in-source docs]
 
 === Quick setup
 

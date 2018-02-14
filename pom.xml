@@ -24,15 +24,15 @@
     <version>28</version>
   </parent>
 
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 
-  <name>Vert.x monitoring module</name>
+  <name>Vert.x metrics implementation for Micrometer.io</name>
 
   <scm>
-    <connection>scm:git:ssh://github.com/vert-x3/vertx-monitoring</connection>
-    <developerConnection>scm:git:ssh://github.com/vert-x3/vertx-monitoring</developerConnection>
-    <url>https://github.com/vert-x3/vertx-monitoring</url>
+    <connection>scm:git:ssh://github.com/vert-x3/vertx-micrometer-metrics</connection>
+    <developerConnection>scm:git:ssh://github.com/vert-x3/vertx-micrometer-metrics</developerConnection>
+    <url>https://github.com/vert-x3/vertx-micrometer-metrics</url>
   </scm>
 
   <properties>

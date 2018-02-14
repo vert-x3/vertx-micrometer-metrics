@@ -1,4 +1,4 @@
-= Vert.x Monitoring
+= Vert.x Micrometer Metrics
 
 This project is an implementation of the Vert.x Metrics Service Provider Interface (SPI).
 
@@ -6,7 +6,7 @@ It uses link:http://micrometer.io/[Micrometer] for managing metrics and reportin
 
 == Features
 
-* Vert.x core tools monitoring: TCP/HTTP client and servers, `link:../../apidocs/io/vertx/core/datagram/DatagramSocket.html[DatagramSocket]`,
+* Vert.x core tools micrometer: TCP/HTTP client and servers, `link:../../apidocs/io/vertx/core/datagram/DatagramSocket.html[DatagramSocket]`,
 `link:../../apidocs/io/vertx/core/eventbus/EventBus.html[EventBus]` and pools
 * User defined metrics through micrometer
 * Reporting to https://www.influxdata.com/[InfluxDB], https://prometheus.io/[Prometheus] or JMX.
@@ -21,7 +21,7 @@ NOTE: You can use a standalone InfluxDB server as well.
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-influx_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-influx_ must be present in the classpath.
 
 Maven users should add this to their project POM file:
 
@@ -29,7 +29,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -43,7 +43,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-influx:1.0.0-rc.9'
 ----
 
@@ -106,7 +106,7 @@ Follow the https://prometheus.io/docs/prometheus/latest/getting_started/[instruc
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-prometheus_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-prometheus_ must be present in the classpath.
 You may also probably need _vertx-web_, to expose the metrics.
 
 Maven users should add this to their project POM file:
@@ -115,7 +115,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -134,7 +134,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-prometheus:1.0.0-rc.9'
 compile 'io.vertx:vertx-web:3.5.1-SNAPSHOT'
 ----
@@ -194,7 +194,7 @@ def vertx = Vertx.vertx([
 // Later on, creating a router
 def router = Router.router(vertx)
 router.route("/metrics").handler({ routingContext ->
-  def prometheusRegistry = io.vertx.monitoring.backend.BackendRegistries.getDefaultNow()
+  def prometheusRegistry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
   if (prometheusRegistry != null) {
     def response = prometheusRegistry.scrape()
     routingContext.response().end(response)
@@ -210,7 +210,7 @@ vertx.createHttpServer().requestHandler(router.&accept).listen(8080)
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-jmx_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-jmx_ must be present in the classpath.
 
 Maven users should add this to their project POM file:
 
@@ -218,7 +218,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -232,7 +232,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-jmx:1.0.0-rc.9'
 ----
 
@@ -275,14 +275,14 @@ def vertx = Vertx.vertx([
 
 == Advanced usage
 
-Please refer to `link:../../apidocs/io/vertx/monitoring/VertxMonitoringOptions.html[VertxMonitoringOptions]` for an exhaustive list of options.
+Please refer to `link:../../apidocs/io/vertx/micrometer/MicrometerMetricsOptions.html[MicrometerMetricsOptions]` for an exhaustive list of options.
 
 === Disable some metric domains
 
 Restricting the Vert.x modules being monitored can be done using
-`link:../../apidocs/io/vertx/monitoring/VertxMonitoringOptions.html#disabledMetricsCategories[disabledMetricsCategories]`.
+`link:../../apidocs/io/vertx/micrometer/MicrometerMetricsOptions.html#disabledMetricsCategories[disabledMetricsCategories]`.
 
-For a full list of domains, see `link:../../apidocs/io/vertx/monitoring/MetricsDomain.html[MetricsDomain]`
+For a full list of domains, see `link:../../apidocs/io/vertx/micrometer/MetricsDomain.html[MetricsDomain]`
 
 === User-defined metrics
 
@@ -291,7 +291,7 @@ By default, an unique registry is used and will be shared across the Vert.x inst
 
 [source,groovy]
 ----
-def registry = io.vertx.monitoring.backend.BackendRegistries.getDefaultNow()
+def registry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
 
 ----
 
@@ -311,7 +311,7 @@ def vertx = Vertx.vertx([
 ])
 
 // Later on:
-def registry = io.vertx.monitoring.backend.BackendRegistries.getNow("my registry")
+def registry = io.vertx.micrometer.backend.BackendRegistries.getNow("my registry")
 
 ----
 
@@ -325,7 +325,7 @@ For instance, to instrument the JVM:
 
 [source,groovy]
 ----
-def registry = io.vertx.monitoring.backend.BackendRegistries.getDefaultNow()
+def registry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
 
 new io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics().bindTo(registry)
 new io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics().bindTo(registry)
@@ -393,7 +393,7 @@ Label matching uses Micrometer's `MeterFilter` under the hood. This API can be a
 
 [source,groovy]
 ----
-def registry = io.vertx.monitoring.backend.BackendRegistries.getDefaultNow()
+def registry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
 
 registry.config().meterFilter(io.micrometer.core.instrument.config.MeterFilter.ignoreTags("address", "remote")).meterFilter(io.micrometer.core.instrument.config.MeterFilter.renameTag("vertx.verticle", "deployed", "instances"))
 
@@ -403,7 +403,7 @@ _See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]
 
 === Snapshots
 
-A `link:../../apidocs/io/vertx/monitoring/service/MetricsService.html[MetricsService]` can be created out of a `link:../../apidocs/io/vertx/core/metrics/Measured.html[Measured]` object
+A `link:../../apidocs/io/vertx/micrometer/service/MetricsService.html[MetricsService]` can be created out of a `link:../../apidocs/io/vertx/core/metrics/Measured.html[Measured]` object
 in order to take a snapshot of its related metrics and measurements.
 The snapshot is returned as a `link:../../apidocs/io/vertx/core/json/JsonObject.html[JsonObject]`.
 
@@ -442,7 +442,7 @@ println(metrics)
 
 == Vert.x core tools metrics
 
-This section lists all the metrics generated by monitoring the Vert.x core tools.
+This section lists all the metrics generated by micrometer the Vert.x core tools.
 
 === Net Client
 
@@ -667,7 +667,7 @@ are registered to the corresponding address.
 
 == Vert.x pool metrics
 
-This section lists all the metrics generated by monitoring Vert.x pools.
+This section lists all the metrics generated by micrometer Vert.x pools.
 
 There are two types currently supported:
 

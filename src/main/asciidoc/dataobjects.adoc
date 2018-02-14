@@ -34,11 +34,60 @@ Set the matched value.
 +++
 |===
 
+[[MicrometerMetricsOptions]]
+== MicrometerMetricsOptions
+
+++++
+ Vert.x micrometer configuration.<br/>
+ It is required to set either <code>influxDbOptions</code>, <code>prometheusOptions</code> or {@code jmxMetricsOptions]
+ in order to actually report metrics.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsDomain[MetricsDomain]`|
++++
+Sets metrics types that are disabled.
++++
+|[[enabled]]`enabled`|`Boolean`|
++++
+Set whether metrics will be enabled on the Vert.x instance. Metrics are not enabled by default.
++++
+|[[influxDbOptions]]`influxDbOptions`|`link:dataobjects.html#VertxInfluxDbOptions[VertxInfluxDbOptions]`|
++++
+Set InfluxDB options.
+ Setting a registry backend option is mandatory in order to effectively report metrics.
++++
+|[[jmxMetricsOptions]]`jmxMetricsOptions`|`link:dataobjects.html#VertxJmxMetricsOptions[VertxJmxMetricsOptions]`|
++++
+Set JMX metrics options.
+ Setting a registry backend option is mandatory in order to effectively report metrics.
++++
+|[[labelMatchs]]`labelMatchs`|`Array of link:dataobjects.html#Match[Match]`|
++++
+Add a rule for label matching.
++++
+|[[prometheusOptions]]`prometheusOptions`|`link:dataobjects.html#VertxPrometheusOptions[VertxPrometheusOptions]`|
++++
+Set Prometheus options.
+ Setting a registry backend option is mandatory in order to effectively report metrics.
++++
+|[[registryName]]`registryName`|`String`|
++++
+Set a name for the metrics registry, so that a new registry will be created and associated with this name.
+ If <code>registryName</code> is not provided (or null), a default registry will be used.
+ If the same name is given to several Vert.x instances (within the same JVM), they will share the same registry.
++++
+|===
+
 [[VertxInfluxDbOptions]]
 == VertxInfluxDbOptions
 
 ++++
- Vert.x InfluxDb monitoring configuration.
+ Vert.x InfluxDb micrometer configuration.
 ++++
 '''
 
@@ -120,55 +169,6 @@ Set true to enable Prometheus reporting
 |[[step]]`step`|`Number (int)`|
 +++
 Push interval steps, in seconds. Default is 10 seconds.
-+++
-|===
-
-[[VertxMonitoringOptions]]
-== VertxMonitoringOptions
-
-++++
- Vert.x monitoring configuration.<br/>
- It is required to set either <code>influxDbOptions</code>, <code>prometheusOptions</code> or {@code jmxMetricsOptions]
- in order to actually report metrics.
-++++
-'''
-
-[cols=">25%,^25%,50%"]
-[frame="topbot"]
-|===
-^|Name | Type ^| Description
-|[[disabledMetricsCategories]]`disabledMetricsCategories`|`Array of link:enums.html#MetricsDomain[MetricsDomain]`|
-+++
-Sets metrics types that are disabled.
-+++
-|[[enabled]]`enabled`|`Boolean`|
-+++
-Set whether metrics will be enabled on the Vert.x instance. Metrics are not enabled by default.
-+++
-|[[influxDbOptions]]`influxDbOptions`|`link:dataobjects.html#VertxInfluxDbOptions[VertxInfluxDbOptions]`|
-+++
-Set InfluxDB options.
- Setting a registry backend option is mandatory in order to effectively report metrics.
-+++
-|[[jmxMetricsOptions]]`jmxMetricsOptions`|`link:dataobjects.html#VertxJmxMetricsOptions[VertxJmxMetricsOptions]`|
-+++
-Set JMX metrics options.
- Setting a registry backend option is mandatory in order to effectively report metrics.
-+++
-|[[labelMatchs]]`labelMatchs`|`Array of link:dataobjects.html#Match[Match]`|
-+++
-Add a rule for label matching.
-+++
-|[[prometheusOptions]]`prometheusOptions`|`link:dataobjects.html#VertxPrometheusOptions[VertxPrometheusOptions]`|
-+++
-Set Prometheus options.
- Setting a registry backend option is mandatory in order to effectively report metrics.
-+++
-|[[registryName]]`registryName`|`String`|
-+++
-Set a name for the metrics registry, so that a new registry will be created and associated with this name.
- If <code>registryName</code> is not provided (or null), a default registry will be used.
- If the same name is given to several Vert.x instances (within the same JVM), they will share the same registry.
 +++
 |===
 

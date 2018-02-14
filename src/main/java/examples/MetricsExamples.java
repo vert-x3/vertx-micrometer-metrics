@@ -30,15 +30,15 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
-import io.vertx.monitoring.MetricsDomain;
-import io.vertx.monitoring.VertxMonitoringOptions;
-import io.vertx.monitoring.backend.BackendRegistries;
-import io.vertx.monitoring.backend.VertxInfluxDbOptions;
-import io.vertx.monitoring.backend.VertxJmxMetricsOptions;
-import io.vertx.monitoring.backend.VertxPrometheusOptions;
-import io.vertx.monitoring.match.Match;
-import io.vertx.monitoring.match.MatchType;
-import io.vertx.monitoring.service.MetricsService;
+import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.backend.BackendRegistries;
+import io.vertx.micrometer.backend.VertxInfluxDbOptions;
+import io.vertx.micrometer.backend.VertxJmxMetricsOptions;
+import io.vertx.micrometer.backend.VertxPrometheusOptions;
+import io.vertx.micrometer.match.Match;
+import io.vertx.micrometer.match.MatchType;
+import io.vertx.micrometer.service.MetricsService;
 
 /**
  * @author Joel Takvorian
@@ -49,14 +49,14 @@ public class MetricsExamples {
 
   public void setupMinimalInfluxDB() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true))
         .setEnabled(true)));
   }
 
   public void setupInfluxDBWithUriAndDatabase() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
           .setUri("http://influxdb.example.com:8888")
           .setDb("sales-department"))
@@ -65,7 +65,7 @@ public class MetricsExamples {
 
   public void setupInfluxDBWithAuthentication() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
           .setUserName("username")
           .setPassword("password"))
@@ -74,14 +74,14 @@ public class MetricsExamples {
 
   public void setupMinimalPrometheus() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
         .setEnabled(true)));
   }
 
   public void setupPrometheusEmbeddedServer() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
           .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(8080))
@@ -91,7 +91,7 @@ public class MetricsExamples {
 
   public void setupPrometheusBoundRouter() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
         .setEnabled(true)));
 
@@ -111,14 +111,14 @@ public class MetricsExamples {
 
   public void setupMinimalJMX() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true))
         .setEnabled(true)));
   }
 
   public void setupJMXWithStepAndDomain() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)
           .setStep(5)
           .setDomain("my.metrics.domain"))
@@ -131,7 +131,7 @@ public class MetricsExamples {
 
   public void setupAndAccessCustomRegistry() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)) // or VertxPrometheusOptions
         .setRegistryName("my registry")
         .setEnabled(true)));
@@ -152,7 +152,7 @@ public class MetricsExamples {
 
   public void setupWithMatcherForFiltering() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
         .addLabelMatch(new Match()
           // Restrict HTTP server metrics to those with label "local=localhost:8080" only
@@ -164,7 +164,7 @@ public class MetricsExamples {
 
   public void setupWithMatcherForIgnoring() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxMonitoringOptions()
+      new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
         .addLabelMatch(new Match()
           // Set all values for "remote" label to "_", for all domains. In other words, it's like disabling the "remote" label.

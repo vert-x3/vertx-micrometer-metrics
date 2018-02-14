@@ -1,4 +1,4 @@
-= Vert.x Monitoring
+= Vert.x Micrometer Metrics
 
 This project is an implementation of the Vert.x Metrics Service Provider Interface (SPI).
 
@@ -6,7 +6,7 @@ It uses link:http://micrometer.io/[Micrometer] for managing metrics and reportin
 
 == Features
 
-* Vert.x core tools monitoring: TCP/HTTP client and servers, `link:../../apidocs/io/vertx/core/datagram/DatagramSocket.html[DatagramSocket]`,
+* Vert.x core tools micrometer: TCP/HTTP client and servers, `link:../../apidocs/io/vertx/core/datagram/DatagramSocket.html[DatagramSocket]`,
 `link:../../apidocs/io/vertx/core/eventbus/EventBus.html[EventBus]` and pools
 * User defined metrics through micrometer
 * Reporting to https://www.influxdata.com/[InfluxDB], https://prometheus.io/[Prometheus] or JMX.
@@ -21,7 +21,7 @@ NOTE: You can use a standalone InfluxDB server as well.
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-influx_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-influx_ must be present in the classpath.
 
 Maven users should add this to their project POM file:
 
@@ -29,7 +29,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -43,7 +43,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-influx:1.0.0-rc.9'
 ----
 
@@ -54,7 +54,7 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true))
     .setEnabled(true)));
 ----
@@ -64,7 +64,7 @@ Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
       .setUri("http://influxdb.example.com:8888")
       .setDb("sales-department"))
@@ -76,7 +76,7 @@ Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
       .setUserName("username")
       .setPassword("password"))
@@ -91,7 +91,7 @@ Follow the https://prometheus.io/docs/prometheus/latest/getting_started/[instruc
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-prometheus_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-prometheus_ must be present in the classpath.
 You may also probably need _vertx-web_, to expose the metrics.
 
 Maven users should add this to their project POM file:
@@ -100,7 +100,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -119,7 +119,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-prometheus:1.0.0-rc.9'
 compile 'io.vertx:vertx-web:3.5.1-SNAPSHOT'
 ----
@@ -131,7 +131,7 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
     .setEnabled(true)));
 ----
@@ -141,7 +141,7 @@ Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
       .setStartEmbeddedServer(true)
       .setEmbeddedServerOptions(new HttpServerOptions().setPort(8080))
@@ -156,7 +156,7 @@ If the embedded server endpoint is not specified, it defaults to _/metrics_.
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
     .setEnabled(true)));
 
@@ -178,7 +178,7 @@ vertx.createHttpServer().requestHandler(router::accept).listen(8080);
 
 === Getting started
 
-The modules _vertx-monitoring_ and _micrometer-registry-jmx_ must be present in the classpath.
+The modules _vertx-micrometer-metrics_ and _micrometer-registry-jmx_ must be present in the classpath.
 
 Maven users should add this to their project POM file:
 
@@ -186,7 +186,7 @@ Maven users should add this to their project POM file:
 ----
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-monitoring</artifactId>
+  <artifactId>vertx-micrometer-metrics</artifactId>
   <version>3.5.1-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -200,7 +200,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-monitoring:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
 compile 'io.micrometer:micrometer-registry-jmx:1.0.0-rc.9'
 ----
 
@@ -211,7 +211,7 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true))
     .setEnabled(true)));
 ----
@@ -224,7 +224,7 @@ MBeans are registered.
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)
       .setStep(5)
       .setDomain("my.metrics.domain"))
@@ -233,14 +233,14 @@ Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
 
 == Advanced usage
 
-Please refer to `link:../../apidocs/io/vertx/monitoring/VertxMonitoringOptions.html[VertxMonitoringOptions]` for an exhaustive list of options.
+Please refer to `link:../../apidocs/io/vertx/micrometer/MicrometerMetricsOptions.html[MicrometerMetricsOptions]` for an exhaustive list of options.
 
 === Disable some metric domains
 
 Restricting the Vert.x modules being monitored can be done using
-`link:../../apidocs/io/vertx/monitoring/VertxMonitoringOptions.html#disabledMetricsCategories[disabledMetricsCategories]`.
+`link:../../apidocs/io/vertx/micrometer/MicrometerMetricsOptions.html#disabledMetricsCategories[disabledMetricsCategories]`.
 
-For a full list of domains, see `link:../../apidocs/io/vertx/monitoring/MetricsDomain.html[MetricsDomain]`
+For a full list of domains, see `link:../../apidocs/io/vertx/micrometer/MetricsDomain.html[MetricsDomain]`
 
 === User-defined metrics
 
@@ -258,7 +258,7 @@ Then it can be retrieved specifically:
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)) // or VertxPrometheusOptions
     .setRegistryName("my registry")
     .setEnabled(true)));
@@ -296,7 +296,7 @@ to whitelist HTTP server metrics per host name and port:
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
     .addLabelMatch(new Match()
       // Restrict HTTP server metrics to those with label "local=localhost:8080" only
@@ -313,7 +313,7 @@ to ignore a label partitioning:
 [source,java]
 ----
 Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-  new VertxMonitoringOptions()
+  new MicrometerMetricsOptions()
     .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
     .addLabelMatch(new Match()
       // Set all values for "remote" label to "_", for all domains. In other words, it's like disabling the "remote" label.
@@ -340,7 +340,7 @@ _See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]
 
 === Snapshots
 
-A `link:../../apidocs/io/vertx/monitoring/service/MetricsService.html[MetricsService]` can be created out of a `link:../../apidocs/io/vertx/core/metrics/Measured.html[Measured]` object
+A `link:../../apidocs/io/vertx/micrometer/service/MetricsService.html[MetricsService]` can be created out of a `link:../../apidocs/io/vertx/core/metrics/Measured.html[Measured]` object
 in order to take a snapshot of its related metrics and measurements.
 The snapshot is returned as a `link:../../apidocs/io/vertx/core/json/JsonObject.html[JsonObject]`.
 
@@ -376,7 +376,7 @@ System.out.println(metrics);
 
 == Vert.x core tools metrics
 
-This section lists all the metrics generated by monitoring the Vert.x core tools.
+This section lists all the metrics generated by micrometer the Vert.x core tools.
 
 === Net Client
 
@@ -601,7 +601,7 @@ are registered to the corresponding address.
 
 == Vert.x pool metrics
 
-This section lists all the metrics generated by monitoring Vert.x pools.
+This section lists all the metrics generated by micrometer Vert.x pools.
 
 There are two types currently supported:
 
