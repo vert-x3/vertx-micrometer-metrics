@@ -42,7 +42,7 @@
     <assertj.version>3.9.0</assertj.version>
     <junit.version>4.12</junit.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
-    <micrometer.version>1.0.0-rc.9</micrometer.version>
+    <micrometer.version>1.0.0</micrometer.version>
     <prometheus-client.version>0.1.0</prometheus-client.version>
   </properties>
 
