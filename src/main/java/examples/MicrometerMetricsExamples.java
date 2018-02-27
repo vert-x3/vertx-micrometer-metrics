@@ -44,7 +44,7 @@ import io.vertx.micrometer.service.MetricsService;
  * @author Joel Takvorian
  */
 @Source
-public class MetricsExamples {
+public class MicrometerMetricsExamples {
   Vertx vertx;
 
   public void setupMinimalInfluxDB() {

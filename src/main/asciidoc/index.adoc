@@ -52,21 +52,21 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupMinimalInfluxDB()}
+{@link examples.MicrometerMetricsExamples#setupMinimalInfluxDB()}
 ----
 
 ==== Using a specific URI and database name
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupInfluxDBWithUriAndDatabase()}
+{@link examples.MicrometerMetricsExamples#setupInfluxDBWithUriAndDatabase()}
 ----
 
 ==== With authentication
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupInfluxDBWithAuthentication()}
+{@link examples.MicrometerMetricsExamples#setupInfluxDBWithAuthentication()}
 ----
 
 == Prometheus
@@ -116,14 +116,14 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupMinimalPrometheus()}
+{@link examples.MicrometerMetricsExamples#setupMinimalPrometheus()}
 ----
 
 ==== Using an embedded HTTP server wih custom endpoint
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupPrometheusEmbeddedServer()}
+{@link examples.MicrometerMetricsExamples#setupPrometheusEmbeddedServer()}
 ----
 
 If the embedded server endpoint is not specified, it defaults to _/metrics_.
@@ -132,7 +132,7 @@ If the embedded server endpoint is not specified, it defaults to _/metrics_.
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupPrometheusBoundRouter()}
+{@link examples.MicrometerMetricsExamples#setupPrometheusBoundRouter()}
 ----
 
 == JMX
@@ -171,7 +171,7 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupMinimalJMX()}
+{@link examples.MicrometerMetricsExamples#setupMinimalJMX()}
 ----
 
 ==== With step and domain
@@ -181,7 +181,7 @@ MBeans are registered.
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupJMXWithStepAndDomain()}
+{@link examples.MicrometerMetricsExamples#setupJMXWithStepAndDomain()}
 ----
 
 == Advanced usage
@@ -202,7 +202,7 @@ By default, an unique registry is used and will be shared across the Vert.x inst
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#accessDefaultRegistry()}
+{@link examples.MicrometerMetricsExamples#accessDefaultRegistry()}
 ----
 
 It is also possible to have separate registries per Vertx instance, by giving a registry name in metrics options.
@@ -210,7 +210,7 @@ Then it can be retrieved specifically:
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupAndAccessCustomRegistry()}
+{@link examples.MicrometerMetricsExamples#setupAndAccessCustomRegistry()}
 ----
 
 For documentation about the micrometer registry and how to create metrics, check
@@ -223,7 +223,7 @@ For instance, to instrument the JVM:
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#instrumentJVM()}
+{@link examples.MicrometerMetricsExamples#instrumentJVM()}
 ----
 
 _From link:http://micrometer.io/docs/ref/jvm[Micrometer documentation]._
@@ -235,7 +235,7 @@ to whitelist HTTP server metrics per host name and port:
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupWithMatcherForFiltering()}
+{@link examples.MicrometerMetricsExamples#setupWithMatcherForFiltering()}
 ----
 
 Matching rules can work on exact strings or regular expressions (the former is more performant).
@@ -244,7 +244,7 @@ to ignore a label partitioning:
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#setupWithMatcherForIgnoring()}
+{@link examples.MicrometerMetricsExamples#setupWithMatcherForIgnoring()}
 ----
 
 Here, any value for the label "remote" will be replaced with "_".
@@ -253,7 +253,7 @@ Label matching uses Micrometer's `MeterFilter` under the hood. This API can be a
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#useMicrometerFilters()}
+{@link examples.MicrometerMetricsExamples#useMicrometerFilters()}
 ----
 
 _See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]._
@@ -268,7 +268,7 @@ A well known _Measured_ object is simply {@link io.vertx.core.Vertx}:
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#createFullSnapshot()}
+{@link examples.MicrometerMetricsExamples#createFullSnapshot()}
 ----
 
 Other components, such as an {@link io.vertx.core.eventbus.EventBus} or a {@link io.vertx.core.http.HttpServer} are
@@ -276,14 +276,14 @@ measurable:
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#createPartialSnapshot()}
+{@link examples.MicrometerMetricsExamples#createPartialSnapshot()}
 ----
 
 Finally it is possible to filter the returned metrics from their base names:
 
 [source,$lang]
 ----
-{@link examples.MetricsExamples#createSnapshotFromPrefix()}
+{@link examples.MicrometerMetricsExamples#createSnapshotFromPrefix()}
 ----
 
 == Vert.x core tools metrics
