@@ -8,7 +8,7 @@ It uses link:http://micrometer.io/[Micrometer] for managing metrics and reportin
 
 * Vert.x core tools monitoring: TCP/HTTP client and servers, `link:../../jsdoc/module-vertx-js_datagram_socket-DatagramSocket.html[DatagramSocket]`,
 `link:../../jsdoc/module-vertx-js_event_bus-EventBus.html[EventBus]` and pools
-* User defined metrics through micrometer
+* User defined metrics through Micrometer
 * Reporting to https://www.influxdata.com/[InfluxDB], https://prometheus.io/[Prometheus] or JMX.
 
 == InfluxDB
@@ -16,8 +16,6 @@ It uses link:http://micrometer.io/[Micrometer] for managing metrics and reportin
 === Prerequisites
 
 Follow the https://docs.influxdata.com/influxdb/latest/introduction/getting_started/[instructions to get InfluxDb up and running].
-
-NOTE: You can use a standalone InfluxDB server as well.
 
 === Getting started
 
@@ -35,7 +33,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.micrometer</groupId>
   <artifactId>micrometer-registry-influx</artifactId>
-  <version>1.0.0-rc.9</version>
+  <version>1.0.0</version>
 </dependency>
 ----
 
@@ -44,7 +42,7 @@ And Gradle users, to their build file:
 [source,groovy,subs="+attributes"]
 ----
 compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
-compile 'io.micrometer:micrometer-registry-influx:1.0.0-rc.9'
+compile 'io.micrometer:micrometer-registry-influx:1.0.0'
 ----
 
 === Configuration examples
@@ -124,7 +122,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.micrometer</groupId>
   <artifactId>micrometer-registry-prometheus</artifactId>
-  <version>1.0.0-rc.9</version>
+  <version>1.0.0</version>
 </dependency>
 <dependency>
   <groupId>io.vertx</groupId>
@@ -138,7 +136,7 @@ And Gradle users, to their build file:
 [source,groovy,subs="+attributes"]
 ----
 compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
-compile 'io.micrometer:micrometer-registry-prometheus:1.0.0-rc.9'
+compile 'io.micrometer:micrometer-registry-prometheus:1.0.0'
 compile 'io.vertx:vertx-web:3.5.1-SNAPSHOT'
 ----
 
@@ -231,7 +229,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.micrometer</groupId>
   <artifactId>micrometer-registry-jmx</artifactId>
-  <version>1.0.0-rc.9</version>
+  <version>1.0.0</version>
 </dependency>
 ----
 
@@ -240,7 +238,7 @@ And Gradle users, to their build file:
 [source,groovy,subs="+attributes"]
 ----
 compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
-compile 'io.micrometer:micrometer-registry-jmx:1.0.0-rc.9'
+compile 'io.micrometer:micrometer-registry-jmx:1.0.0'
 ----
 
 === Configuration examples
@@ -295,7 +293,7 @@ For a full list of domains, see `link:../enums.html#MetricsDomain[MetricsDomain]
 
 === User-defined metrics
 
-The micrometer registries are accessible, in order to create new metrics or fetch the existing ones.
+The Micrometer registries are accessible, in order to create new metrics or fetch the existing ones.
 By default, an unique registry is used and will be shared across the Vert.x instances of the JVM:
 
 [source,js]
@@ -325,12 +323,12 @@ var registry = Java.type("io.vertx.micrometer.backend.BackendRegistries").getNow
 
 ----
 
-For documentation about the micrometer registry and how to create metrics, check
+For documentation about the Micrometer registry and how to create metrics, check
 link:http://micrometer.io/docs/concepts#_registry[Micrometer doc].
 
 === Other instrumentation
 
-Since plain access to micrometer registries is provided, it is possible to leverage the micrometer API.
+Since plain access to Micrometer registries is provided, it is possible to leverage the Micrometer API.
 For instance, to instrument the JVM:
 
 [source,js]
