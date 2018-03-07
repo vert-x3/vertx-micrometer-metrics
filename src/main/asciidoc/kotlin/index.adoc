@@ -285,7 +285,22 @@ var registry = io.vertx.micrometer.backend.BackendRegistries.getNow("my registry
 
 ----
 
-For documentation about the Micrometer registry and how to create metrics, check
+As an example, here is a custom timer that will track the execution time of a piece of code that is regularly called:
+
+[source,kotlin]
+----
+var registry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
+var timer = io.micrometer.core.instrument.Timer.builder("my.timer").description("a description of what this timer does").register(registry)
+
+vertx.setPeriodic(1000, { l ->
+  timer.record({
+    // Running here some operation to monitor
+  })
+})
+
+----
+
+For more examples, documentation about the Micrometer registry and how to create metrics, check
 link:http://micrometer.io/docs/concepts#_registry[Micrometer doc].
 
 === Other instrumentation

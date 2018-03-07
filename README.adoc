@@ -11,51 +11,5 @@ capture events from Vert.x in order to gather metrics.
 Please see the in-source Asciidoc documentation or the main documentation on the web-site for a full description
 of this component:
 
-* link:http://vertx.io/docs/vertx-micrometer-metrics/[web-site docs]
-* link:src/main/asciidoc[in-source docs]
-
-== InfluxDB
-
-This project is an http://www.influxdb.org[InfluxDB] implementation of the Vert.x Metrics SPI: metrics built from Vert.x events will be sent to
-an InfluxDb Timeseries database.
-
-=== Quick setup
-
-To use the InfluxDB reporter, you need first to get a running InfluxDB instance. Example with _docker_:
-
-```bash
-docker run --rm --name vertx-influxdb -p 8086:8086 -p 8083:8083 -e INFLUXDB_ADMIN_ENABLED=true influxdb
-```
-
-You can connect to the administration interface in your browser at `http://localhost:8083`.
-You need to create a database from this interface. By default, the reporter will use `default`, but you can change it
-through `VertxInfluxDbOptions#setDatabase`.
-
-InfluxDB will listen for api requests on port 8086 by default.
-
-== Prometheus
-
-This project is an implementation of the Vert.x Metrics SPI for https://prometheus.io/[Prometheus]: metrics built from Vert.x events will be exposed
-on an HTTP endpoint using Prometheus format.
-
-=== Quick setup
-
-To use the Prometheus reporter, you need first to get a running Prometheus instance.
-See link:https://prometheus.io/docs/prometheus/latest/installation/[Prometheus installation].
-
-Configure Prometheus to scrape your Vert.x server. Example in `prometheus.yml`:
-
-```yml
-scrape_configs:
-  - job_name: 'myapp'
-    static_configs:
-      - targets: ['localhost:9091']
-```
-
-It will match a configuration like:
-
-```java
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new VertxPrometheusOptions().setEnabled(true)
-        .embedServer(new VertxPrometheusServerOptions().port(9091))));
-```
+* link:http://vertx.io/docs/vertx-micrometer-metrics/java[web-site docs]
+* link:src/main/asciidoc/java/index.adoc[in-source docs]

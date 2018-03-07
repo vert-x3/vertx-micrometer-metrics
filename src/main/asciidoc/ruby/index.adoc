@@ -323,7 +323,22 @@ registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_now("my registr
 
 ----
 
-For documentation about the Micrometer registry and how to create metrics, check
+As an example, here is a custom timer that will track the execution time of a piece of code that is regularly called:
+
+[source,ruby]
+----
+registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
+timer = Java::IoMicrometerCoreInstrument::Timer.builder("my.timer").description("a description of what this timer does").register(registry)
+
+@vertx.set_periodic(1000) { |l|
+  timer.record(lambda {
+    # Running here some operation to monitor
+  })
+}
+
+----
+
+For more examples, documentation about the Micrometer registry and how to create metrics, check
 link:http://micrometer.io/docs/concepts#_registry[Micrometer doc].
 
 === Other instrumentation

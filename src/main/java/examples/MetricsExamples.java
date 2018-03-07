@@ -16,6 +16,7 @@
 package examples;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -138,6 +139,20 @@ public class MetricsExamples {
 
     // Later on:
     MeterRegistry registry = BackendRegistries.getNow("my registry");
+  }
+
+  public void customTimerExample() {
+    MeterRegistry registry = BackendRegistries.getDefaultNow();
+    Timer timer = Timer
+      .builder("my.timer")
+      .description("a description of what this timer does")
+      .register(registry);
+
+    vertx.setPeriodic(1000, l -> {
+      timer.record(() -> {
+        // Running here some operation to monitor
+      });
+    });
   }
 
   public void instrumentJVM() {

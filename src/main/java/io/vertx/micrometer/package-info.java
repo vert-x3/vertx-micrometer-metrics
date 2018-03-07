@@ -228,7 +228,14 @@
  * {@link examples.MetricsExamples#setupAndAccessCustomRegistry()}
  * ----
  *
- * For documentation about the Micrometer registry and how to create metrics, check
+ * As an example, here is a custom timer that will track the execution time of a piece of code that is regularly called:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.MetricsExamples#customTimerExample()}
+ * ----
+ *
+ * For more examples, documentation about the Micrometer registry and how to create metrics, check
  * link:http://micrometer.io/docs/concepts#_registry[Micrometer doc].
  *
  * === Other instrumentation
