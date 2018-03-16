@@ -22,6 +22,8 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxJmxMetricsOptions;
+import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;

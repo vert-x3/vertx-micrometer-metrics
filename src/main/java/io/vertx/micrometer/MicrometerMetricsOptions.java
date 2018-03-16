@@ -20,11 +20,6 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
-import io.vertx.micrometer.backend.VertxInfluxDbOptions;
-import io.vertx.micrometer.backend.VertxJmxMetricsOptions;
-import io.vertx.micrometer.backend.VertxPrometheusOptions;
-import io.vertx.micrometer.match.Match;
-import io.vertx.micrometer.match.MatchType;
 
 import java.util.ArrayList;
 import java.util.Arrays;

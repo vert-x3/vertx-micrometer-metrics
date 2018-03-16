@@ -1,6 +1,6 @@
 package io.vertx.kotlin.micrometer.backend
 
-import io.vertx.micrometer.backend.VertxInfluxDbOptions
+import io.vertx.micrometer.VertxInfluxDbOptions
 
 /**
  * A function providing a DSL for building [io.vertx.micrometer.backend.VertxInfluxDbOptions] objects.
@@ -21,7 +21,7 @@ import io.vertx.micrometer.backend.VertxInfluxDbOptions
  * @param userName  Username used for authenticated connections
  *
  * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.micrometer.backend.VertxInfluxDbOptions original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from the [io.vertx.micrometer.VertxInfluxDbOptions original] using Vert.x codegen.
  */
 fun VertxInfluxDbOptions(
   batchSize: Int? = null,
@@ -35,7 +35,7 @@ fun VertxInfluxDbOptions(
   retentionPolicy: String? = null,
   step: Int? = null,
   uri: String? = null,
-  userName: String? = null): VertxInfluxDbOptions = io.vertx.micrometer.backend.VertxInfluxDbOptions().apply {
+  userName: String? = null): VertxInfluxDbOptions = VertxInfluxDbOptions().apply {
 
   if (batchSize != null) {
     this.setBatchSize(batchSize)

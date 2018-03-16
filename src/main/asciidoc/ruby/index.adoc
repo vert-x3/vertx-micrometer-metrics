@@ -199,7 +199,7 @@ vertx = Vertx::Vertx.vertx({
 # Later on, creating a router
 router = VertxWeb::Router.router(vertx)
 router.route("/metrics").handler() { |routingContext|
-  prometheusRegistry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
+  prometheusRegistry = Java::IoVertxMicrometerBackends::BackendRegistries.get_default_now()
   if (prometheusRegistry != nil)
     response = prometheusRegistry.scrape()
     routingContext.response().end(response)
@@ -298,7 +298,7 @@ By default, an unique registry is used and will be shared across the Vert.x inst
 
 [source,ruby]
 ----
-registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
+registry = Java::IoVertxMicrometerBackends::BackendRegistries.get_default_now()
 
 ----
 
@@ -319,7 +319,7 @@ vertx = Vertx::Vertx.vertx({
 })
 
 # Later on:
-registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_now("my registry")
+registry = Java::IoVertxMicrometerBackends::BackendRegistries.get_now("my registry")
 
 ----
 
@@ -327,7 +327,7 @@ As an example, here is a custom timer that will track the execution time of a pi
 
 [source,ruby]
 ----
-registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
+registry = Java::IoVertxMicrometerBackends::BackendRegistries.get_default_now()
 timer = Java::IoMicrometerCoreInstrument::Timer.builder("my.timer").description("a description of what this timer does").register(registry)
 
 @vertx.set_periodic(1000) { |l|
@@ -348,7 +348,7 @@ For instance, to instrument the JVM:
 
 [source,ruby]
 ----
-registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
+registry = Java::IoVertxMicrometerBackends::BackendRegistries.get_default_now()
 
 Java::IoMicrometerCoreInstrumentBinderJvm::ClassLoaderMetrics.new().bind_to(registry)
 Java::IoMicrometerCoreInstrumentBinderJvm::JvmMemoryMetrics.new().bind_to(registry)
@@ -418,7 +418,7 @@ Label matching uses Micrometer's `MeterFilter` under the hood. This API can be a
 
 [source,ruby]
 ----
-registry = Java::IoVertxMicrometerBackend::BackendRegistries.get_default_now()
+registry = Java::IoVertxMicrometerBackends::BackendRegistries.get_default_now()
 
 registry.config().meter_filter(Java::IoMicrometerCoreInstrumentConfig::MeterFilter.ignore_tags("address", "remote")).meter_filter(Java::IoMicrometerCoreInstrumentConfig::MeterFilter.rename_tag("vertx.verticle", "deployed", "instances"))
 

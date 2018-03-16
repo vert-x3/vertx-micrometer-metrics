@@ -1,6 +1,6 @@
 package io.vertx.kotlin.micrometer.backend
 
-import io.vertx.micrometer.backend.VertxJmxMetricsOptions
+import io.vertx.micrometer.VertxJmxMetricsOptions
 
 /**
  * A function providing a DSL for building [io.vertx.micrometer.backend.VertxJmxMetricsOptions] objects.
@@ -12,12 +12,12 @@ import io.vertx.micrometer.backend.VertxJmxMetricsOptions
  * @param step  Push interval steps, in seconds. Default is 10 seconds.
  *
  * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.micrometer.backend.VertxJmxMetricsOptions original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from the [io.vertx.micrometer.VertxJmxMetricsOptions original] using Vert.x codegen.
  */
 fun VertxJmxMetricsOptions(
   domain: String? = null,
   enabled: Boolean? = null,
-  step: Int? = null): VertxJmxMetricsOptions = io.vertx.micrometer.backend.VertxJmxMetricsOptions().apply {
+  step: Int? = null): VertxJmxMetricsOptions = VertxJmxMetricsOptions().apply {
 
   if (domain != null) {
     this.setDomain(domain)

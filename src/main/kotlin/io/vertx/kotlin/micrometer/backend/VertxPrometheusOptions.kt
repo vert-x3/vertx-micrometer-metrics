@@ -1,7 +1,6 @@
 package io.vertx.kotlin.micrometer.backend
 
-import io.vertx.micrometer.backend.VertxPrometheusOptions
-import io.vertx.core.http.HttpServerOptions
+import io.vertx.micrometer.VertxPrometheusOptions
 
 /**
  * A function providing a DSL for building [io.vertx.micrometer.backend.VertxPrometheusOptions] objects.
@@ -14,13 +13,13 @@ import io.vertx.core.http.HttpServerOptions
  * @param startEmbeddedServer  When true, an embedded server will start to expose metrics with Prometheus format.
  *
  * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.micrometer.backend.VertxPrometheusOptions original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from the [io.vertx.micrometer.VertxPrometheusOptions original] using Vert.x codegen.
  */
 fun VertxPrometheusOptions(
   embeddedServerEndpoint: String? = null,
   embeddedServerOptions: io.vertx.core.http.HttpServerOptions? = null,
   enabled: Boolean? = null,
-  startEmbeddedServer: Boolean? = null): VertxPrometheusOptions = io.vertx.micrometer.backend.VertxPrometheusOptions().apply {
+  startEmbeddedServer: Boolean? = null): VertxPrometheusOptions = VertxPrometheusOptions().apply {
 
   if (embeddedServerEndpoint != null) {
     this.setEmbeddedServerEndpoint(embeddedServerEndpoint)

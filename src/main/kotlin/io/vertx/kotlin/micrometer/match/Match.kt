@@ -1,8 +1,8 @@
 package io.vertx.kotlin.micrometer.match
 
-import io.vertx.micrometer.match.Match
+import io.vertx.micrometer.Match
 import io.vertx.micrometer.MetricsDomain
-import io.vertx.micrometer.match.MatchType
+import io.vertx.micrometer.MatchType
 
 /**
  * A function providing a DSL for building [io.vertx.micrometer.match.Match] objects.
@@ -16,14 +16,14 @@ import io.vertx.micrometer.match.MatchType
  * @param value  Set the matched value.
  *
  * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.micrometer.match.Match original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from the [io.vertx.micrometer.Match original] using Vert.x codegen.
  */
 fun Match(
   alias: String? = null,
   domain: MetricsDomain? = null,
   label: String? = null,
   type: MatchType? = null,
-  value: String? = null): Match = io.vertx.micrometer.match.Match().apply {
+  value: String? = null): Match = Match().apply {
 
   if (alias != null) {
     this.setAlias(alias)

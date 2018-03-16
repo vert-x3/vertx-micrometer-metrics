@@ -199,7 +199,7 @@ var vertx = Vertx.vertx({
 // Later on, creating a router
 var router = Router.router(vertx);
 router.route("/metrics").handler(function (routingContext) {
-  var prometheusRegistry = Java.type("io.vertx.micrometer.backend.BackendRegistries").getDefaultNow();
+  var prometheusRegistry = Java.type("io.vertx.micrometer.backends.BackendRegistries").getDefaultNow();
   if ((prometheusRegistry !== null && prometheusRegistry !== undefined)) {
     var response = prometheusRegistry.scrape();
     routingContext.response().end(response);
@@ -298,7 +298,7 @@ By default, an unique registry is used and will be shared across the Vert.x inst
 
 [source,js]
 ----
-var registry = Java.type("io.vertx.micrometer.backend.BackendRegistries").getDefaultNow();
+var registry = Java.type("io.vertx.micrometer.backends.BackendRegistries").getDefaultNow();
 
 ----
 
@@ -319,7 +319,7 @@ var vertx = Vertx.vertx({
 });
 
 // Later on:
-var registry = Java.type("io.vertx.micrometer.backend.BackendRegistries").getNow("my registry");
+var registry = Java.type("io.vertx.micrometer.backends.BackendRegistries").getNow("my registry");
 
 ----
 
@@ -327,7 +327,7 @@ As an example, here is a custom timer that will track the execution time of a pi
 
 [source,js]
 ----
-var registry = Java.type("io.vertx.micrometer.backend.BackendRegistries").getDefaultNow();
+var registry = Java.type("io.vertx.micrometer.backends.BackendRegistries").getDefaultNow();
 var timer = Java.type("io.micrometer.core.instrument.Timer").builder("my.timer").description("a description of what this timer does").register(registry);
 
 vertx.setPeriodic(1000, function (l) {
@@ -348,7 +348,7 @@ For instance, to instrument the JVM:
 
 [source,js]
 ----
-var registry = Java.type("io.vertx.micrometer.backend.BackendRegistries").getDefaultNow();
+var registry = Java.type("io.vertx.micrometer.backends.BackendRegistries").getDefaultNow();
 
 new (Java.type("io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics"))().bindTo(registry);
 new (Java.type("io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics"))().bindTo(registry);
@@ -418,7 +418,7 @@ Label matching uses Micrometer's `MeterFilter` under the hood. This API can be a
 
 [source,js]
 ----
-var registry = Java.type("io.vertx.micrometer.backend.BackendRegistries").getDefaultNow();
+var registry = Java.type("io.vertx.micrometer.backends.BackendRegistries").getDefaultNow();
 
 registry.config().meterFilter(Java.type("io.micrometer.core.instrument.config.MeterFilter").ignoreTags("address", "remote")).meterFilter(Java.type("io.micrometer.core.instrument.config.MeterFilter").renameTag("vertx.verticle", "deployed", "instances"));
 

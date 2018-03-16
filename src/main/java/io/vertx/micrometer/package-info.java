@@ -282,7 +282,7 @@
  *
  * === Snapshots
  *
- * A {@link io.vertx.micrometer.service.MetricsService} can be created out of a {@link io.vertx.core.metrics.Measured} object
+ * A {@link io.vertx.micrometer.MetricsService} can be created out of a {@link io.vertx.core.metrics.Measured} object
  * in order to take a snapshot of its related metrics and measurements.
  * The snapshot is returned as a {@link io.vertx.core.json.JsonObject}.
  *

@@ -18,7 +18,7 @@ package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.micrometer.backend.BackendRegistries;
+import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.util.List;
 import java.util.Objects;

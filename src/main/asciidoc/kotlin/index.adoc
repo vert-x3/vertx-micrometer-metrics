@@ -173,7 +173,7 @@ var vertx = Vertx.vertx(VertxOptions(
 // Later on, creating a router
 var router = Router.router(vertx)
 router.route("/metrics").handler({ routingContext ->
-  var prometheusRegistry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
+  var prometheusRegistry = io.vertx.micrometer.backends.BackendRegistries.getDefaultNow()
   if (prometheusRegistry != null) {
     var response = prometheusRegistry.scrape()
     routingContext.response().end(response)
@@ -264,7 +264,7 @@ By default, an unique registry is used and will be shared across the Vert.x inst
 
 [source,kotlin]
 ----
-var registry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
+var registry = io.vertx.micrometer.backends.BackendRegistries.getDefaultNow()
 
 ----
 
@@ -281,7 +281,7 @@ var vertx = Vertx.vertx(VertxOptions(
     enabled = true)))
 
 // Later on:
-var registry = io.vertx.micrometer.backend.BackendRegistries.getNow("my registry")
+var registry = io.vertx.micrometer.backends.BackendRegistries.getNow("my registry")
 
 ----
 
@@ -289,7 +289,7 @@ As an example, here is a custom timer that will track the execution time of a pi
 
 [source,kotlin]
 ----
-var registry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
+var registry = io.vertx.micrometer.backends.BackendRegistries.getDefaultNow()
 var timer = io.micrometer.core.instrument.Timer.builder("my.timer").description("a description of what this timer does").register(registry)
 
 vertx.setPeriodic(1000, { l ->
@@ -310,7 +310,7 @@ For instance, to instrument the JVM:
 
 [source,kotlin]
 ----
-var registry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
+var registry = io.vertx.micrometer.backends.BackendRegistries.getDefaultNow()
 
 io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics().bindTo(registry)
 io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics().bindTo(registry)
@@ -366,7 +366,7 @@ Label matching uses Micrometer's `MeterFilter` under the hood. This API can be a
 
 [source,kotlin]
 ----
-var registry = io.vertx.micrometer.backend.BackendRegistries.getDefaultNow()
+var registry = io.vertx.micrometer.backends.BackendRegistries.getDefaultNow()
 
 registry.config().meterFilter(io.micrometer.core.instrument.config.MeterFilter.ignoreTags("address", "remote")).meterFilter(io.micrometer.core.instrument.config.MeterFilter.renameTag("vertx.verticle", "deployed", "instances"))
 
@@ -376,7 +376,7 @@ _See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]
 
 === Snapshots
 
-A `link:../../apidocs/io/vertx/micrometer/service/MetricsService.html[MetricsService]` can be created out of a `link:../../apidocs/io/vertx/core/metrics/Measured.html[Measured]` object
+A `link:../../apidocs/io/vertx/micrometer/MetricsService.html[MetricsService]` can be created out of a `link:../../apidocs/io/vertx/core/metrics/Measured.html[Measured]` object
 in order to take a snapshot of its related metrics and measurements.
 The snapshot is returned as a `link:../../apidocs/io/vertx/core/json/JsonObject.html[JsonObject]`.
 

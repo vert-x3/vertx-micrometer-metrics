@@ -10,7 +10,6 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backend.VertxPrometheusOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

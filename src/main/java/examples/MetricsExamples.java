@@ -33,13 +33,13 @@ import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.backend.BackendRegistries;
-import io.vertx.micrometer.backend.VertxInfluxDbOptions;
-import io.vertx.micrometer.backend.VertxJmxMetricsOptions;
-import io.vertx.micrometer.backend.VertxPrometheusOptions;
-import io.vertx.micrometer.match.Match;
-import io.vertx.micrometer.match.MatchType;
-import io.vertx.micrometer.service.MetricsService;
+import io.vertx.micrometer.backends.BackendRegistries;
+import io.vertx.micrometer.VertxInfluxDbOptions;
+import io.vertx.micrometer.VertxJmxMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.Match;
+import io.vertx.micrometer.MatchType;
+import io.vertx.micrometer.MetricsService;
 
 /**
  * @author Joel Takvorian

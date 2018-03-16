@@ -1,11 +1,11 @@
 package io.vertx.kotlin.micrometer
 
 import io.vertx.micrometer.MicrometerMetricsOptions
+import io.vertx.micrometer.Match
 import io.vertx.micrometer.MetricsDomain
-import io.vertx.micrometer.backend.VertxInfluxDbOptions
-import io.vertx.micrometer.backend.VertxJmxMetricsOptions
-import io.vertx.micrometer.backend.VertxPrometheusOptions
-import io.vertx.micrometer.match.Match
+import io.vertx.micrometer.VertxInfluxDbOptions
+import io.vertx.micrometer.VertxJmxMetricsOptions
+import io.vertx.micrometer.VertxPrometheusOptions
 
 /**
  * A function providing a DSL for building [io.vertx.micrometer.MicrometerMetricsOptions] objects.
@@ -28,10 +28,10 @@ import io.vertx.micrometer.match.Match
 fun MicrometerMetricsOptions(
   disabledMetricsCategories: Iterable<MetricsDomain>? = null,
   enabled: Boolean? = null,
-  influxDbOptions: io.vertx.micrometer.backend.VertxInfluxDbOptions? = null,
-  jmxMetricsOptions: io.vertx.micrometer.backend.VertxJmxMetricsOptions? = null,
-  labelMatchs: Iterable<io.vertx.micrometer.match.Match>? = null,
-  prometheusOptions: io.vertx.micrometer.backend.VertxPrometheusOptions? = null,
+  influxDbOptions: io.vertx.micrometer.VertxInfluxDbOptions? = null,
+  jmxMetricsOptions: io.vertx.micrometer.VertxJmxMetricsOptions? = null,
+  labelMatchs: Iterable<io.vertx.micrometer.Match>? = null,
+  prometheusOptions: io.vertx.micrometer.VertxPrometheusOptions? = null,
   registryName: String? = null): MicrometerMetricsOptions = io.vertx.micrometer.MicrometerMetricsOptions().apply {
 
   if (disabledMetricsCategories != null) {

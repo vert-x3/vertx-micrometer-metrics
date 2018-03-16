@@ -39,19 +39,19 @@ public class MicrometerMetricsOptionsConverter {
       obj.setEnabled((Boolean)json.getValue("enabled"));
     }
     if (json.getValue("influxDbOptions") instanceof JsonObject) {
-      obj.setInfluxDbOptions(new io.vertx.micrometer.backend.VertxInfluxDbOptions((JsonObject)json.getValue("influxDbOptions")));
+      obj.setInfluxDbOptions(new io.vertx.micrometer.VertxInfluxDbOptions((JsonObject)json.getValue("influxDbOptions")));
     }
     if (json.getValue("jmxMetricsOptions") instanceof JsonObject) {
-      obj.setJmxMetricsOptions(new io.vertx.micrometer.backend.VertxJmxMetricsOptions((JsonObject)json.getValue("jmxMetricsOptions")));
+      obj.setJmxMetricsOptions(new io.vertx.micrometer.VertxJmxMetricsOptions((JsonObject)json.getValue("jmxMetricsOptions")));
     }
     if (json.getValue("labelMatchs") instanceof JsonArray) {
       json.getJsonArray("labelMatchs").forEach(item -> {
         if (item instanceof JsonObject)
-          obj.addLabelMatch(new io.vertx.micrometer.match.Match((JsonObject)item));
+          obj.addLabelMatch(new io.vertx.micrometer.Match((JsonObject)item));
       });
     }
     if (json.getValue("prometheusOptions") instanceof JsonObject) {
-      obj.setPrometheusOptions(new io.vertx.micrometer.backend.VertxPrometheusOptions((JsonObject)json.getValue("prometheusOptions")));
+      obj.setPrometheusOptions(new io.vertx.micrometer.VertxPrometheusOptions((JsonObject)json.getValue("prometheusOptions")));
     }
     if (json.getValue("registryName") instanceof String) {
       obj.setRegistryName((String)json.getValue("registryName"));

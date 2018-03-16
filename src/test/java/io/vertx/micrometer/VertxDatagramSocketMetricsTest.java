@@ -6,7 +6,6 @@ import io.vertx.core.datagram.DatagramSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backend.VertxPrometheusOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
