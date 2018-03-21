@@ -48,6 +48,11 @@ public class VertxPoolMetricsTest {
       }, false, context.asyncAssertSuccess());
     }
     ready.awaitSuccess();
+    RegistryInspector.waitForValue(
+      vertx,
+      context,
+      "vertx.pool.completed[pool_name=test-worker,pool_type=worker]$COUNT",
+      value -> value.intValue() == taskCount);
 
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.pool.");
     assertThat(datapoints).containsOnly(

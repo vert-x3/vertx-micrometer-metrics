@@ -18,10 +18,14 @@ package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.vertx.core.Vertx;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -85,8 +89,20 @@ final class RegistryInspector {
     return new Datapoint(id, (double) value);
   }
 
-  static void waitUntil(String id, int value) {
+  static void waitForValue(Vertx vertx, TestContext context, String fullName, Predicate<Double> p) {
+    waitForValue(vertx, context, MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME, fullName, p);
+  }
 
+  static void waitForValue(Vertx vertx, TestContext context, String regName, String fullName, Predicate<Double> p) {
+    Async ready = context.async();
+    vertx.setPeriodic(200, l -> {
+      RegistryInspector.listWithoutTimers("").stream()
+        .filter(dp -> fullName.equals(dp.id()))
+        .filter(dp -> p.test(dp.value()))
+        .findAny()
+        .ifPresent(dp -> ready.countDown());
+    });
+    ready.awaitSuccess(10000);
   }
 
   static class Datapoint {
