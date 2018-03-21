@@ -44,6 +44,8 @@ public class VertxDatagramSocketMetricsTest {
     }
     async.awaitSuccess();
 
+    RegistryInspector.waitForValue(vertx, context, "vertx.datagram.bytesSent[]$COUNT",
+      value -> value.intValue() == 5);
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.datagram.");
     assertThat(datapoints).containsOnly(
       dp("vertx.datagram.bytesSent[]$COUNT", 5),

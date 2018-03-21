@@ -88,6 +88,10 @@ public class VertxHttpClientServerMetricsTest {
   @Test
   public void shouldReportHttpClientMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx, false);
+
+    RegistryInspector.waitForValue(vertx, ctx, registryName, "vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$COUNT",
+      value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
+
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.http.client.", registryName);
     assertThat(datapoints).hasSize(8).contains(
         dp("vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
@@ -106,6 +110,10 @@ public class VertxHttpClientServerMetricsTest {
   @Test
   public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx, true);
+
+    RegistryInspector.waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
+      value -> value.intValue() == concurrentClients * SENT_COUNT);
+
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.http.server.", registryName);
     assertThat(datapoints).extracting(RegistryInspector.Datapoint::id).containsOnly(
       "vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",

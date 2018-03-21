@@ -78,6 +78,9 @@ public class VertxNetClientServerMetricsTest {
   public void shouldReportNetClientMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx);
 
+    RegistryInspector.waitForValue(vertx, ctx, registryName, "vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$COUNT",
+      value -> value.intValue() == concurrentClients * SENT_COUNT);
+
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.net.client.", registryName);
     assertThat(datapoints).containsOnly(
         dp("vertx.net.client.connections[local=?,remote=localhost:9194]$VALUE", 0),
@@ -90,6 +93,9 @@ public class VertxNetClientServerMetricsTest {
   @Test
   public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx);
+
+    RegistryInspector.waitForValue(vertx, ctx, registryName, "vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$COUNT",
+      value -> value.intValue() == concurrentClients * SENT_COUNT);
 
     List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.net.server.", registryName);
     assertThat(datapoints).containsOnly(

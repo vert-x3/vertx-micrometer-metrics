@@ -34,20 +34,20 @@ import static java.util.stream.Collectors.toList;
 /**
  * @author Joel Takvorian
  */
-final class RegistryInspector {
+public final class RegistryInspector {
 
   private RegistryInspector() {
   }
 
-  static List<Datapoint> listWithoutTimers(String startsWith) {
+  public static List<Datapoint> listWithoutTimers(String startsWith) {
     return listWithoutTimers(startsWith, MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
   }
 
-  static List<Datapoint> listTimers(String startsWith) {
+  public static List<Datapoint> listTimers(String startsWith) {
     return listTimers(startsWith, MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
   }
 
-  static List<Datapoint> listWithoutTimers(String startsWith, String regName) {
+  public static List<Datapoint> listWithoutTimers(String startsWith, String regName) {
     MeterRegistry registry = BackendRegistries.getNow(regName);
     return registry.getMeters().stream()
       .filter(m -> m.getId().getType() != Meter.Type.TIMER && m.getId().getType() != Meter.Type.LONG_TASK_TIMER)
@@ -60,7 +60,7 @@ final class RegistryInspector {
       .collect(toList());
   }
 
-  static List<Datapoint> listTimers(String startsWith, String regName) {
+  public static List<Datapoint> listTimers(String startsWith, String regName) {
     MeterRegistry registry = BackendRegistries.getNow(regName);
     return registry.getMeters().stream()
       .filter(m -> m.getId().getType() == Meter.Type.TIMER || m.getId().getType() == Meter.Type.LONG_TASK_TIMER)
@@ -81,22 +81,22 @@ final class RegistryInspector {
       + "]";
   }
 
-  static RegistryInspector.Datapoint dp(String id, double value) {
+  public static RegistryInspector.Datapoint dp(String id, double value) {
     return new Datapoint(id, value);
   }
 
-  static RegistryInspector.Datapoint dp(String id, int value) {
+  public static RegistryInspector.Datapoint dp(String id, int value) {
     return new Datapoint(id, (double) value);
   }
 
-  static void waitForValue(Vertx vertx, TestContext context, String fullName, Predicate<Double> p) {
+  public static void waitForValue(Vertx vertx, TestContext context, String fullName, Predicate<Double> p) {
     waitForValue(vertx, context, MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME, fullName, p);
   }
 
-  static void waitForValue(Vertx vertx, TestContext context, String regName, String fullName, Predicate<Double> p) {
+  public static void waitForValue(Vertx vertx, TestContext context, String regName, String fullName, Predicate<Double> p) {
     Async ready = context.async();
     vertx.setPeriodic(200, l -> {
-      RegistryInspector.listWithoutTimers("").stream()
+      RegistryInspector.listWithoutTimers("", regName).stream()
         .filter(dp -> fullName.equals(dp.id()))
         .filter(dp -> p.test(dp.value()))
         .findAny()
@@ -105,7 +105,7 @@ final class RegistryInspector {
     ready.awaitSuccess(10000);
   }
 
-  static class Datapoint {
+  public static class Datapoint {
     private final String id;
     private final Double value;
 
