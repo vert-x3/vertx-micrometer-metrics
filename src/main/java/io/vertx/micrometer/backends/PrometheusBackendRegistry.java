@@ -23,6 +23,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
@@ -30,6 +32,8 @@ import io.vertx.micrometer.VertxPrometheusOptions;
  * @author Joel Takvorian
  */
 public final class PrometheusBackendRegistry implements BackendRegistry {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusBackendRegistry.class);
+
   private final PrometheusMeterRegistry registry;
   private final Vertx vertx;
   private final VertxPrometheusOptions options;
@@ -61,6 +65,7 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
       });
       server = vertx.createHttpServer(serverOptions)
         .requestHandler(router::accept)
+        .exceptionHandler(t -> LOGGER.error("Error in Prometheus registry embedded server", t))
         .listen(serverOptions.getPort(), serverOptions.getHost());
     }
   }
