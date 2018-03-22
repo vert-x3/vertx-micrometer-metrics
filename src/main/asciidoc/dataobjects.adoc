@@ -68,7 +68,7 @@ Set JMX metrics options.
 +++
 |[[labelMatchs]]`labelMatchs`|`Array of link:dataobjects.html#Match[Match]`|
 +++
-Add a rule for label matching.
+Set a list of rules for label matching.
 +++
 |[[prometheusOptions]]`prometheusOptions`|`link:dataobjects.html#VertxPrometheusOptions[VertxPrometheusOptions]`|
 +++

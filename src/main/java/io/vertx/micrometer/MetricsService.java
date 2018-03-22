@@ -24,7 +24,8 @@ import io.vertx.micrometer.impl.MetricsServiceImpl;
 import java.util.Set;
 
 /**
- * The metrics service mainly allows to return a snapshot of measured objects.
+ * The metrics service mainly allows to return a snapshot of measured objects.<br/>
+ * This service is derived and adapted from {@code MetricsService} in the <i>vertx-dropwizard-metrics</i> module.
  *
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  * @author Joel Takvorian
@@ -55,9 +56,6 @@ public interface MetricsService {
   /**
    * Will return the metrics that correspond with the {@code measured} object, null if no metrics is available.<p/>
    *
-   * Note: in the case of scaled servers, the JsonObject returns an aggregation of the metrics as the
-   * dropwizard backend reports to a single server.
-   *
    * @return the map of metrics where the key is the name of the metric (excluding the base name unless for the Vert.x object)
    * and the value is the json data representing that metric
    */
@@ -65,9 +63,6 @@ public interface MetricsService {
 
   /**
    * Will return the metrics that begins with the {@code baseName}, null if no metrics is available.<p/>
-   *
-   * Note: in the case of scaled servers, the JsonObject returns an aggregation of the metrics as the
-   * dropwizard backend reports to a single server.
    *
    * @return the map of metrics where the key is the name of the metric and the value is the json data
    * representing that metric

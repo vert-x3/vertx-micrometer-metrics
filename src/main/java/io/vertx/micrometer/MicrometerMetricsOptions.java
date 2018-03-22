@@ -200,6 +200,17 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   }
 
   /**
+   * Set a list of rules for label matching.
+   *
+   * @param matches the new list of rules
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MicrometerMetricsOptions setLabelMatchs(List<Match> matches) {
+    labelMatchs = new ArrayList<>(matches);
+    return this;
+  }
+
+  /**
    * Add a rule for label matching.
    *
    * @param match the label match
@@ -207,16 +218,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions addLabelMatch(Match match) {
     labelMatchs.add(match);
-    return this;
-  }
-
-  /**
-   * Reset the label matching rules, so that there is no default behaviour
-   *
-   * @return a reference to this, so the API can be used fluently
-   */
-  public MicrometerMetricsOptions resetLabelMatchs() {
-    labelMatchs.clear();
     return this;
   }
 

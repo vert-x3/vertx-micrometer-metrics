@@ -18,7 +18,7 @@ import io.vertx.micrometer.VertxPrometheusOptions
  * @param enabled  Set whether metrics will be enabled on the Vert.x instance. Metrics are not enabled by default.
  * @param influxDbOptions  Set InfluxDB options. Setting a registry backend option is mandatory in order to effectively report metrics.
  * @param jmxMetricsOptions  Set JMX metrics options. Setting a registry backend option is mandatory in order to effectively report metrics.
- * @param labelMatchs  Add a rule for label matching.
+ * @param labelMatchs  Set a list of rules for label matching.
  * @param prometheusOptions  Set Prometheus options. Setting a registry backend option is mandatory in order to effectively report metrics.
  * @param registryName  Set a name for the metrics registry, so that a new registry will be created and associated with this name. If <code>registryName</code> is not provided (or null), a default registry will be used. If the same name is given to several Vert.x instances (within the same JVM), they will share the same registry.
  *
@@ -47,9 +47,7 @@ fun MicrometerMetricsOptions(
     this.setJmxMetricsOptions(jmxMetricsOptions)
   }
   if (labelMatchs != null) {
-    for (item in labelMatchs) {
-      this.addLabelMatch(item)
-    }
+    this.setLabelMatchs(labelMatchs.toList())
   }
   if (prometheusOptions != null) {
     this.setPrometheusOptions(prometheusOptions)

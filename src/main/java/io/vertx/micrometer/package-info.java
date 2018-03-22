@@ -271,6 +271,17 @@
  *
  * Here, any value for the label "remote" will be replaced with "_".
  *
+ * Sometimes, having some labels results in a high cardinality of label values, which can cause troubles / bad
+ * performances on the metrics backend.
+ * This is often the case with the _remote_ label on server metrics.
+ * For that reason, there are rules in the default metrics options to ignore it (one for HTTP server, one for Net server metrics).
+ * It is still possible to stop ignoring it by clearing the label matchers:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.MetricsExamples#setupWithMatcherReset()}
+ * ----
+ *
  * Label matching uses Micrometer's `MeterFilter` under the hood. This API can be accessed directly as well:
  *
  * [source,$lang]

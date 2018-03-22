@@ -31,15 +31,17 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
+import io.vertx.micrometer.Match;
+import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MetricsService;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.VertxInfluxDbOptions;
 import io.vertx.micrometer.VertxJmxMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
-import io.vertx.micrometer.Match;
-import io.vertx.micrometer.MatchType;
-import io.vertx.micrometer.MetricsService;
+import io.vertx.micrometer.backends.BackendRegistries;
+
+import java.util.ArrayList;
 
 /**
  * @author Joel Takvorian
@@ -174,6 +176,14 @@ public class MetricsExamples {
           .setDomain(MetricsDomain.HTTP_SERVER)
           .setLabel("local")
           .setValue("localhost:8080"))
+        .setEnabled(true)));
+  }
+
+  public void setupWithMatcherReset() {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+        .setLabelMatchs(new ArrayList<>())
         .setEnabled(true)));
   }
 
