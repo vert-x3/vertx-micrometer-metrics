@@ -81,6 +81,11 @@ public class VertxPrometheusOptions {
     VertxPrometheusOptionsConverter.fromJson(json, this);
   }
 
+  /**
+   * Will Prometheus reporting be enabled?
+   *
+   * @return true if enabled, false if not.
+   */
   public boolean isEnabled() {
     return enabled;
   }
@@ -93,6 +98,9 @@ public class VertxPrometheusOptions {
     return this;
   }
 
+  /**
+   * Returns true if it is configured to start an embedded web server to expose Prometheus metrics
+   */
   public boolean isStartEmbeddedServer() {
     return startEmbeddedServer;
   }
@@ -105,6 +113,9 @@ public class VertxPrometheusOptions {
     return this;
   }
 
+  /**
+   * Get the HTTP server options of the embedded server, if any
+   */
   public HttpServerOptions getEmbeddedServerOptions() {
     return embeddedServerOptions;
   }
@@ -127,6 +138,9 @@ public class VertxPrometheusOptions {
     return this;
   }
 
+  /**
+   * Get the HTTP endpoint used if an embedded server is configured
+   */
   public String getEmbeddedServerEndpoint() {
     return embeddedServerEndpoint;
   }

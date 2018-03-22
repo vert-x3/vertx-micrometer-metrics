@@ -29,7 +29,7 @@ public final class JmxBackendRegistry implements BackendRegistry {
   private final JmxMeterRegistry registry;
 
   public JmxBackendRegistry(VertxJmxMetricsOptions options) {
-    registry = new JmxMeterRegistry(options, Clock.SYSTEM);
+    registry = new JmxMeterRegistry(options.toMicrometerConfig(), Clock.SYSTEM);
   }
 
   @Override

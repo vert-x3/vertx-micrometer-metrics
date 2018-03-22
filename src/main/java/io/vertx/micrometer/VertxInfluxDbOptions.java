@@ -28,7 +28,7 @@ import java.time.Duration;
  * @author Joel Takvorian
  */
 @DataObject(generateConverter = true, inheritConverter = true)
-public class VertxInfluxDbOptions implements InfluxConfig {
+public class VertxInfluxDbOptions {
 
   /**
    * Default value for enabled = false.
@@ -88,6 +88,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
   private int readTimeout;
   private int batchSize;
 
+  /**
+   * Create default options for InfluxDB reporting. Note that they are disabled by default.
+   */
   public VertxInfluxDbOptions() {
     enabled = DEFAULT_ENABLED;
     uri = DEFAULT_URI;
@@ -100,6 +103,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     batchSize = DEFAULT_BATCH_SIZE;
   }
 
+  /**
+   * Creates new options object for InfluxDB reporting, which is a copy of {@code other}.
+   */
   public VertxInfluxDbOptions(VertxInfluxDbOptions other) {
     enabled = other.enabled;
     uri = other.uri;
@@ -115,11 +121,19 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     batchSize = other.batchSize;
   }
 
+  /**
+   * Creates new options object for InfluxDB reporting from {@code json} input.
+   */
   public VertxInfluxDbOptions(JsonObject json) {
     this();
     VertxInfluxDbOptionsConverter.fromJson(json, this);
   }
 
+  /**
+   * Will InfluxDB reporting be enabled?
+   *
+   * @return true if enabled, false if not.
+   */
   public boolean isEnabled() {
     return enabled;
   }
@@ -132,6 +146,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the InfluxDB server URI
+   */
   public String getUri() {
     return uri;
   }
@@ -144,6 +161,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the InfluxDB database name used to store metrics
+   */
   public String getDb() {
     return db;
   }
@@ -156,6 +176,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the username used for authenticated connections
+   */
   public String getUserName() {
     return userName;
   }
@@ -168,6 +191,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the password used for authenticated connections
+   */
   public String getPassword() {
     return password;
   }
@@ -180,6 +206,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the InfluxDB retention policy
+   */
   public String getRetentionPolicy() {
     return retentionPolicy;
   }
@@ -192,6 +221,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the GZIP compression flag for requests
+   */
   public boolean isCompressed() {
     return compressed;
   }
@@ -204,6 +236,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the step of push intervals, in seconds
+   */
   public int getStep() {
     return step;
   }
@@ -216,6 +251,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the number of threads used by the push scheduler
+   */
   public int getNumThreads() {
     return numThreads;
   }
@@ -228,6 +266,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the connection timeout for InfluxDB server connections, in seconds.
+   */
   public int getConnectTimeout() {
     return connectTimeout;
   }
@@ -240,6 +281,9 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get the read timeout for InfluxDB server connections, in seconds.
+   */
   public int getReadTimeout() {
     return readTimeout;
   }
@@ -252,12 +296,15 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
+  /**
+   * Get batch size, which is the maximum number of measurements sent per request to the InfluxDB server.
+   */
   public int getBatchSize() {
     return batchSize;
   }
 
   /**
-   * Maximum number of measurements sent per request to InfluxDB. When the maximum is reached, several requests are made.
+   * Maximum number of measurements sent per request to the InfluxDB server. When the maximum is reached, several requests are made.
    * Default is 10000.
    */
   public VertxInfluxDbOptions setBatchSize(int batchSize) {
@@ -265,63 +312,70 @@ public class VertxInfluxDbOptions implements InfluxConfig {
     return this;
   }
 
-  @Override
-  public String get(String k) {
-    return null;
-  }
+  /**
+   * Convert these options to a Micrometer's {@code InfluxConfig} object
+   */
+  public InfluxConfig toMicrometerConfig() {
+    return new InfluxConfig() {
+      @Override
+      public String get(String k) {
+        return null;
+      }
 
-  @Override
-  public String db() {
-    return db;
-  }
+      @Override
+      public String db() {
+        return db;
+      }
 
-  @Override
-  public String userName() {
-    return userName;
-  }
+      @Override
+      public String userName() {
+        return userName;
+      }
 
-  @Override
-  public String password() {
-    return password;
-  }
+      @Override
+      public String password() {
+        return password;
+      }
 
-  @Override
-  public String retentionPolicy() {
-    return retentionPolicy;
-  }
+      @Override
+      public String retentionPolicy() {
+        return retentionPolicy;
+      }
 
-  @Override
-  public String uri() {
-    return uri;
-  }
+      @Override
+      public String uri() {
+        return uri;
+      }
 
-  @Override
-  public boolean compressed() {
-    return compressed;
-  }
+      @Override
+      public boolean compressed() {
+        return compressed;
+      }
 
-  @Override
-  public Duration step() {
-    return Duration.ofSeconds(step);
-  }
+      @Override
+      public Duration step() {
+        return Duration.ofSeconds(step);
+      }
 
-  @Override
-  public int numThreads() {
-    return numThreads;
-  }
+      @Override
+      public int numThreads() {
+        return numThreads;
+      }
 
-  @Override
-  public Duration connectTimeout() {
-    return Duration.ofSeconds(connectTimeout);
-  }
+      @Override
+      public Duration connectTimeout() {
+        return Duration.ofSeconds(connectTimeout);
+      }
 
-  @Override
-  public Duration readTimeout() {
-    return Duration.ofSeconds(readTimeout);
-  }
+      @Override
+      public Duration readTimeout() {
+        return Duration.ofSeconds(readTimeout);
+      }
 
-  @Override
-  public int batchSize() {
-    return batchSize;
+      @Override
+      public int batchSize() {
+        return batchSize;
+      }
+    };
   }
 }

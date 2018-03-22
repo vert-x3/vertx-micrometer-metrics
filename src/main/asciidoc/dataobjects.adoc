@@ -97,7 +97,7 @@ Set a name for the metrics registry, so that a new registry will be created and 
 ^|Name | Type ^| Description
 |[[batchSize]]`batchSize`|`Number (int)`|
 +++
-Maximum number of measurements sent per request to InfluxDB. When the maximum is reached, several requests are made.
+Maximum number of measurements sent per request to the InfluxDB server. When the maximum is reached, several requests are made.
  Default is 10000.
 +++
 |[[compressed]]`compressed`|`Boolean`|

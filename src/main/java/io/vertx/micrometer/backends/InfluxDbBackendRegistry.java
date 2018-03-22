@@ -29,7 +29,7 @@ public final class InfluxDbBackendRegistry implements BackendRegistry {
   private final InfluxMeterRegistry registry;
 
   public InfluxDbBackendRegistry(VertxInfluxDbOptions options) {
-    registry = new InfluxMeterRegistry(options, Clock.SYSTEM);
+    registry = new InfluxMeterRegistry(options.toMicrometerConfig(), Clock.SYSTEM);
     registry.stop();
   }
 

@@ -28,7 +28,7 @@ import java.time.Duration;
  * @author Joel Takvorian
  */
 @DataObject(generateConverter = true, inheritConverter = true)
-public class VertxJmxMetricsOptions implements JmxConfig {
+public class VertxJmxMetricsOptions {
 
   /**
    * Default value for enabled = false.
@@ -79,6 +79,11 @@ public class VertxJmxMetricsOptions implements JmxConfig {
     VertxJmxMetricsOptionsConverter.fromJson(json, this);
   }
 
+  /**
+   * Will JMX reporting be enabled?
+   *
+   * @return true if enabled, false if not.
+   */
   public boolean isEnabled() {
     return enabled;
   }
@@ -91,6 +96,9 @@ public class VertxJmxMetricsOptions implements JmxConfig {
     return this;
   }
 
+  /**
+   * Get the JMX domain under which metrics are published
+   */
   public String getDomain() {
     return domain;
   }
@@ -103,6 +111,9 @@ public class VertxJmxMetricsOptions implements JmxConfig {
     return this;
   }
 
+  /**
+   * Get the step of push intervals, in seconds
+   */
   public int getStep() {
     return step;
   }
@@ -115,18 +126,27 @@ public class VertxJmxMetricsOptions implements JmxConfig {
     return this;
   }
 
-  @Override
-  public String get(String s) {
-    return null;
+  /**
+   * Convert these options to a Micrometer's {@code JmxConfig} object
+   */
+  public JmxConfig toMicrometerConfig() {
+    return new JmxConfig() {
+      @Override
+      public String get(String s) {
+        return null;
+      }
+
+      @Override
+      public String domain() {
+        return domain;
+      }
+
+      @Override
+      public Duration step() {
+        return Duration.ofSeconds(step);
+      }
+    };
+
   }
 
-  @Override
-  public String domain() {
-    return domain;
-  }
-
-  @Override
-  public Duration step() {
-    return Duration.ofSeconds(step);
-  }
 }

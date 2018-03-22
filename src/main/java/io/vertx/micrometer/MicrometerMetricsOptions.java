@@ -74,12 +74,18 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private VertxPrometheusOptions prometheusOptions;
   private VertxJmxMetricsOptions jmxMetricsOptions;
 
+  /**
+   * Creates default options for Micrometer metrics.
+   */
   public MicrometerMetricsOptions() {
     disabledMetricsCategories = EnumSet.noneOf(MetricsDomain.class);
     registryName = DEFAULT_REGISTRY_NAME;
     labelMatchs = new ArrayList<>(DEFAULT_LABEL_MATCHES);
   }
 
+  /**
+   * Creates new options object for Micrometer metrics, which is a copy of {@code other}.
+   */
   public MicrometerMetricsOptions(MicrometerMetricsOptions other) {
     super(other);
     disabledMetricsCategories = other.disabledMetricsCategories != null ? EnumSet.copyOf(other.disabledMetricsCategories) : EnumSet.noneOf(MetricsDomain.class);
@@ -96,6 +102,9 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     }
   }
 
+  /**
+   * Creates new options object for Micrometer metrics from {@code json} input.
+   */
   public MicrometerMetricsOptions(JsonObject json) {
     this();
     MicrometerMetricsOptionsConverter.fromJson(json, this);
@@ -156,11 +165,18 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     return this;
   }
 
+  /**
+   * Is the given metrics category disabled?
+   * @return true if it is disabled
+   */
   @GenIgnore
   public boolean isMetricsCategoryDisabled(MetricsDomain metricsDomain) {
     return disabledMetricsCategories != null && disabledMetricsCategories.contains(metricsDomain);
   }
 
+  /**
+   * Get the metrics registry name set in these options
+   */
   public String getRegistryName() {
     return registryName;
   }
@@ -204,6 +220,9 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     return this;
   }
 
+  /**
+   * Get the specific options for InfluxDB reporting.
+   */
   public VertxInfluxDbOptions getInfluxDbOptions() {
     return influxDbOptions;
   }
@@ -218,6 +237,9 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     return this;
   }
 
+  /**
+   * Get the specific options for Prometheus reporting.
+   */
   public VertxPrometheusOptions getPrometheusOptions() {
     return prometheusOptions;
   }
@@ -232,6 +254,9 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     return this;
   }
 
+  /**
+   * Get the specific options for JMX reporting.
+   */
   public VertxJmxMetricsOptions getJmxMetricsOptions() {
     return jmxMetricsOptions;
   }

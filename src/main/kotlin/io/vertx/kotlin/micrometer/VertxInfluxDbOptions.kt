@@ -7,7 +7,7 @@ import io.vertx.micrometer.VertxInfluxDbOptions
  *
  * Vert.x InfluxDb micrometer configuration.
  *
- * @param batchSize  Maximum number of measurements sent per request to InfluxDB. When the maximum is reached, several requests are made. Default is 10000.
+ * @param batchSize  Maximum number of measurements sent per request to the InfluxDB server. When the maximum is reached, several requests are made. Default is 10000.
  * @param compressed  Activate or deactivate GZIP compression. It is activated by default.
  * @param connectTimeout  Connection timeout for InfluxDB server connections, in seconds. Default is 1 second.
  * @param db  Database name used to store metrics. Default is "default".
