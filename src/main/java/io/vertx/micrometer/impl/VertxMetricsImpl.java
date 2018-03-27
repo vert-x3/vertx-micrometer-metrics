@@ -25,13 +25,7 @@ import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.spi.metrics.DatagramSocketMetrics;
-import io.vertx.core.spi.metrics.EventBusMetrics;
-import io.vertx.core.spi.metrics.HttpClientMetrics;
-import io.vertx.core.spi.metrics.HttpServerMetrics;
-import io.vertx.core.spi.metrics.PoolMetrics;
-import io.vertx.core.spi.metrics.TCPMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
+import io.vertx.core.spi.metrics.*;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
@@ -98,14 +92,6 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (verticleMetrics != null) {
       verticleMetrics.verticleUndeployed(verticle);
     }
-  }
-
-  @Override
-  public void timerCreated(long l) {
-  }
-
-  @Override
-  public void timerEnded(long l, boolean b) {
   }
 
   @Override
