@@ -11,5 +11,5 @@ capture events from Vert.x in order to gather metrics.
 Please see the in-source Asciidoc documentation or the main documentation on the web-site for a full description
 of this component:
 
-* link:http://vertx.io/docs/vertx-micrometer-metrics/java[web-site docs]
-* link:src/main/asciidoc/java/index.adoc[in-source docs]
+* link:https://vertx.io/docs/vertx-micrometer-metrics/java[web-site docs]
+* link:src/main/asciidoc/index.adoc[in-source docs]
