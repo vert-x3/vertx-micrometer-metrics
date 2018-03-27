@@ -201,14 +201,14 @@
  *
  * == Advanced usage
  *
- * Please refer to {@link io.vertx.micrometer.MicrometerMetricsOptions} for an exhaustive list of options.
+ * Please refer to `io.vertx.micrometer.MicrometerMetricsOptions` for an exhaustive list of options.
  *
  * === Disable some metric domains
  *
  * Restricting the Vert.x modules being monitored can be done using
- * {@link io.vertx.micrometer.MicrometerMetricsOptions#disabledMetricsCategories}.
+ * `io.vertx.micrometer.MicrometerMetricsOptions#disabledMetricsCategories`.
  *
- * For a full list of domains, see {@link io.vertx.micrometer.MetricsDomain}
+ * For a full list of domains, see `io.vertx.micrometer.MetricsDomain`
  *
  * === User-defined metrics
  *
@@ -293,7 +293,7 @@
  *
  * === Snapshots
  *
- * A {@link io.vertx.micrometer.MetricsService} can be created out of a {@link io.vertx.core.metrics.Measured} object
+ * A `io.vertx.micrometer.MetricsService` can be created out of a {@link io.vertx.core.metrics.Measured} object
  * in order to take a snapshot of its related metrics and measurements.
  * The snapshot is returned as a {@link io.vertx.core.json.JsonObject}.
  *
