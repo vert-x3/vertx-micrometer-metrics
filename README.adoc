@@ -8,8 +8,10 @@ Vert.x Micrometer Metrics contains metrics collection and reporting to various t
 The http://vertx.io/docs/vertx-core/java/index.html#_metrics_spi[Vert.x Metrics SPI] allows implementers to
 capture events from Vert.x in order to gather metrics.
 
-Please see the in-source Asciidoc documentation or the main documentation on the web-site for a full description
-of this component:
+Please see the main documentation on the web-site for a full description:
 
-* link:https://vertx.io/docs/vertx-micrometer-metrics/java[web-site docs]
-* link:src/main/asciidoc/index.adoc[in-source docs]
+* https://vertx.io/docs/vertx-micrometer-metrics/java/[Java documentation]
+* https://vertx.io/docs/vertx-micrometer-metrics/js/[JavaScript documentation]
+* https://vertx.io/docs/vertx-micrometer-metrics/kotlin/[Kotlin documentation]
+* https://vertx.io/docs/vertx-micrometer-metrics/groovy/[Groovy documentation]
+* https://vertx.io/docs/vertx-micrometer-metrics/ruby/[Ruby documentation]
