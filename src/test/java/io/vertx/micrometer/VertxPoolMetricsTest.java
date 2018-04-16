@@ -63,14 +63,16 @@ public class VertxPoolMetricsTest {
 
     List<RegistryInspector.Datapoint> timersDp = RegistryInspector.listTimers("vertx.pool.")
       .stream().filter(dp -> dp.id().startsWith("vertx.pool.")).collect(Collectors.toList());
-    assertThat(timersDp)
-      .usingFieldByFieldElementComparator()
-      .usingComparatorForElementFieldsWithType(new DoubleComparator(0.1), Double.class)
-      .hasSize(6)
+    assertThat(timersDp).hasSize(6)
       .contains(
         dp("vertx.pool.queue.delay[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
+        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$COUNT", taskCount));
+
+    assertThat(timersDp)
+      .usingFieldByFieldElementComparator()
+      .usingComparatorForElementFieldsWithType(new DoubleComparator(1.0), Double.class)
+      .contains(
         dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$TOTAL_TIME", taskCount * sleepMillis / 1000d),
-        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
         dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$MAX", sleepMillis / 1000d));
   }
 }
