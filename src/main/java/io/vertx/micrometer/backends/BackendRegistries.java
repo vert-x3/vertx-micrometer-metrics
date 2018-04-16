@@ -20,11 +20,11 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.Vertx;
+import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxInfluxDbOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
-import io.vertx.micrometer.Match;
 
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,9 @@ public final class BackendRegistries {
   public static BackendRegistry setupBackend(Vertx vertx, MicrometerMetricsOptions options) {
     return REGISTRIES.computeIfAbsent(options.getRegistryName(), k -> {
       final BackendRegistry reg;
-      if (options.getInfluxDbOptions() != null && options.getInfluxDbOptions().isEnabled()) {
+      if (options.getMicrometerRegistry() != null) {
+        reg = options::getMicrometerRegistry;
+      } else if (options.getInfluxDbOptions() != null && options.getInfluxDbOptions().isEnabled()) {
         reg = new InfluxDbBackendRegistry(options.getInfluxDbOptions());
       } else if (options.getPrometheusOptions() != null && options.getPrometheusOptions().isEnabled()) {
         reg = new PrometheusBackendRegistry(vertx, options.getPrometheusOptions());

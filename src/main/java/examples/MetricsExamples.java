@@ -15,6 +15,7 @@
  */
 package examples;
 
+import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
@@ -22,7 +23,10 @@ import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.graphite.GraphiteMeterRegistry;
+import io.micrometer.jmx.JmxMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -225,5 +229,16 @@ public class MetricsExamples {
     // Client + server
     JsonObject metrics = metricsService.getMetricsSnapshot("vertx.http");
     System.out.println(metrics);
+  }
+
+  public void setupWithCompositeRegistry() {
+    CompositeMeterRegistry myRegistry = new CompositeMeterRegistry();
+    myRegistry.add(new JmxMeterRegistry(s -> null, Clock.SYSTEM));
+    myRegistry.add(new GraphiteMeterRegistry(s -> null, Clock.SYSTEM));
+
+    Vertx vertx = Vertx.vertx(new VertxOptions()
+      .setMetricsOptions(new MicrometerMetricsOptions()
+        .setMicrometerRegistry(myRegistry)
+        .setEnabled(true)));
   }
 }

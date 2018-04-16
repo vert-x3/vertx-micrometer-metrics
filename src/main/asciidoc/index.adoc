@@ -8,7 +8,8 @@ It uses link:http://micrometer.io/[Micrometer] for managing metrics and reportin
 * Vert.x core tools monitoring: TCP/HTTP client and servers, {@link io.vertx.core.datagram.DatagramSocket}
 , {@link io.vertx.core.eventbus.EventBus} and pools
 * User defined metrics through Micrometer
-* Reporting to https://www.influxdata.com/[InfluxDB], https://prometheus.io/[Prometheus] or JMX.
+* Reporting to any backend supported by Micrometer
+* Built-in options for https://www.influxdata.com/[InfluxDB], https://prometheus.io/[Prometheus] and JMX reporting.
 
 == InfluxDB
 
@@ -180,6 +181,22 @@ MBeans are registered.
 [source,$lang]
 ----
 {@link examples.MetricsExamples#setupJMXWithStepAndDomain()}
+----
+
+== Other backends or combinations
+
+Even if not all backends supported by Micrometer are implemented in Vert.x options, it is still possible
+to create any Micrometer registry and pass it to Vert.x.
+
+The list of available backends includes Graphite, Ganglia, Atlas, link:http://micrometer.io/docs[etc].
+It also enables the link:http://micrometer.io/docs/concepts#_composite_registries[Micrometer Composite Registry]
+in order to report the same metrics to multiple backends.
+
+In this example, metrics are reported both for JMX and Graphite:
+
+[source,$lang]
+----
+{@link examples.MetricsExamples#setupWithCompositeRegistry()}
 ----
 
 == Advanced usage

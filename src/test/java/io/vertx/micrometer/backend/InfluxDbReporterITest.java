@@ -42,7 +42,7 @@ public class InfluxDbReporterITest {
   public void setUp(TestContext context) {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
-        .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
+        .setInfluxDbOptions(new VertxInfluxDbOptions()
           .setStep(1)
           .setEnabled(true))
         .setRegistryName("influx")

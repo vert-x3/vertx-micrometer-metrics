@@ -24,6 +24,6 @@ import io.vertx.core.eventbus.EventBus;
  */
 public interface BackendRegistry {
   MeterRegistry getMeterRegistry();
-  void eventBusInitialized(EventBus bus);
-  void close();
+  default void eventBusInitialized(EventBus bus) {}
+  default void close() {}
 }

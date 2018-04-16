@@ -39,7 +39,8 @@ Set the matched value.
 
 ++++
  Vert.x micrometer configuration.<br/>
- It is required to set either <code>influxDbOptions</code>, <code>prometheusOptions</code> or {@code jmxMetricsOptions]
+ It is required to set either <code>influxDbOptions</code>, <code>prometheusOptions</code> or <code>jmxMetricsOptions</code>
+ (or, programmatically, <code>micrometerRegistry</code>)
  in order to actually report metrics.
 ++++
 '''
