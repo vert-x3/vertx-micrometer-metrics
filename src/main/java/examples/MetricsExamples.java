@@ -113,7 +113,7 @@ public class MetricsExamples {
         routingContext.fail(500);
       }
     });
-    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+    vertx.createHttpServer().requestHandler(router).listen(8080);
   }
 
   public void setupMinimalJMX() {

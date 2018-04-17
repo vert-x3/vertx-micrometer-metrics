@@ -9,6 +9,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,9 +19,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
-import java.util.stream.Collectors;
 
-import static io.vertx.micrometer.RegistryInspector.dp;
+import static io.vertx.micrometer.RegistryInspector.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -79,6 +79,7 @@ public class VertxHttpClientServerMetricsTest {
 
   @After
   public void teardown() {
+    BackendRegistries.stop(registryName);
     createdClients.forEach(HttpClient::close);
     if (httpServer != null) {
       httpServer.close();
@@ -89,19 +90,18 @@ public class VertxHttpClientServerMetricsTest {
   public void shouldReportHttpClientMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx, false);
 
-    RegistryInspector.waitForValue(vertx, ctx, registryName, "vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$COUNT",
+    waitForValue(vertx, ctx, registryName, "vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
 
-    List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.http.client.", registryName);
-    assertThat(datapoints).hasSize(8).contains(
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.client."));
+    assertThat(datapoints).hasSize(11).contains(
         dp("vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
         dp("vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
         dp("vertx.http.client.bytesSent[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
         dp("vertx.http.client.bytesSent[local=?,remote=127.0.0.1:9195]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
         dp("vertx.http.client.requestCount[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT));
 
-    List<RegistryInspector.Datapoint> timersDp = RegistryInspector.listTimers("vertx.http.client.", registryName);
-    assertThat(timersDp).extracting(RegistryInspector.Datapoint::id).containsOnly(
+    assertThat(datapoints).extracting(Datapoint::id).contains(
       "vertx.http.client.responseTime[local=?,path=/resource,remote=127.0.0.1:9195]$TOTAL_TIME",
       "vertx.http.client.responseTime[local=?,path=/resource,remote=127.0.0.1:9195]$COUNT",
       "vertx.http.client.responseTime[local=?,path=/resource,remote=127.0.0.1:9195]$MAX");
@@ -111,11 +111,11 @@ public class VertxHttpClientServerMetricsTest {
   public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx, true);
 
-    RegistryInspector.waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
+    waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
       value -> value.intValue() == concurrentClients * SENT_COUNT);
 
-    List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.http.server.", registryName);
-    assertThat(datapoints).extracting(RegistryInspector.Datapoint::id).containsOnly(
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.server."));
+    assertThat(datapoints).extracting(Datapoint::id).containsOnly(
       "vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
       "vertx.http.server.requests[local=127.0.0.1:9195,path=/resource,remote=_]$VALUE",
       "vertx.http.server.connections[local=127.0.0.1:9195,remote=_]$VALUE",
@@ -123,20 +123,17 @@ public class VertxHttpClientServerMetricsTest {
       "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL",
       "vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT",
-      "vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL");
+      "vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL",
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$TOTAL_TIME",
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$COUNT",
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$MAX");
+
     assertThat(datapoints).contains(
       dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
       dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
       dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
       dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
       dp("vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT));
-
-    List<RegistryInspector.Datapoint> timersDp = RegistryInspector.listTimers("vertx.http.server.", registryName)
-      .stream().filter(dp -> dp.id().startsWith("vertx.http.server.")).collect(Collectors.toList());
-    assertThat(timersDp).extracting(RegistryInspector.Datapoint::id).containsOnly(
-      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$TOTAL_TIME",
-      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$MAX");
   }
 
   private void runClientRequests(TestContext ctx, boolean ws) throws InterruptedException {

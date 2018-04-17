@@ -37,18 +37,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(VertxUnitRunner.class)
 public class JmxMetricsITest {
 
-  private Vertx vertx;
+  private static final String REGISTRY_NAME = "jmx-test";
 
   @After
   public void tearDown() {
-    BackendRegistries.stop(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
+    BackendRegistries.stop(REGISTRY_NAME);
   }
 
   @Test
   public void shouldReportJmx(TestContext context) throws Exception {
-    vertx = Vertx.vertx(new VertxOptions()
+    Vertx vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
+        .setRegistryName(REGISTRY_NAME)
         .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)
+          .setDomain("my-metrics")
           .setStep(1))
         .setEnabled(true)));
 
@@ -60,8 +62,8 @@ public class JmxMetricsITest {
 
     // Read MBean
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-    assertThat(mbs.getDomains()).contains("metrics");
-    Number result = (Number) mbs.getAttribute(new ObjectName("metrics", "name", "vertxEventbusHandlers.address.test-eb"), "Value");
+    assertThat(mbs.getDomains()).contains("my-metrics");
+    Number result = (Number) mbs.getAttribute(new ObjectName("my-metrics", "name", "vertxEventbusHandlers.address.test-eb"), "Value");
     assertThat(result).isEqualTo(1d);
   }
 }

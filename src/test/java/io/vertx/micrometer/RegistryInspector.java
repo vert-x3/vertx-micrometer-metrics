@@ -23,54 +23,43 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * @author Joel Takvorian
  */
 public final class RegistryInspector {
-
   private RegistryInspector() {
   }
 
-  public static List<Datapoint> listWithoutTimers(String startsWith) {
-    return listWithoutTimers(startsWith, MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
+  public static Predicate<Meter> startsWith(String start) {
+    return m -> m.getId().getName().startsWith(start);
   }
 
-  public static List<Datapoint> listTimers(String startsWith) {
-    return listTimers(startsWith, MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
+  public static List<Datapoint> listDatapoints(Predicate<Meter> predicate) {
+    return listDatapoints(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME, predicate);
   }
 
-  public static List<Datapoint> listWithoutTimers(String startsWith, String regName) {
+  public static List<Datapoint> listDatapoints(String regName, Predicate<Meter> predicate) {
+    List<Datapoint> result = new ArrayList<>();
     MeterRegistry registry = BackendRegistries.getNow(regName);
-    return registry.getMeters().stream()
-      .filter(m -> m.getId().getType() != Meter.Type.TIMER && m.getId().getType() != Meter.Type.LONG_TASK_TIMER)
-      .filter(m -> m.getId().getName().startsWith(startsWith))
-      .flatMap(m -> {
+    if (registry == null) {
+      throw new NoRegistryException(regName);
+    }
+    registry.forEachMeter(m -> {
+      if (predicate.test(m)) {
         String id = id(m);
-        return StreamSupport.stream(m.measure().spliterator(), false)
-          .map(measurement -> new Datapoint(id + "$" + measurement.getStatistic().name(), measurement.getValue()));
-      })
-      .collect(toList());
-  }
-
-  public static List<Datapoint> listTimers(String startsWith, String regName) {
-    MeterRegistry registry = BackendRegistries.getNow(regName);
-    return registry.getMeters().stream()
-      .filter(m -> m.getId().getType() == Meter.Type.TIMER || m.getId().getType() == Meter.Type.LONG_TASK_TIMER)
-      .filter(m -> m.getId().getName().startsWith(startsWith))
-      .flatMap(m -> {
-        String id = id(m);
-        return StreamSupport.stream(m.measure().spliterator(), false)
-          .map(measurement -> new Datapoint(id + "$" + measurement.getStatistic().name(), measurement.getValue()));
-      })
-      .collect(toList());
+        m.measure().forEach(measurement -> {
+          result.add(new Datapoint(id + "$" + measurement.getStatistic().name(), measurement.getValue()));
+        });
+      }
+    });
+    return result;
   }
 
   private static String id(Meter m) {
@@ -95,12 +84,20 @@ public final class RegistryInspector {
 
   public static void waitForValue(Vertx vertx, TestContext context, String regName, String fullName, Predicate<Double> p) {
     Async ready = context.async();
-    vertx.setPeriodic(200, l -> {
-      RegistryInspector.listWithoutTimers("", regName).stream()
-        .filter(dp -> fullName.equals(dp.id()))
-        .filter(dp -> p.test(dp.value()))
-        .findAny()
-        .ifPresent(dp -> ready.countDown());
+    vertx.setPeriodic(200, id -> {
+      try {
+        RegistryInspector.listDatapoints(regName, m -> true).stream()
+          .filter(dp -> fullName.equals(dp.id()))
+          .filter(dp -> p.test(dp.value()))
+          .findAny()
+          .ifPresent(dp -> {
+            vertx.cancelTimer(id);
+            ready.complete();
+          });
+      } catch (NoRegistryException e) {
+        context.fail(e);
+        vertx.cancelTimer(id);
+      }
     });
     ready.awaitSuccess(10000);
   }
@@ -139,6 +136,12 @@ public final class RegistryInspector {
     @Override
     public String toString() {
       return id + "/" + value;
+    }
+  }
+
+  public static class NoRegistryException extends RuntimeException {
+    public NoRegistryException(String regName) {
+      super("Registry '" + regName + "' not found");
     }
   }
 }

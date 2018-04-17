@@ -43,5 +43,6 @@ public final class JmxBackendRegistry implements BackendRegistry {
 
   @Override
   public void close() {
+    registry.stop();
   }
 }

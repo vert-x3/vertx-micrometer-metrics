@@ -7,6 +7,8 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.backends.BackendRegistries;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.vertx.micrometer.RegistryInspector.dp;
+import static io.vertx.micrometer.RegistryInspector.listDatapoints;
+import static io.vertx.micrometer.RegistryInspector.startsWith;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -21,6 +25,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(VertxUnitRunner.class)
 public class VertxVerticleMetricsTest {
+
+  @After
+  public void teardown() {
+    BackendRegistries.stop(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
+  }
 
   @Test
   public void shouldReportVerticleMetrics(TestContext context) throws InterruptedException {
@@ -43,7 +52,7 @@ public class VertxVerticleMetricsTest {
     });
     async1.awaitSuccess();
 
-    List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.verticle");
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.verticle."));
     assertThat(datapoints).containsOnly(
       dp(metricName + "$VALUE", 3));
 
@@ -57,7 +66,7 @@ public class VertxVerticleMetricsTest {
     });
     async2.awaitSuccess();
 
-    datapoints = RegistryInspector.listWithoutTimers("vertx.verticle");
+    datapoints = listDatapoints(startsWith("vertx.verticle"));
     assertThat(datapoints).containsOnly(
       dp(metricName + "$VALUE", 7));
 
@@ -71,7 +80,7 @@ public class VertxVerticleMetricsTest {
     });
     async3.awaitSuccess();
 
-    datapoints = RegistryInspector.listWithoutTimers("vertx.verticle");
+    datapoints = listDatapoints(startsWith("vertx.verticle"));
     assertThat(datapoints).containsOnly(
       dp(metricName + "$VALUE", 4));
   }

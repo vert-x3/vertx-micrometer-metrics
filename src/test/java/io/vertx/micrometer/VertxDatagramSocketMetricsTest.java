@@ -6,11 +6,14 @@ import io.vertx.core.datagram.DatagramSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.backends.BackendRegistries;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
 
+import static io.vertx.micrometer.RegistryInspector.*;
 import static io.vertx.micrometer.RegistryInspector.dp;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,6 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(VertxUnitRunner.class)
 public class VertxDatagramSocketMetricsTest {
+
+  @After
+  public void teardown() {
+    BackendRegistries.stop(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
+  }
+
   @Test
   public void shouldReportDatagramMetrics(TestContext context) throws InterruptedException {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
@@ -44,9 +53,8 @@ public class VertxDatagramSocketMetricsTest {
     }
     async.awaitSuccess();
 
-    RegistryInspector.waitForValue(vertx, context, "vertx.datagram.bytesSent[]$COUNT",
-      value -> value.intValue() == 5);
-    List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.datagram.");
+    waitForValue(vertx, context, "vertx.datagram.bytesSent[]$COUNT", value -> value.intValue() == 5);
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.datagram."));
     assertThat(datapoints).containsOnly(
       dp("vertx.datagram.bytesSent[]$COUNT", 5),
       dp("vertx.datagram.bytesSent[]$TOTAL", 45),  // 45 = size("some text") * loops

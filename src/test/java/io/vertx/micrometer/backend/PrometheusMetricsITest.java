@@ -78,7 +78,7 @@ public class PrometheusMetricsITest {
       String response = prometheusRegistry.scrape();
       routingContext.response().end(response);
     });
-    vertx.createHttpServer().requestHandler(router::accept).listen(8081);
+    vertx.createHttpServer().requestHandler(router).listen(8081);
 
     Async async = context.async();
     HttpClientRequest req = vertx.createHttpClient()
