@@ -15,6 +15,7 @@
  */
 package io.vertx.micrometer;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonArray;
@@ -29,7 +30,8 @@ import java.util.Set;
 
 /**
  * Vert.x micrometer configuration.<br/>
- * It is required to set either {@code influxDbOptions}, {@code prometheusOptions} or {@code jmxMetricsOptions]
+ * It is required to set either {@code influxDbOptions}, {@code prometheusOptions} or {@code jmxMetricsOptions}
+ * (or, programmatically, {@code micrometerRegistry})
  * in order to actually report metrics.
  *
  * @author Joel Takvorian
@@ -70,6 +72,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private Set<MetricsDomain> disabledMetricsCategories;
   private String registryName;
   private List<Match> labelMatchs;
+  private MeterRegistry micrometerRegistry;
   private VertxInfluxDbOptions influxDbOptions;
   private VertxPrometheusOptions prometheusOptions;
   private VertxJmxMetricsOptions jmxMetricsOptions;
@@ -91,6 +94,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     disabledMetricsCategories = other.disabledMetricsCategories != null ? EnumSet.copyOf(other.disabledMetricsCategories) : EnumSet.noneOf(MetricsDomain.class);
     registryName = other.registryName;
     labelMatchs = new ArrayList<>(other.labelMatchs);
+    micrometerRegistry = other.micrometerRegistry;
     if (other.influxDbOptions != null) {
       influxDbOptions = new VertxInfluxDbOptions(other.influxDbOptions);
     }
@@ -218,6 +222,38 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions addLabelMatch(Match match) {
     labelMatchs.add(match);
+    return this;
+  }
+
+  /**
+   * Get the Micrometer MeterRegistry to be used by Vert.x, that has been previously set programmatically
+   *
+   * @return the micrometer registry.
+   */
+  public MeterRegistry getMicrometerRegistry() {
+    return micrometerRegistry;
+  }
+
+  /**
+   * Programmatically set the Micrometer MeterRegistry to be used by Vert.x.
+   *
+   * This is useful in several scenarios, such as:
+   * <ul>
+   *   <li>if there is already a MeterRegistry used in the application
+   * that should be used by Vert.x as well.</li>
+   *   <li>to define some backend configuration that is not covered in this module
+   * (example: reporting to non-covered backends such as New Relic)</li>
+   *   <li>to use Micrometer's CompositeRegistry</li>
+   * </ul>
+   *
+   * This setter is mutually exclusive with setInfluxDbOptions/setPrometheusOptions/setJmxMetricsOptions
+   * and takes precedence over them.
+   *
+   * @param micrometerRegistry the registry to use
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MicrometerMetricsOptions setMicrometerRegistry(MeterRegistry micrometerRegistry) {
+    this.micrometerRegistry = micrometerRegistry;
     return this;
   }
 
