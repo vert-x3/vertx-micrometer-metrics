@@ -19,8 +19,6 @@ package io.vertx.micrometer.backend;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -57,31 +55,14 @@ public class InfluxDbReporterITest {
   @Test
   public void shouldSendDataToInfluxDb(TestContext context) {
     Async async = context.async();
-    vertx.createHttpServer(new HttpServerOptions()
-      .setCompressionSupported(true)
-      .setDecompressionSupported(true)
-      .setLogActivity(true)
-      .setHost("localhost")
-      .setPort(8086))
-      .requestHandler(req -> {
-        req.exceptionHandler(context.exceptionHandler());
-        Buffer fullRequestBody = Buffer.buffer();
-        req.handler(fullRequestBody::appendBuffer);
-        req.endHandler(h -> {
-          String str = fullRequestBody.toString();
-          if (str.isEmpty()) {
-            req.response().setStatusCode(200).end();
-            return;
-          }
-          try {
-            context.verify(v -> assertThat(str)
-              .contains("vertx_http_server_connections,local=localhost:8086,remote=_,metric_type=gauge value=1"));
-          } finally {
-            req.response().setStatusCode(200).end();
-            async.complete();
-          }
-        });
-      }).listen(8086, "localhost", context.asyncAssertSuccess());
+    InfluxDbTestHelper.simulateInfluxServer(vertx, context, 8086, body -> {
+      try {
+        context.verify(v -> assertThat(body)
+          .contains("vertx_http_server_connections,local=localhost:8086,remote=_,metric_type=gauge value=1"));
+      } finally {
+        async.complete();
+      }
+    });
     async.awaitSuccess();
   }
 }

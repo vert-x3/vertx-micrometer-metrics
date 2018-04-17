@@ -23,15 +23,13 @@ import io.micrometer.influx.InfluxMeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,7 +37,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,13 +46,8 @@ public class CustomMicrometerMetricsITest {
   private static final String REGITRY_NAME = "CustomMicrometerMetricsITest";
   private Vertx vertx;
 
-  @After
-  public void tearDown() {
-    BackendRegistries.stop(REGITRY_NAME);
-  }
-
-  @Test
-  public void shouldReportWithCompositeRegistry(TestContext context) throws Exception {
+  @Before
+  public void setup() {
     CompositeMeterRegistry myRegistry = new CompositeMeterRegistry();
     myRegistry.add(new JmxMeterRegistry(s -> null, Clock.SYSTEM));
     myRegistry.add(new InfluxMeterRegistry(new InfluxConfig() {
@@ -71,6 +63,10 @@ public class CustomMicrometerMetricsITest {
       public String uri() {
         return "http://localhost:8087";
       }
+      @Override
+      public boolean autoCreateDb() {
+        return false;
+      }
     }, Clock.SYSTEM));
 
     vertx = Vertx.vertx(new VertxOptions()
@@ -80,10 +76,18 @@ public class CustomMicrometerMetricsITest {
         .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
         .addDisabledMetricsCategory(MetricsDomain.NAMED_POOLS)
         .setEnabled(true)));
+  }
 
+  @After
+  public void after(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
+  }
+
+  @Test
+  public void shouldReportWithCompositeRegistry(TestContext context) throws Exception {
     // Mock an influxdb server
     Async asyncInflux = context.async();
-    simulateInfluxServer(context, body -> {
+    InfluxDbTestHelper.simulateInfluxServer(vertx, context, 8087, body -> {
       try {
         context.verify(w -> assertThat(body)
           .contains("vertx_eventbus_handlers,address=test-eb,metric_type=gauge value=1"));
@@ -106,33 +110,5 @@ public class CustomMicrometerMetricsITest {
 
     // Await influx
     asyncInflux.awaitSuccess();
-  }
-
-  private void simulateInfluxServer(TestContext context, Consumer<String> onRequest) {
-    vertx.runOnContext(v -> {
-      vertx.createHttpServer(new HttpServerOptions()
-        .setCompressionSupported(true)
-        .setDecompressionSupported(true)
-        .setLogActivity(true)
-        .setHost("localhost")
-        .setPort(8087))
-        .requestHandler(req -> {
-          req.exceptionHandler(context.exceptionHandler());
-          Buffer fullRequestBody = Buffer.buffer();
-          req.handler(fullRequestBody::appendBuffer);
-          req.endHandler(h -> {
-            String str = fullRequestBody.toString();
-            if (str.isEmpty()) {
-              req.response().setStatusCode(200).end();
-              return;
-            }
-            try {
-              onRequest.accept(str);
-            } finally {
-              req.response().setStatusCode(200).end();
-            }
-          });
-        }).listen(8087, "localhost", context.asyncAssertSuccess());
-    });
   }
 }
