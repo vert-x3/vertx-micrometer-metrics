@@ -24,7 +24,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxInfluxDbOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,11 +34,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class InfluxDbReporterITest {
 
   private static final String REGITRY_NAME = "InfluxDbReporterITest";
+  private Vertx vertx;
   private Vertx vertxForSimulatedServer = Vertx.vertx();
 
   @After
   public void after(TestContext context) {
-    BackendRegistries.stop(REGITRY_NAME);
+    vertx.close(context.asyncAssertSuccess());
     vertxForSimulatedServer.close(context.asyncAssertSuccess());
   }
 
@@ -56,7 +56,7 @@ public class InfluxDbReporterITest {
       }
     });
 
-    Vertx vertx = Vertx.vertx(new VertxOptions()
+    vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setInfluxDbOptions(new VertxInfluxDbOptions()
           .setStep(1)

@@ -72,12 +72,8 @@ public class VertxNetClientServerMetricsTest {
   }
 
   @After
-  public void teardown() {
-    BackendRegistries.stop(registryName);
-    createdClients.forEach(NetClient::close);
-    if (netServer != null) {
-      netServer.close();
-    }
+  public void tearDown(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
   }
 
   @Test

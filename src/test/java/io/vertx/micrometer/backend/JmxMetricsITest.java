@@ -23,7 +23,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxJmxMetricsOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,15 +37,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JmxMetricsITest {
 
   private static final String REGISTRY_NAME = "jmx-test";
+  private Vertx vertx;
 
   @After
-  public void tearDown() {
-    BackendRegistries.stop(REGISTRY_NAME);
+  public void tearDown(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
   }
 
   @Test
   public void shouldReportJmx(TestContext context) throws Exception {
-    Vertx vertx = Vertx.vertx(new VertxOptions()
+    vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setRegistryName(REGISTRY_NAME)
         .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)

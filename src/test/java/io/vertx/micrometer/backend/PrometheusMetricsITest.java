@@ -43,8 +43,8 @@ public class PrometheusMetricsITest {
   private Vertx vertx;
 
   @After
-  public void tearDown() {
-    BackendRegistries.stop(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
+  public void tearDown(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
   }
 
   @Test

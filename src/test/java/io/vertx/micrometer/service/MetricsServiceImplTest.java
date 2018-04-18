@@ -63,10 +63,8 @@ public class MetricsServiceImplTest {
   }
 
   @After
-  public void teardown() {
-    if (httpServer != null) {
-      httpServer.close();
-    }
+  public void tearDown(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
   }
 
   @Test

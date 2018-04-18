@@ -25,9 +25,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(VertxUnitRunner.class)
 public class VertxPoolMetricsTest {
 
+  private Vertx vertx;
+
   @After
-  public void teardown() {
-    BackendRegistries.stop(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
+  public void tearDown(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
   }
 
   @Test
@@ -36,7 +38,7 @@ public class VertxPoolMetricsTest {
     int taskCount = maxPoolSize * 3;
     int sleepMillis = 30;
 
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
+    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .setEnabled(true)))
       .exceptionHandler(context.exceptionHandler());

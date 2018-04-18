@@ -28,7 +28,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,11 +43,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CustomMicrometerMetricsITest {
 
   private static final String REGITRY_NAME = "CustomMicrometerMetricsITest";
+  private Vertx vertx;
   private Vertx vertxForSimulatedServer = Vertx.vertx();
 
   @After
   public void after(TestContext context) {
-    BackendRegistries.stop(REGITRY_NAME);
+    vertx.close(context.asyncAssertSuccess());
     vertxForSimulatedServer.close(context.asyncAssertSuccess());
   }
 
@@ -86,7 +86,7 @@ public class CustomMicrometerMetricsITest {
       }
     }, Clock.SYSTEM));
 
-    Vertx vertx = Vertx.vertx(new VertxOptions()
+    vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setMicrometerRegistry(myRegistry)
         .setRegistryName(REGITRY_NAME)
