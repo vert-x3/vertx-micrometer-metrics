@@ -43,8 +43,8 @@ public class PrometheusMetricsITest {
   private Vertx vertx;
 
   @After
-  public void tearDown() {
-    BackendRegistries.stop(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME);
+  public void tearDown(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
   }
 
   @Test
@@ -78,7 +78,7 @@ public class PrometheusMetricsITest {
       String response = prometheusRegistry.scrape();
       routingContext.response().end(response);
     });
-    vertx.createHttpServer().requestHandler(router::accept).listen(8081);
+    vertx.createHttpServer().requestHandler(router).listen(8081);
 
     Async async = context.async();
     HttpClientRequest req = vertx.createHttpClient()

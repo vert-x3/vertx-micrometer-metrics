@@ -64,7 +64,7 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
         routingContext.response().end(response);
       });
       server = vertx.createHttpServer(serverOptions)
-        .requestHandler(router::accept)
+        .requestHandler(router)
         .exceptionHandler(t -> LOGGER.error("Error in Prometheus registry embedded server", t))
         .listen(serverOptions.getPort(), serverOptions.getHost());
     }

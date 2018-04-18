@@ -29,7 +29,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,9 +44,27 @@ public class CustomMicrometerMetricsITest {
 
   private static final String REGITRY_NAME = "CustomMicrometerMetricsITest";
   private Vertx vertx;
+  private Vertx vertxForSimulatedServer = Vertx.vertx();
 
-  @Before
-  public void setup() {
+  @After
+  public void after(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
+    vertxForSimulatedServer.close(context.asyncAssertSuccess());
+  }
+
+  @Test
+  public void shouldReportWithCompositeRegistry(TestContext context) throws Exception {
+    // Mock an influxdb server
+    Async asyncInflux = context.async();
+    InfluxDbTestHelper.simulateInfluxServer(vertxForSimulatedServer, context, 8087, body -> {
+      try {
+        context.verify(w -> assertThat(body)
+          .contains("vertx_eventbus_handlers,address=test-eb,metric_type=gauge value=1"));
+      } finally {
+        asyncInflux.complete();
+      }
+    });
+
     CompositeMeterRegistry myRegistry = new CompositeMeterRegistry();
     myRegistry.add(new JmxMeterRegistry(s -> null, Clock.SYSTEM));
     myRegistry.add(new InfluxMeterRegistry(new InfluxConfig() {
@@ -76,25 +93,6 @@ public class CustomMicrometerMetricsITest {
         .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
         .addDisabledMetricsCategory(MetricsDomain.NAMED_POOLS)
         .setEnabled(true)));
-  }
-
-  @After
-  public void after(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
-  }
-
-  @Test
-  public void shouldReportWithCompositeRegistry(TestContext context) throws Exception {
-    // Mock an influxdb server
-    Async asyncInflux = context.async();
-    InfluxDbTestHelper.simulateInfluxServer(vertx, context, 8087, body -> {
-      try {
-        context.verify(w -> assertThat(body)
-          .contains("vertx_eventbus_handlers,address=test-eb,metric_type=gauge value=1"));
-      } finally {
-        asyncInflux.complete();
-      }
-    });
 
     // Send something on the eventbus and wait til it's received
     Async asyncEB = context.async();

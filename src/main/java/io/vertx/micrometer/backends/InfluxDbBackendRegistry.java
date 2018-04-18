@@ -45,5 +45,6 @@ public final class InfluxDbBackendRegistry implements BackendRegistry {
 
   @Override
   public void close() {
+    registry.stop();
   }
 }

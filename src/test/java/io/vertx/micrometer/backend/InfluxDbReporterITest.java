@@ -25,7 +25,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxInfluxDbOptions;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,35 +33,45 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(VertxUnitRunner.class)
 public class InfluxDbReporterITest {
 
+  private static final String REGITRY_NAME = "InfluxDbReporterITest";
   private Vertx vertx;
-
-  @Before
-  public void setUp(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setInfluxDbOptions(new VertxInfluxDbOptions()
-          .setStep(1)
-          .setEnabled(true))
-        .setRegistryName("influx")
-        .setEnabled(true)));
-  }
+  private Vertx vertxForSimulatedServer = Vertx.vertx();
 
   @After
   public void after(TestContext context) {
     vertx.close(context.asyncAssertSuccess());
+    vertxForSimulatedServer.close(context.asyncAssertSuccess());
   }
 
   @Test
-  public void shouldSendDataToInfluxDb(TestContext context) {
-    Async async = context.async();
-    InfluxDbTestHelper.simulateInfluxServer(vertx, context, 8086, body -> {
+  public void shouldSendDataToInfluxDb(TestContext context) throws Exception {
+    // Mock an influxdb server
+    Async asyncInflux = context.async();
+    InfluxDbTestHelper.simulateInfluxServer(vertxForSimulatedServer, context, 8086, body -> {
       try {
-        context.verify(v -> assertThat(body)
-          .contains("vertx_http_server_connections,local=localhost:8086,remote=_,metric_type=gauge value=1"));
+        context.verify(w -> assertThat(body)
+          .contains("vertx_eventbus_handlers,address=test-eb,metric_type=gauge value=1"));
       } finally {
-        async.complete();
+        asyncInflux.complete();
       }
     });
-    async.awaitSuccess();
+
+    vertx = Vertx.vertx(new VertxOptions()
+      .setMetricsOptions(new MicrometerMetricsOptions()
+        .setInfluxDbOptions(new VertxInfluxDbOptions()
+          .setStep(1)
+          .setDb("mydb")
+          .setEnabled(true))
+        .setRegistryName(REGITRY_NAME)
+        .setEnabled(true)));
+
+    // Send something on the eventbus and wait til it's received
+    Async asyncEB = context.async();
+    vertx.eventBus().consumer("test-eb", msg -> asyncEB.complete());
+    vertx.eventBus().publish("test-eb", "test message");
+    asyncEB.await(2000);
+
+    // Await influx
+    asyncInflux.awaitSuccess();
   }
 }

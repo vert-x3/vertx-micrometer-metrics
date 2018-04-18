@@ -10,6 +10,7 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +22,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
 import static io.vertx.micrometer.RegistryInspector.dp;
+import static io.vertx.micrometer.RegistryInspector.listDatapoints;
+import static io.vertx.micrometer.RegistryInspector.startsWith;
+import static io.vertx.micrometer.RegistryInspector.waitForValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -42,6 +46,7 @@ public class VertxNetClientServerMetricsTest {
   public void setUp(TestContext ctx) {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
       .setRegistryName(registryName)
       .setEnabled(true)))
       .exceptionHandler(ctx.exceptionHandler());
@@ -67,21 +72,18 @@ public class VertxNetClientServerMetricsTest {
   }
 
   @After
-  public void teardown() {
-    createdClients.forEach(NetClient::close);
-    if (netServer != null) {
-      netServer.close();
-    }
+  public void tearDown(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
   }
 
   @Test
   public void shouldReportNetClientMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx);
 
-    RegistryInspector.waitForValue(vertx, ctx, registryName, "vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$COUNT",
+    waitForValue(vertx, ctx, registryName, "vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$COUNT",
       value -> value.intValue() == concurrentClients * SENT_COUNT);
 
-    List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.net.client.", registryName);
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.client."));
     assertThat(datapoints).containsOnly(
         dp("vertx.net.client.connections[local=?,remote=localhost:9194]$VALUE", 0),
         dp("vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT),
@@ -94,10 +96,10 @@ public class VertxNetClientServerMetricsTest {
   public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx);
 
-    RegistryInspector.waitForValue(vertx, ctx, registryName, "vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$COUNT",
+    waitForValue(vertx, ctx, registryName, "vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$COUNT",
       value -> value.intValue() == concurrentClients * SENT_COUNT);
 
-    List<RegistryInspector.Datapoint> datapoints = RegistryInspector.listWithoutTimers("vertx.net.server.", registryName);
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.server."));
     assertThat(datapoints).containsOnly(
       dp("vertx.net.server.connections[local=localhost:9194,remote=_]$VALUE", 0),
       dp("vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT),
