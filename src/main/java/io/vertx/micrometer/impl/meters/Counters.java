@@ -21,9 +21,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.micrometer.impl.Label;
 import io.vertx.micrometer.impl.Labels;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * @author Joel Takvorian
  */
@@ -32,7 +29,6 @@ public class Counters {
   private final String description;
   private final Label[] keys;
   private final MeterRegistry registry;
-  private final Map<Labels.Values, Counter> counters = new ConcurrentHashMap<>();
 
   public Counters(String name,
                   String description,
@@ -45,12 +41,10 @@ public class Counters {
   }
 
   public Counter get(String... values) {
-    return counters.computeIfAbsent(new Labels.Values(values), v -> {
-      // Create a new Counter
-      return Counter.builder(name)
-        .description(description)
-        .tags(Labels.toTags(keys, values))
-        .register(registry);
-    });
+    // Get or create the Counter
+    return Counter.builder(name)
+      .description(description)
+      .tags(Labels.toTags(keys, values))
+      .register(registry);
   }
 }

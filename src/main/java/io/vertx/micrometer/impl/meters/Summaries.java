@@ -21,9 +21,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.micrometer.impl.Label;
 import io.vertx.micrometer.impl.Labels;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * @author Joel Takvorian
  */
@@ -32,7 +29,6 @@ public class Summaries {
   private final String description;
   private final Label[] keys;
   private final MeterRegistry registry;
-  private final Map<Labels.Values, DistributionSummary> summaries = new ConcurrentHashMap<>();
 
   public Summaries(String name,
                    String description,
@@ -45,12 +41,10 @@ public class Summaries {
   }
 
   public DistributionSummary get(String... values) {
-    return summaries.computeIfAbsent(new Labels.Values(values), v -> {
-      // Create a new Summary
-      return DistributionSummary.builder(name)
-        .description(description)
-        .tags(Labels.toTags(keys, values))
-        .register(registry);
-    });
+    // Get or create the Summary
+    return DistributionSummary.builder(name)
+      .description(description)
+      .tags(Labels.toTags(keys, values))
+      .register(registry);
   }
 }

@@ -21,8 +21,6 @@ import io.micrometer.core.instrument.Timer;
 import io.vertx.micrometer.impl.Label;
 import io.vertx.micrometer.impl.Labels;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,7 +31,6 @@ public class Timers {
   private final String description;
   private final Label[] keys;
   private final MeterRegistry registry;
-  private final Map<Labels.Values, Timer> timers = new ConcurrentHashMap<>();
 
   public Timers(String name,
                 String description,
@@ -46,13 +43,11 @@ public class Timers {
   }
 
   public Timer get(String... values) {
-    return timers.computeIfAbsent(new Labels.Values(values), v -> {
-      // Create a new Timer
-      return Timer.builder(name)
-        .description(description)
-        .tags(Labels.toTags(keys, values))
-        .register(registry);
-    });
+    // Get or create the Timer
+    return Timer.builder(name)
+      .description(description)
+      .tags(Labels.toTags(keys, values))
+      .register(registry);
   }
 
   public EventTiming start(String... values) {
