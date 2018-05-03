@@ -20,7 +20,6 @@ import io.micrometer.core.instrument.Tag;
 import io.vertx.core.net.SocketAddress;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,26 +48,5 @@ public final class Labels {
       tags.add(Tag.of(lowKey, values[i]));
     }
     return tags;
-  }
-
-  public static class Values {
-    private final String[] values;
-
-    public Values(String... values) {
-      this.values = values;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      Values otherValues = (Values) o;
-      return Arrays.equals(values, otherValues.values);
-    }
-
-    @Override
-    public int hashCode() {
-      return Arrays.hashCode(values);
-    }
   }
 }
