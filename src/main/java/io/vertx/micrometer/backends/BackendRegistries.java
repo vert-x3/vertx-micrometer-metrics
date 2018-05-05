@@ -46,13 +46,12 @@ public final class BackendRegistries {
   /**
    * Create a new backend registry, containing a micrometer registry, initialized with the provided options.
    * If a registry already exists with the associated name, it is just returned without any effect.
-   * @param vertx vertx object that might be necessary for some backend initialization
    * @param options micrometer options, including configuration related to the backend.
    *                Should be a subclass of {@link MicrometerMetricsOptions} (ex: {@link VertxInfluxDbOptions}, {@link VertxPrometheusOptions}).
    *                If the class is not recognized, a {@link NoopBackendRegistry} will be returned.
    * @return the created (or existing) {@link BackendRegistry}
    */
-  public static BackendRegistry setupBackend(Vertx vertx, MicrometerMetricsOptions options) {
+  public static BackendRegistry setupBackend(MicrometerMetricsOptions options) {
     return REGISTRIES.computeIfAbsent(options.getRegistryName(), k -> {
       final BackendRegistry reg;
       if (options.getMicrometerRegistry() != null) {
@@ -60,7 +59,7 @@ public final class BackendRegistries {
       } else if (options.getInfluxDbOptions() != null && options.getInfluxDbOptions().isEnabled()) {
         reg = new InfluxDbBackendRegistry(options.getInfluxDbOptions());
       } else if (options.getPrometheusOptions() != null && options.getPrometheusOptions().isEnabled()) {
-        reg = new PrometheusBackendRegistry(vertx, options.getPrometheusOptions());
+        reg = new PrometheusBackendRegistry(options.getPrometheusOptions());
       } else if (options.getJmxMetricsOptions() != null && options.getJmxMetricsOptions().isEnabled()) {
         reg = new JmxBackendRegistry(options.getJmxMetricsOptions());
       } else {

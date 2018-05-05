@@ -37,7 +37,7 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
     } else {
       options = new MicrometerMetricsOptions(metricsOptions.toJson());
     }
-    BackendRegistry backendRegistry = BackendRegistries.setupBackend(vertx, options);
+    BackendRegistry backendRegistry = BackendRegistries.setupBackend(options);
     return new VertxMetricsImpl(options, backendRegistry);
   }
 

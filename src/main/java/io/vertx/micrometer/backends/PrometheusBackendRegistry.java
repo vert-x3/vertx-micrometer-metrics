@@ -37,10 +37,9 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
   private final PrometheusMeterRegistry registry;
   private final Vertx vertx;
   private final VertxPrometheusOptions options;
-  private HttpServer server;
 
-  public PrometheusBackendRegistry(Vertx vertx, VertxPrometheusOptions options) {
-    this.vertx = vertx;
+  public PrometheusBackendRegistry(VertxPrometheusOptions options) {
+    this.vertx = Vertx.vertx();
     this.options = options;
     registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
   }
@@ -63,7 +62,7 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
         String response = registry.scrape();
         routingContext.response().end(response);
       });
-      server = vertx.createHttpServer(serverOptions)
+      vertx.createHttpServer(serverOptions)
         .requestHandler(router)
         .exceptionHandler(t -> LOGGER.error("Error in Prometheus registry embedded server", t))
         .listen(serverOptions.getPort(), serverOptions.getHost());
@@ -72,8 +71,6 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
 
   @Override
   public void close() {
-    if (server != null) {
-      server.close();
-    }
+    vertx.close();
   }
 }
