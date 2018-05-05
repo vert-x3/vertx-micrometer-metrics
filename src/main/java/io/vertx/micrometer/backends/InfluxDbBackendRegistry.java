@@ -19,7 +19,6 @@ package io.vertx.micrometer.backends;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.influx.InfluxMeterRegistry;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.micrometer.VertxInfluxDbOptions;
 
 /**
@@ -39,7 +38,7 @@ public final class InfluxDbBackendRegistry implements BackendRegistry {
   }
 
   @Override
-  public void eventBusInitialized(EventBus bus) {
+  public void init() {
     registry.start();
   }
 

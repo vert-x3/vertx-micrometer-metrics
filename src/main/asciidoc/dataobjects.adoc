@@ -199,7 +199,7 @@ Set true to enable Prometheus reporting
 +++
 |[[startEmbeddedServer]]`startEmbeddedServer`|`Boolean`|
 +++
-When true, an embedded server will start to expose metrics with Prometheus format.
+When true, an embedded server will init to expose metrics with Prometheus format.
 +++
 |===
 

@@ -19,7 +19,6 @@ package io.vertx.micrometer.backends;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.micrometer.VertxJmxMetricsOptions;
 
 /**
@@ -38,7 +37,7 @@ public final class JmxBackendRegistry implements BackendRegistry {
   }
 
   @Override
-  public void eventBusInitialized(EventBus bus) {
+  public void init() {
   }
 
   @Override

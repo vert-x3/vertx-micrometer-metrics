@@ -15,7 +15,6 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.VertxMetricsFactory;
@@ -29,7 +28,7 @@ import io.vertx.micrometer.backends.BackendRegistry;
  */
 public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
   @Override
-  public VertxMetrics metrics(Vertx vertx, VertxOptions vertxOptions) {
+  public VertxMetrics metrics(VertxOptions vertxOptions) {
     MetricsOptions metricsOptions = vertxOptions.getMetricsOptions();
     MicrometerMetricsOptions options;
     if (metricsOptions instanceof MicrometerMetricsOptions) {
@@ -38,7 +37,9 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
       options = new MicrometerMetricsOptions(metricsOptions.toJson());
     }
     BackendRegistry backendRegistry = BackendRegistries.setupBackend(options);
-    return new VertxMetricsImpl(options, backendRegistry);
+    VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry);
+    metrics.init();
+    return metrics;
   }
 
   @Override

@@ -17,13 +17,12 @@
 package io.vertx.micrometer.backends;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.core.eventbus.EventBus;
 
 /**
  * @author Joel Takvorian
  */
 public interface BackendRegistry {
   MeterRegistry getMeterRegistry();
-  default void eventBusInitialized(EventBus bus) {}
+  default void init() {}
   default void close() {}
 }

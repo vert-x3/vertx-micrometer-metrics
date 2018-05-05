@@ -99,14 +99,14 @@ public class VertxPrometheusOptions {
   }
 
   /**
-   * Returns true if it is configured to start an embedded web server to expose Prometheus metrics
+   * Returns true if it is configured to init an embedded web server to expose Prometheus metrics
    */
   public boolean isStartEmbeddedServer() {
     return startEmbeddedServer;
   }
 
   /**
-   * When true, an embedded server will start to expose metrics with Prometheus format.
+   * When true, an embedded server will init to expose metrics with Prometheus format.
    */
   public VertxPrometheusOptions setStartEmbeddedServer(boolean startEmbeddedServer) {
     this.startEmbeddedServer = startEmbeddedServer;

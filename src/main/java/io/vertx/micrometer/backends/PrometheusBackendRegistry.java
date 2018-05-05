@@ -20,8 +20,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -50,7 +48,7 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
   }
 
   @Override
-  public void eventBusInitialized(EventBus bus) {
+  public void init() {
     if (options.isStartEmbeddedServer()) {
       // Start dedicated server
       HttpServerOptions serverOptions = options.getEmbeddedServerOptions();

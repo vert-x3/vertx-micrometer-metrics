@@ -18,12 +18,8 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Verticle;
-import io.vertx.core.datagram.DatagramSocket;
 import io.vertx.core.datagram.DatagramSocketOptions;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.NetClientOptions;
@@ -86,9 +82,8 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       : new VertxVerticleMetrics(registry);
   }
 
-  @Override
-  public void eventBusInitialized(EventBus bus) {
-    backendRegistry.eventBusInitialized(bus);
+  void init() {
+    backendRegistry.init();
   }
 
   @Override
@@ -114,7 +109,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public EventBusMetrics createMetrics(EventBus eventBus) {
+  public EventBusMetrics createEventBusMetrics() {
     if (eventBusMetrics != null) {
       return eventBusMetrics;
     }
@@ -122,7 +117,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public HttpServerMetrics<?, ?, ?> createMetrics(HttpServer httpServer, SocketAddress socketAddress, HttpServerOptions httpServerOptions) {
+  public HttpServerMetrics<?, ?, ?> createHttpServerMetrics(HttpServerOptions httpClientOptions, SocketAddress socketAddress) {
     if (httpServerMetrics != null) {
       return httpServerMetrics.forAddress(socketAddress);
     }
@@ -130,7 +125,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public HttpClientMetrics<?, ?, ?, ?, ?> createMetrics(HttpClient httpClient, HttpClientOptions httpClientOptions) {
+  public HttpClientMetrics<?, ?, ?, ?, ?> createHttpClientMetrics(HttpClientOptions httpClientOptions) {
     if (httpClientMetrics != null) {
       return httpClientMetrics.forAddress(httpClientOptions.getLocalAddress());
     }
@@ -138,7 +133,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public TCPMetrics<?> createMetrics(SocketAddress socketAddress, NetServerOptions netServerOptions) {
+  public TCPMetrics<?> createNetServerMetrics(NetServerOptions netServerOptions, SocketAddress socketAddress) {
     if (netServerMetrics != null) {
       return netServerMetrics.forAddress(socketAddress);
     }
@@ -146,7 +141,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public TCPMetrics<?> createMetrics(NetClientOptions netClientOptions) {
+  public TCPMetrics<?> createNetClientMetrics(NetClientOptions netClientOptions) {
     if (netClientMetrics != null) {
       return netClientMetrics.forAddress(netClientOptions.getLocalAddress());
     }
@@ -154,7 +149,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public DatagramSocketMetrics createMetrics(DatagramSocket datagramSocket, DatagramSocketOptions datagramSocketOptions) {
+  public DatagramSocketMetrics createDatagramSocketMetrics(DatagramSocketOptions options) {
     if (datagramSocketMetrics != null) {
       return datagramSocketMetrics;
     }
@@ -162,7 +157,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public <P> PoolMetrics<?> createMetrics(P pool, String poolType, String poolName, int maxPoolSize) {
+  public PoolMetrics<?> createPoolMetrics(String poolType, String poolName, int maxPoolSize) {
     if (poolMetrics != null) {
       return poolMetrics.forInstance(poolType, poolName, maxPoolSize);
     }

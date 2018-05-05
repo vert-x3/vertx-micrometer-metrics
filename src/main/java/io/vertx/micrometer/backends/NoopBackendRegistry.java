@@ -18,7 +18,6 @@ package io.vertx.micrometer.backends;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
-import io.vertx.core.eventbus.EventBus;
 
 /**
  * @author Joel Takvorian
@@ -32,7 +31,7 @@ public enum NoopBackendRegistry implements BackendRegistry {
   }
 
   @Override
-  public void eventBusInitialized(EventBus bus) {
+  public void init() {
   }
 
   @Override
