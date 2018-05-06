@@ -5,13 +5,9 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.Repeat;
-import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.assertj.core.util.DoubleComparator;
 import org.junit.After;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,15 +27,11 @@ public class VertxPoolMetricsTest {
 
   private Vertx vertx;
 
-  @Rule
-  public RepeatRule rule = new RepeatRule();
-
   @After
   public void tearDown(TestContext context) {
     vertx.close(context.asyncAssertSuccess());
   }
 
-  @Repeat(1000)
   @Test
   public void shouldReportNamedPoolMetrics(TestContext context) throws InterruptedException {
     int maxPoolSize = 8;
