@@ -5,13 +5,17 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.Repeat;
+import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.assertj.core.util.DoubleComparator;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static io.vertx.micrometer.RegistryInspector.dp;
@@ -27,11 +31,15 @@ public class VertxPoolMetricsTest {
 
   private Vertx vertx;
 
+  @Rule
+  public RepeatRule rule = new RepeatRule();
+
   @After
   public void tearDown(TestContext context) {
     vertx.close(context.asyncAssertSuccess());
   }
 
+  @Repeat(1000)
   @Test
   public void shouldReportNamedPoolMetrics(TestContext context) throws InterruptedException {
     int maxPoolSize = 8;
@@ -53,9 +61,10 @@ public class VertxPoolMetricsTest {
         } catch (InterruptedException e) {
           throw new RuntimeException(e);
         }
-        ready.countDown();
         future.complete();
-      }, false, context.asyncAssertSuccess());
+      }, false, context.asyncAssertSuccess(v -> {
+        ready.countDown();
+      }));
     }
     ready.awaitSuccess();
     RegistryInspector.waitForValue(
@@ -76,8 +85,19 @@ public class VertxPoolMetricsTest {
     assertThat(datapoints)
       .usingFieldByFieldElementComparator()
       .usingComparatorForElementFieldsWithType(new DoubleComparator(0.1), Double.class)
+      .contains(dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$MAX", sleepMillis / 1000d));
+
+    class GreaterOrEqualsComparator implements Comparator<Double> {
+      @Override
+      public int compare(Double o1, Double o2) {
+        return o1 < o2 ? -1 : 0;
+      }
+    }
+
+    assertThat(datapoints)
+      .usingFieldByFieldElementComparator()
+      .usingComparatorForElementFieldsWithType(new GreaterOrEqualsComparator(), Double.class)
       .contains(
-        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$TOTAL_TIME", taskCount * sleepMillis / 1000d),
-        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$MAX", sleepMillis / 1000d));
+        dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$TOTAL_TIME", taskCount * sleepMillis / 1000d));
   }
 }
