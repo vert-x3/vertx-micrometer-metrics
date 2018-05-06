@@ -48,7 +48,7 @@ public class PrometheusMetricsITest {
   }
 
   @Test
-  public void shouldStartEmbeddedServer(TestContext context) {
+  public void shouldStartEmbeddedServer(TestContext context) throws Exception {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
@@ -59,7 +59,7 @@ public class PrometheusMetricsITest {
     Async async = context.async();
     tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
       context.verify(v -> assertThat(body)
-        .contains("vertx_http_server_connections{local=\"0.0.0.0:9090\",remote=\"_\",} 1.0"));
+        .contains("vertx_http_client_requests{local=\"?\",path=\"/metrics\",remote=\"localhost:9090\",} 1.0"));
       async.complete();
     }, 0);
     async.awaitSuccess(10000);
