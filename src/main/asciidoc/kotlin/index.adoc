@@ -28,7 +28,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-micrometer-metrics</artifactId>
-  <version>3.5.1-SNAPSHOT</version>
+  <version>3.5.2.CR1</version>
 </dependency>
 <dependency>
   <groupId>io.micrometer</groupId>
@@ -41,7 +41,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.2.CR1'
 compile 'io.micrometer:micrometer-registry-influx:1.0.0'
 ----
 
@@ -105,7 +105,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-micrometer-metrics</artifactId>
-  <version>3.5.1-SNAPSHOT</version>
+  <version>3.5.2.CR1</version>
 </dependency>
 <dependency>
   <groupId>io.micrometer</groupId>
@@ -115,7 +115,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-web</artifactId>
-  <version>3.5.1-SNAPSHOT</version>
+  <version>3.5.2.CR1</version>
 </dependency>
 ----
 
@@ -123,9 +123,9 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.2.CR1'
 compile 'io.micrometer:micrometer-registry-prometheus:1.0.0'
-compile 'io.vertx:vertx-web:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-web:3.5.2.CR1'
 ----
 
 === Configuration examples
@@ -198,7 +198,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-micrometer-metrics</artifactId>
-  <version>3.5.1-SNAPSHOT</version>
+  <version>3.5.2.CR1</version>
 </dependency>
 <dependency>
   <groupId>io.micrometer</groupId>
@@ -211,7 +211,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-micrometer-metrics:3.5.1-SNAPSHOT'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.2.CR1'
 compile 'io.micrometer:micrometer-registry-jmx:1.0.0'
 ----
 
@@ -248,14 +248,14 @@ var vertx = Vertx.vertx(VertxOptions(
 
 == Advanced usage
 
-Please refer to `link:../../apidocs/io/vertx/micrometer/MicrometerMetricsOptions.html[MicrometerMetricsOptions]` for an exhaustive list of options.
+Please refer to `io.vertx.micrometer.MicrometerMetricsOptions` for an exhaustive list of options.
 
 === Disable some metric domains
 
 Restricting the Vert.x modules being monitored can be done using
-`link:../../apidocs/io/vertx/micrometer/MicrometerMetricsOptions.html#disabledMetricsCategories[disabledMetricsCategories]`.
+`io.vertx.micrometer.MicrometerMetricsOptions#disabledMetricsCategories`.
 
-For a full list of domains, see `link:../../apidocs/io/vertx/micrometer/MetricsDomain.html[MetricsDomain]`
+For a full list of domains, see `io.vertx.micrometer.MetricsDomain`
 
 === User-defined metrics
 
@@ -393,7 +393,7 @@ _See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]
 
 === Snapshots
 
-A `link:../../apidocs/io/vertx/micrometer/MetricsService.html[MetricsService]` can be created out of a `link:../../apidocs/io/vertx/core/metrics/Measured.html[Measured]` object
+A `io.vertx.micrometer.MetricsService` can be created out of a `link:../../apidocs/io/vertx/core/metrics/Measured.html[Measured]` object
 in order to take a snapshot of its related metrics and measurements.
 The snapshot is returned as a `link:../../apidocs/io/vertx/core/json/JsonObject.html[JsonObject]`.
 
