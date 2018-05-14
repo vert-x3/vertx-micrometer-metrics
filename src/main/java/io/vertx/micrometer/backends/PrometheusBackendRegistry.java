@@ -33,11 +33,10 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
   private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusBackendRegistry.class);
 
   private final PrometheusMeterRegistry registry;
-  private final Vertx vertx;
   private final VertxPrometheusOptions options;
+  private Vertx vertx;
 
   public PrometheusBackendRegistry(VertxPrometheusOptions options) {
-    this.vertx = Vertx.vertx();
     this.options = options;
     registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
   }
@@ -50,6 +49,7 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
   @Override
   public void init() {
     if (options.isStartEmbeddedServer()) {
+      this.vertx = Vertx.vertx();
       // Start dedicated server
       HttpServerOptions serverOptions = options.getEmbeddedServerOptions();
       if (serverOptions == null) {
@@ -69,6 +69,8 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
 
   @Override
   public void close() {
-    vertx.close();
+    if (this.vertx != null) {
+      vertx.close();
+    }
   }
 }
