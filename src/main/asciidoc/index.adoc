@@ -250,46 +250,61 @@ For instance, to instrument the JVM:
 
 _From link:http://micrometer.io/docs/ref/jvm[Micrometer documentation]._
 
-=== Label matchers
+=== Labels and matchers
 
-The labels (aka tags, or fields...) can be configured through the use of matchers. Here is an example
-to whitelist HTTP server metrics per host name and port:
+Vert.x Micrometer Metrics defines a set of labels (aka tags or fields) that are used to provide dimensionality
+to a metric. For instance, metrics related to event bus messages have an _address_ label, which allows then to query
+timeseries for a specific event bus address, or compare timeseries per address, or perform any kind of aggregation
+that the query API allows.
+
+While setting up metrics options, you can specify which labels you want to enable or not:
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#setupWithLabelsEnabled()}
+----
+
+The full list of labels is detailed here: {@link io.vertx.micrometer.Label}.
+
+Enabling labels may result in a high cardinality in values, which can cause troubles on the metrics backend and affect performances.
+So it must be used with care.
+In general, it is fine to enable labels when the set of possible values is bounded.
+
+For that reason, labels enabled by default are restricted to the ones with known bounded values.
+
+It is possible to interact with labels further than just enabling/disabling. There are two ways for that:
+
+==== Using Matchers
+
+{@link io.vertx.micrometer.Match}  objects can be used to filter or rename some label value
+by matching it with either an exact string or a regular expression (the former being more efficient).
+
+Here is an example to restrict HTTP server metrics to those with label _local=localhost:8080_ only:
 
 [source,$lang]
 ----
 {@link examples.MicrometerMetricsExamples#setupWithMatcherForFiltering()}
 ----
 
-Matching rules can work on exact strings or regular expressions (the former is more performant).
-When a pattern matches, the value can also be renamed with an alias. By playing with regex and aliases it is possible
-to ignore a label partitioning:
+When an _alias_ is specified in the Match, it will be used to rename value instead of filtering.
 
-[source,$lang]
-----
-{@link examples.MicrometerMetricsExamples#setupWithMatcherForIgnoring()}
-----
+Matchers are especially useful to control labelling through configuration as they are set via
+{@link io.vertx.micrometer.MicrometerMetricsOptions}.
 
-Here, any value for the label "remote" will be replaced with "_".
+==== Using Micrometer's MeterFilter
 
-Sometimes, having some labels results in a high cardinality of label values, which can cause troubles / bad
-performances on the metrics backend.
-This is often the case with the _remote_ label on server metrics.
-For that reason, there are rules in the default metrics options to ignore it (one for HTTP server, one for Net server metrics).
-It is still possible to stop ignoring it by clearing the label matchers:
+Micrometer's link:http://micrometer.io/docs/concepts#_meter_filters[MeterFilter API] can be accessed directly in order to define rules on labels.
+Compared to Matchers, it offers more features in manipulating the labels, but cannot be defined from configuration.
+So both have their advantages.
 
-[source,$lang]
-----
-{@link examples.MicrometerMetricsExamples#setupWithMatcherReset()}
-----
-
-Label matching uses Micrometer's `MeterFilter` under the hood. This API can be accessed directly as well:
+Here is an example to replace the actual `path` label of HTTP requests with a generic form using regex:
 
 [source,$lang]
 ----
 {@link examples.MicrometerMetricsExamples#useMicrometerFilters()}
 ----
 
-_See also link:http://micrometer.io/docs/concepts#_meter_filters[other examples]._
+Note that Matchers use MeterFilters under the hood.
 
 === Snapshots
 

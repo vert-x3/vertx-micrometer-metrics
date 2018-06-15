@@ -18,6 +18,7 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Verticle;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Gauges;
 
@@ -31,7 +32,7 @@ class VertxVerticleMetrics extends AbstractMetrics {
 
   VertxVerticleMetrics(MeterRegistry registry) {
     super(registry, MetricsDomain.VERTICLES);
-    deployed = longGauges("deployed", "Number of verticle instances deployed", Label.CLASS);
+    deployed = longGauges("deployed", "Number of verticle instances deployed", Label.CLASS_NAME);
   }
 
   void verticleDeployed(Verticle verticle) {

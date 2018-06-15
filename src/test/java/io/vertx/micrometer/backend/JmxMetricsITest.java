@@ -21,6 +21,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxJmxMetricsOptions;
 import org.junit.After;
@@ -49,6 +50,7 @@ public class JmxMetricsITest {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setRegistryName(REGISTRY_NAME)
+        .addLabels(Label.EB_ADDRESS)
         .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)
           .setDomain("my-metrics")
           .setStep(1))

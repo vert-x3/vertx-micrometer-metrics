@@ -9,7 +9,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.assertj.core.util.DoubleComparator;
 import org.junit.After;
 import org.junit.Test;
@@ -39,6 +38,7 @@ public class VertxEventBusMetricsTest {
   public void shouldReportEventbusMetrics(TestContext context) throws InterruptedException {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .addLabels(Label.EB_ADDRESS, Label.EB_FAILURE, Label.CLASS_NAME)
       .setEnabled(true)))
       .exceptionHandler(t -> {
         if (t.getMessage() == null || !t.getMessage().contains("expected failure")) {

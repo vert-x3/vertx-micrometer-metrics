@@ -19,6 +19,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.core.spi.metrics.TCPMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
@@ -44,7 +45,7 @@ class VertxNetServerMetrics extends AbstractMetrics {
     connections = longGauges("connections", "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
     bytesReceived = summaries("bytesReceived", "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
     bytesSent = summaries("bytesSent", "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
-    errorCount = counters("errors", "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS);
+    errorCount = counters("errors", "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);
   }
 
   TCPMetrics forAddress(SocketAddress localAddress) {

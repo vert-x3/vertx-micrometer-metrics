@@ -18,7 +18,7 @@ package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.micrometer.impl.Label;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
 /**

@@ -19,13 +19,14 @@ package io.vertx.micrometer.backends;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
-import io.vertx.core.Vertx;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxInfluxDbOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +67,7 @@ public final class BackendRegistries {
         // No backend setup, use global registry
         reg = NoopBackendRegistry.INSTANCE;
       }
-      registerMatchers(reg.getMeterRegistry(), options.getLabelMatchs());
+      registerMatchers(reg.getMeterRegistry(), options.getLabels(), options.getLabelMatchs());
       return reg;
     });
   }
@@ -106,7 +107,11 @@ public final class BackendRegistries {
     }
   }
 
-  public static void registerMatchers(MeterRegistry registry, List<Match> matches) {
+  public static void registerMatchers(MeterRegistry registry, EnumSet<Label> enabledLabels, List<Match> matches) {
+    String[] ignored = EnumSet.complementOf(enabledLabels).stream()
+      .map(Label::toString)
+      .toArray(String[]::new);
+    registry.config().meterFilter(MeterFilter.ignoreTags(ignored));
     matches.forEach(m -> {
       switch (m.getType()) {
         case EQUALS:

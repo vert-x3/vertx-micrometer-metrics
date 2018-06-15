@@ -22,6 +22,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
@@ -41,10 +42,10 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
 
   VertxHttpServerMetrics(MeterRegistry registry) {
     super(registry, MetricsDomain.HTTP_SERVER);
-    requests = longGauges("requests", "Number of requests being processed", Label.LOCAL, Label.REMOTE, Label.PATH);
-    requestCount = counters("requestCount", "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.PATH, Label.METHOD, Label.CODE);
-    requestResetCount = counters("requestResetCount", "Number of requests reset", Label.LOCAL, Label.REMOTE, Label.PATH);
-    processingTime = timers("responseTime", "Request processing time", Label.LOCAL, Label.REMOTE, Label.PATH);
+    requests = longGauges("requests", "Number of requests being processed", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH);
+    requestCount = counters("requestCount", "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    requestResetCount = counters("requestResetCount", "Number of requests reset", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH);
+    processingTime = timers("responseTime", "Request processing time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH);
     wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 

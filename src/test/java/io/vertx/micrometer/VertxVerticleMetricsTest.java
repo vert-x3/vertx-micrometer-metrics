@@ -7,7 +7,6 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +38,7 @@ public class VertxVerticleMetricsTest {
 
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .addLabels(Label.CLASS_NAME)
       .setEnabled(true)))
       .exceptionHandler(context.exceptionHandler());
 

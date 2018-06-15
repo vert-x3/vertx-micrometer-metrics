@@ -3,13 +3,14 @@ package io.vertx.micrometer.impl.meters;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.vertx.micrometer.impl.Label;
-import io.vertx.micrometer.backends.BackendRegistries;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MatchType;
+import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,15 +20,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class GaugesTest {
 
+  private static final EnumSet<Label> ALL_LABELS = EnumSet.allOf(Label.class);
+
   @Test
   public void shouldAliasGaugeLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue("addr1")
       .setAlias("1")));
-    Gauges<LongAdder> gauges = new Gauges<>("my_gauge", "", LongAdder::new, LongAdder::doubleValue, registry, Label.ADDRESS);
+    Gauges<LongAdder> gauges = new Gauges<>("my_gauge", "", LongAdder::new, LongAdder::doubleValue, registry, Label.EB_ADDRESS);
     gauges.get("addr1").increment();
     gauges.get("addr1").increment();
     gauges.get("addr2").increment();
@@ -43,12 +46,12 @@ public class GaugesTest {
   @Test
   public void shouldIgnoreGaugeLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue(".*")
       .setAlias("_")));
-    Gauges<LongAdder> gauges = new Gauges<>("my_gauge", "", LongAdder::new, LongAdder::doubleValue, registry, Label.ADDRESS);
+    Gauges<LongAdder> gauges = new Gauges<>("my_gauge", "", LongAdder::new, LongAdder::doubleValue, registry, Label.EB_ADDRESS);
     gauges.get("addr1").increment();
     gauges.get("addr1").increment();
     gauges.get("addr2").increment();

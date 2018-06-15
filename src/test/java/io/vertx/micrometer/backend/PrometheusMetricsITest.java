@@ -25,6 +25,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
@@ -54,6 +55,7 @@ public class PrometheusMetricsITest {
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
           .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+        .addLabels(Label.LOCAL, Label.HTTP_PATH, Label.REMOTE)
         .setEnabled(true)));
 
     Async async = context.async();
@@ -103,6 +105,7 @@ public class PrometheusMetricsITest {
           .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
         .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
+        .addLabels(Label.LOCAL, Label.REMOTE)
         .setEnabled(true)));
 
     Async async = context.async();
@@ -122,6 +125,7 @@ public class PrometheusMetricsITest {
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
           .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+        .addLabels(Label.EB_ADDRESS)
         .setEnabled(true)));
 
     // Send something on the eventbus and wait til it's received

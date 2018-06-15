@@ -3,13 +3,14 @@ package io.vertx.micrometer.impl.meters;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.vertx.micrometer.impl.Label;
-import io.vertx.micrometer.backends.BackendRegistries;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MatchType;
+import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.EnumSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,15 +19,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class SummariesTest {
 
+  private static final EnumSet<Label> ALL_LABELS = EnumSet.allOf(Label.class);
+
   @Test
   public void shouldAliasSummaryLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue("addr1")
       .setAlias("1")));
-    Summaries summaries = new Summaries("my_summary", "", registry, Label.ADDRESS);
+    Summaries summaries = new Summaries("my_summary", "", registry, Label.EB_ADDRESS);
     summaries.get("addr1").record(5);
     summaries.get("addr1").record(8);
     summaries.get("addr2").record(10);
@@ -44,12 +47,12 @@ public class SummariesTest {
   @Test
   public void shouldIgnoreSummaryLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue(".*")
       .setAlias("_")));
-    Summaries summaries = new Summaries("my_summary", "", registry, Label.ADDRESS);
+    Summaries summaries = new Summaries("my_summary", "", registry, Label.EB_ADDRESS);
     summaries.get("addr1").record(5);
     summaries.get("addr1").record(8);
     summaries.get("addr2").record(10);

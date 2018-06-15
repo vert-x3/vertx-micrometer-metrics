@@ -9,6 +9,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsService;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -40,6 +42,7 @@ public class MetricsServiceImplTest {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .setRegistryName(registryName)
+      .setLabels(EnumSet.complementOf(EnumSet.of(Label.LOCAL, Label.REMOTE)))
       .setEnabled(true)))
       .exceptionHandler(ctx.exceptionHandler());
 
