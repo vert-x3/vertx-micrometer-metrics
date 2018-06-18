@@ -19,6 +19,7 @@ package io.vertx.micrometer;
 import io.vertx.codegen.annotations.VertxGen;
 
 /**
+ * List of labels used in various Vert.x metrics. Labels that may not have bounded values are disabled by default.
  * @author Joel Takvorian
  */
 @VertxGen
@@ -45,7 +46,7 @@ public enum Label {
   HTTP_CODE("code"),
   /**
    * Class name. When used in error counters (in net, http, datagram and eventbus domains) it relates to an exception that occurred.
-   * When used in 'verticle' domain, it relates to the verticle class name.
+   * When used in verticle domain, it relates to the verticle class name.
    */
   CLASS_NAME("class"),
   /**
@@ -53,7 +54,7 @@ public enum Label {
    */
   EB_ADDRESS("address"),
   /**
-   * Event bus "side" of the metric, it can be either "local" or "remote"
+   * Event bus side of the metric, it can be either "local" or "remote"
    */
   EB_SIDE("side"),
   /**
@@ -61,7 +62,7 @@ public enum Label {
    */
   EB_FAILURE("failure"),
   /**
-   * Pool type, such as _worker_ or _datasource_ (used in pools domain)
+   * Pool type, such as "worker" or "datasource" (used in pools domain)
    */
   POOL_TYPE("pool_type"),
   /**

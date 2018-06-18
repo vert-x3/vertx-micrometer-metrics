@@ -204,7 +204,7 @@ public class MicrometerMetricsExamples {
           return "/foo/bar/:id";
         }
         return actualPath;
-      }));
+      }, ""));
   }
 
   public void createFullSnapshot() {
