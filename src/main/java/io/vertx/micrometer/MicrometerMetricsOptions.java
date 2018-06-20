@@ -51,8 +51,8 @@ public class MicrometerMetricsOptions extends MetricsOptions {
 
   private Set<MetricsDomain> disabledMetricsCategories;
   private String registryName;
-  private EnumSet<Label> labels;
-  private List<Match> labelMatchs;
+  private Set<Label> labels;
+  private List<Match> labelMatches;
   private MeterRegistry micrometerRegistry;
   private VertxInfluxDbOptions influxDbOptions;
   private VertxPrometheusOptions prometheusOptions;
@@ -65,7 +65,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     disabledMetricsCategories = EnumSet.noneOf(MetricsDomain.class);
     registryName = DEFAULT_REGISTRY_NAME;
     labels = EnumSet.copyOf(DEFAULT_LABELS);
-    labelMatchs = new ArrayList<>();
+    labelMatches = new ArrayList<>();
   }
 
   /**
@@ -76,7 +76,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     disabledMetricsCategories = other.disabledMetricsCategories != null ? EnumSet.copyOf(other.disabledMetricsCategories) : EnumSet.noneOf(MetricsDomain.class);
     registryName = other.registryName;
     labels = other.labels != null ? EnumSet.copyOf(other.labels) : EnumSet.noneOf(Label.class);
-    labelMatchs = new ArrayList<>(other.labelMatchs);
+    labelMatches = new ArrayList<>(other.labelMatches);
     micrometerRegistry = other.micrometerRegistry;
     if (other.influxDbOptions != null) {
       influxDbOptions = new VertxInfluxDbOptions(other.influxDbOptions);
@@ -95,13 +95,13 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   public MicrometerMetricsOptions(JsonObject json) {
     this();
     MicrometerMetricsOptionsConverter.fromJson(json, this);
-    labelMatchs = loadLabelMatches(json);
+    labelMatches = loadLabelMatches(json);
   }
 
   private List<Match> loadLabelMatches(JsonObject json) {
     List<Match> list = new ArrayList<>();
 
-    JsonArray monitored = json.getJsonArray("labelMatchs", new JsonArray());
+    JsonArray monitored = json.getJsonArray("labelMatches", new JsonArray());
     monitored.forEach(object -> {
       if (object instanceof JsonObject) list.add(new Match((JsonObject) object));
     });
@@ -182,7 +182,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   /**
    * @return the enabled labels.
    */
-  public EnumSet<Label> getLabels() {
+  public Set<Label> getLabels() {
     return labels;
   }
 
@@ -192,7 +192,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    * @param labels the set of enabled labels - this set will replace any previously enabled labels, including the default ones
    * @return a reference to this, so that the API can be used fluently
    */
-  public MicrometerMetricsOptions setLabels(EnumSet<Label> labels) {
+  public MicrometerMetricsOptions setLabels(Set<Label> labels) {
     this.labels = labels;
     return this;
   }
@@ -215,8 +215,8 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   /**
    * @return the list of label matching rules
    */
-  public List<Match> getLabelMatchs() {
-    return labelMatchs;
+  public List<Match> getLabelMatches() {
+    return labelMatches;
   }
 
   /**
@@ -225,8 +225,8 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    * @param matches the new list of rules
    * @return a reference to this, so the API can be used fluently
    */
-  public MicrometerMetricsOptions setLabelMatchs(List<Match> matches) {
-    labelMatchs = new ArrayList<>(matches);
+  public MicrometerMetricsOptions setLabelMatches(List<Match> matches) {
+    labelMatches = new ArrayList<>(matches);
     return this;
   }
 
@@ -237,7 +237,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MicrometerMetricsOptions addLabelMatch(Match match) {
-    labelMatchs.add(match);
+    labelMatches.add(match);
     return this;
   }
 

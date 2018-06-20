@@ -29,6 +29,7 @@ import io.vertx.micrometer.VertxPrometheusOptions;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -67,7 +68,7 @@ public final class BackendRegistries {
         // No backend setup, use global registry
         reg = NoopBackendRegistry.INSTANCE;
       }
-      registerMatchers(reg.getMeterRegistry(), options.getLabels(), options.getLabelMatchs());
+      registerMatchers(reg.getMeterRegistry(), options.getLabels(), options.getLabelMatches());
       return reg;
     });
   }
@@ -107,8 +108,8 @@ public final class BackendRegistries {
     }
   }
 
-  public static void registerMatchers(MeterRegistry registry, EnumSet<Label> enabledLabels, List<Match> matches) {
-    String[] ignored = EnumSet.complementOf(enabledLabels).stream()
+  public static void registerMatchers(MeterRegistry registry, Set<Label> enabledLabels, List<Match> matches) {
+    String[] ignored = EnumSet.complementOf(EnumSet.copyOf(enabledLabels)).stream()
       .map(Label::toString)
       .toArray(String[]::new);
     registry.config().meterFilter(MeterFilter.ignoreTags(ignored));

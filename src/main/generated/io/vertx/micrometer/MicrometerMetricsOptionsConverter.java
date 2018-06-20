@@ -37,14 +37,32 @@ public class MicrometerMetricsOptionsConverter {
             obj.setJmxMetricsOptions(new io.vertx.micrometer.VertxJmxMetricsOptions((JsonObject)member.getValue()));
           }
           break;
-        case "labelMatchs":
+        case "labelMatches":
           if (member.getValue() instanceof JsonArray) {
             java.util.ArrayList<io.vertx.micrometer.Match> list =  new java.util.ArrayList<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
                 list.add(new io.vertx.micrometer.Match((JsonObject)item));
             });
-            obj.setLabelMatchs(list);
+            obj.setLabelMatches(list);
+          }
+          break;
+        case "labelMatchs":
+          if (member.getValue() instanceof JsonArray) {
+            ((Iterable<Object>)member.getValue()).forEach( item -> {
+              if (item instanceof JsonObject)
+                obj.addLabelMatch(new io.vertx.micrometer.Match((JsonObject)item));
+            });
+          }
+          break;
+        case "labels":
+          if (member.getValue() instanceof JsonArray) {
+            java.util.LinkedHashSet<io.vertx.micrometer.Label> list =  new java.util.LinkedHashSet<>();
+            ((Iterable<Object>)member.getValue()).forEach( item -> {
+              if (item instanceof String)
+                list.add(io.vertx.micrometer.Label.valueOf((String)item));
+            });
+            obj.setLabels(list);
           }
           break;
         case "prometheusOptions":
@@ -72,6 +90,11 @@ public class MicrometerMetricsOptionsConverter {
       json.put("disabledMetricsCategories", array);
     }
     json.put("enabled", obj.isEnabled());
+    if (obj.getLabels() != null) {
+      JsonArray array = new JsonArray();
+      obj.getLabels().forEach(item -> array.add(item.name()));
+      json.put("labels", array);
+    }
     if (obj.getRegistryName() != null) {
       json.put("registryName", obj.getRegistryName());
     }
