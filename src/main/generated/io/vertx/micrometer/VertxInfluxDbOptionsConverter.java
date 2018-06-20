@@ -1,19 +1,3 @@
-/*
- * Copyright (c) 2014 Red Hat, Inc. and others
- *
- * Red Hat licenses this file to you under the Apache License, version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at:
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.vertx.micrometer;
 
 import io.vertx.core.json.JsonObject;
@@ -21,51 +5,82 @@ import io.vertx.core.json.JsonArray;
 
 /**
  * Converter for {@link io.vertx.micrometer.VertxInfluxDbOptions}.
- *
- * NOTE: This class has been automatically generated from the {@link io.vertx.micrometer.VertxInfluxDbOptions} original class using Vert.x codegen.
+ * NOTE: This class has been automatically generated from the {@link "io.vertx.micrometer.VertxInfluxDbOptions} original class using Vert.x codegen.
  */
 public class VertxInfluxDbOptionsConverter {
 
-  public static void fromJson(JsonObject json, VertxInfluxDbOptions obj) {
-    if (json.getValue("batchSize") instanceof Number) {
-      obj.setBatchSize(((Number)json.getValue("batchSize")).intValue());
-    }
-    if (json.getValue("compressed") instanceof Boolean) {
-      obj.setCompressed((Boolean)json.getValue("compressed"));
-    }
-    if (json.getValue("connectTimeout") instanceof Number) {
-      obj.setConnectTimeout(((Number)json.getValue("connectTimeout")).intValue());
-    }
-    if (json.getValue("db") instanceof String) {
-      obj.setDb((String)json.getValue("db"));
-    }
-    if (json.getValue("enabled") instanceof Boolean) {
-      obj.setEnabled((Boolean)json.getValue("enabled"));
-    }
-    if (json.getValue("numThreads") instanceof Number) {
-      obj.setNumThreads(((Number)json.getValue("numThreads")).intValue());
-    }
-    if (json.getValue("password") instanceof String) {
-      obj.setPassword((String)json.getValue("password"));
-    }
-    if (json.getValue("readTimeout") instanceof Number) {
-      obj.setReadTimeout(((Number)json.getValue("readTimeout")).intValue());
-    }
-    if (json.getValue("retentionPolicy") instanceof String) {
-      obj.setRetentionPolicy((String)json.getValue("retentionPolicy"));
-    }
-    if (json.getValue("step") instanceof Number) {
-      obj.setStep(((Number)json.getValue("step")).intValue());
-    }
-    if (json.getValue("uri") instanceof String) {
-      obj.setUri((String)json.getValue("uri"));
-    }
-    if (json.getValue("userName") instanceof String) {
-      obj.setUserName((String)json.getValue("userName"));
+  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, VertxInfluxDbOptions obj) {
+    for (java.util.Map.Entry<String, Object> member : json) {
+      switch (member.getKey()) {
+        case "batchSize":
+          if (member.getValue() instanceof Number) {
+            obj.setBatchSize(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "compressed":
+          if (member.getValue() instanceof Boolean) {
+            obj.setCompressed((Boolean)member.getValue());
+          }
+          break;
+        case "connectTimeout":
+          if (member.getValue() instanceof Number) {
+            obj.setConnectTimeout(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "db":
+          if (member.getValue() instanceof String) {
+            obj.setDb((String)member.getValue());
+          }
+          break;
+        case "enabled":
+          if (member.getValue() instanceof Boolean) {
+            obj.setEnabled((Boolean)member.getValue());
+          }
+          break;
+        case "numThreads":
+          if (member.getValue() instanceof Number) {
+            obj.setNumThreads(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "password":
+          if (member.getValue() instanceof String) {
+            obj.setPassword((String)member.getValue());
+          }
+          break;
+        case "readTimeout":
+          if (member.getValue() instanceof Number) {
+            obj.setReadTimeout(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "retentionPolicy":
+          if (member.getValue() instanceof String) {
+            obj.setRetentionPolicy((String)member.getValue());
+          }
+          break;
+        case "step":
+          if (member.getValue() instanceof Number) {
+            obj.setStep(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "uri":
+          if (member.getValue() instanceof String) {
+            obj.setUri((String)member.getValue());
+          }
+          break;
+        case "userName":
+          if (member.getValue() instanceof String) {
+            obj.setUserName((String)member.getValue());
+          }
+          break;
+      }
     }
   }
 
   public static void toJson(VertxInfluxDbOptions obj, JsonObject json) {
+    toJson(obj, json.getMap());
+  }
+
+  public static void toJson(VertxInfluxDbOptions obj, java.util.Map<String, Object> json) {
     json.put("batchSize", obj.getBatchSize());
     json.put("compressed", obj.isCompressed());
     json.put("connectTimeout", obj.getConnectTimeout());

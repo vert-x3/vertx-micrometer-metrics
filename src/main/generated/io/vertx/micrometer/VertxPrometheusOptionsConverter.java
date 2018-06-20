@@ -1,19 +1,3 @@
-/*
- * Copyright (c) 2014 Red Hat, Inc. and others
- *
- * Red Hat licenses this file to you under the Apache License, version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at:
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.vertx.micrometer;
 
 import io.vertx.core.json.JsonObject;
@@ -21,27 +5,42 @@ import io.vertx.core.json.JsonArray;
 
 /**
  * Converter for {@link io.vertx.micrometer.VertxPrometheusOptions}.
- *
- * NOTE: This class has been automatically generated from the {@link io.vertx.micrometer.VertxPrometheusOptions} original class using Vert.x codegen.
+ * NOTE: This class has been automatically generated from the {@link "io.vertx.micrometer.VertxPrometheusOptions} original class using Vert.x codegen.
  */
 public class VertxPrometheusOptionsConverter {
 
-  public static void fromJson(JsonObject json, VertxPrometheusOptions obj) {
-    if (json.getValue("embeddedServerEndpoint") instanceof String) {
-      obj.setEmbeddedServerEndpoint((String)json.getValue("embeddedServerEndpoint"));
-    }
-    if (json.getValue("embeddedServerOptions") instanceof JsonObject) {
-      obj.setEmbeddedServerOptions(new io.vertx.core.http.HttpServerOptions((JsonObject)json.getValue("embeddedServerOptions")));
-    }
-    if (json.getValue("enabled") instanceof Boolean) {
-      obj.setEnabled((Boolean)json.getValue("enabled"));
-    }
-    if (json.getValue("startEmbeddedServer") instanceof Boolean) {
-      obj.setStartEmbeddedServer((Boolean)json.getValue("startEmbeddedServer"));
+  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, VertxPrometheusOptions obj) {
+    for (java.util.Map.Entry<String, Object> member : json) {
+      switch (member.getKey()) {
+        case "embeddedServerEndpoint":
+          if (member.getValue() instanceof String) {
+            obj.setEmbeddedServerEndpoint((String)member.getValue());
+          }
+          break;
+        case "embeddedServerOptions":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setEmbeddedServerOptions(new io.vertx.core.http.HttpServerOptions((JsonObject)member.getValue()));
+          }
+          break;
+        case "enabled":
+          if (member.getValue() instanceof Boolean) {
+            obj.setEnabled((Boolean)member.getValue());
+          }
+          break;
+        case "startEmbeddedServer":
+          if (member.getValue() instanceof Boolean) {
+            obj.setStartEmbeddedServer((Boolean)member.getValue());
+          }
+          break;
+      }
     }
   }
 
   public static void toJson(VertxPrometheusOptions obj, JsonObject json) {
+    toJson(obj, json.getMap());
+  }
+
+  public static void toJson(VertxPrometheusOptions obj, java.util.Map<String, Object> json) {
     if (obj.getEmbeddedServerEndpoint() != null) {
       json.put("embeddedServerEndpoint", obj.getEmbeddedServerEndpoint());
     }
