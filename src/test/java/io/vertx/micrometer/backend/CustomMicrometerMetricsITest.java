@@ -59,7 +59,7 @@ public class CustomMicrometerMetricsITest {
     InfluxDbTestHelper.simulateInfluxServer(vertxForSimulatedServer, context, 8087, body -> {
       try {
         context.verify(w -> assertThat(body)
-          .contains("vertx_eventbus_handlers,address=test-eb,metric_type=gauge value=1"));
+          .contains("vertx.eventbus.handlers,address=test-eb,metric_type=gauge value=1"));
       } finally {
         asyncInflux.complete();
       }
