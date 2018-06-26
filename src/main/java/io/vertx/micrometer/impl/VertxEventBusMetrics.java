@@ -18,6 +18,7 @@ package io.vertx.micrometer.impl;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
@@ -44,17 +45,17 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   VertxEventBusMetrics(MeterRegistry registry) {
     super(registry, MetricsDomain.EVENT_BUS);
-    handlers = longGauges("handlers", "Number of event bus handlers in use", Label.ADDRESS);
-    pending = longGauges("pending", "Number of messages not processed yet", Label.ADDRESS, Label.SIDE);
-    published = counters("published", "Number of messages published (publish / subscribe)", Label.ADDRESS, Label.SIDE);
-    sent = counters("sent", "Number of messages sent (point-to-point)", Label.ADDRESS, Label.SIDE);
-    received = counters("received", "Number of messages received", Label.ADDRESS, Label.SIDE);
-    delivered = counters("delivered", "Number of messages delivered to handlers", Label.ADDRESS, Label.SIDE);
-    errorCount = counters("errors", "Number of errors", Label.ADDRESS, Label.CLASS);
-    replyFailures = counters("replyFailures", "Number of message reply failures", Label.ADDRESS, Label.FAILURE);
-    processTime = timers("processingTime", "Processing time", Label.ADDRESS);
-    bytesRead = summaries("bytesRead", "Number of bytes received while reading messages from event bus cluster peers", Label.ADDRESS);
-    bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Label.ADDRESS);
+    handlers = longGauges("handlers", "Number of event bus handlers in use", Label.EB_ADDRESS);
+    pending = longGauges("pending", "Number of messages not processed yet", Label.EB_ADDRESS, Label.EB_SIDE);
+    published = counters("published", "Number of messages published (publish / subscribe)", Label.EB_ADDRESS, Label.EB_SIDE);
+    sent = counters("sent", "Number of messages sent (point-to-point)", Label.EB_ADDRESS, Label.EB_SIDE);
+    received = counters("received", "Number of messages received", Label.EB_ADDRESS, Label.EB_SIDE);
+    delivered = counters("delivered", "Number of messages delivered to handlers", Label.EB_ADDRESS, Label.EB_SIDE);
+    errorCount = counters("errors", "Number of errors", Label.EB_ADDRESS, Label.CLASS_NAME);
+    replyFailures = counters("replyFailures", "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
+    processTime = timers("processingTime", "Processing time", Label.EB_ADDRESS);
+    bytesRead = summaries("bytesRead", "Number of bytes received while reading messages from event bus cluster peers", Label.EB_ADDRESS);
+    bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
   }
 
   @Override

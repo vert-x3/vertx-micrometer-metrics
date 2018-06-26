@@ -26,6 +26,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import org.junit.After;
@@ -92,6 +93,7 @@ public class CustomMicrometerMetricsITest {
         .setRegistryName(REGITRY_NAME)
         .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
         .addDisabledMetricsCategory(MetricsDomain.NAMED_POOLS)
+        .addLabels(Label.EB_ADDRESS)
         .setEnabled(true)));
 
     // Send something on the eventbus and wait til it's received

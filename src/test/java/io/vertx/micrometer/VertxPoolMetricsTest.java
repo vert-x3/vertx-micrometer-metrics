@@ -40,6 +40,7 @@ public class VertxPoolMetricsTest {
 
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .addLabels(Label.POOL_NAME)
       .setEnabled(true)))
       .exceptionHandler(context.exceptionHandler());
 

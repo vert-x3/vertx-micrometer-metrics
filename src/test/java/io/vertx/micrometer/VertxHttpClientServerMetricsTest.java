@@ -1,5 +1,6 @@
 package io.vertx.micrometer;
 
+import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -17,7 +18,6 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
 import static io.vertx.micrometer.RegistryInspector.*;
@@ -37,7 +37,6 @@ public class VertxHttpClientServerMetricsTest {
 
   private final int concurrentClients = ForkJoinPool.commonPool().getParallelism();
   private final String registryName = UUID.randomUUID().toString();
-  private final List<HttpClient> createdClients = new CopyOnWriteArrayList<>();
   private HttpServer httpServer;
   private Vertx vertx;
 
@@ -46,8 +45,13 @@ public class VertxHttpClientServerMetricsTest {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .setRegistryName(registryName)
+      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH)
       .setEnabled(true)))
       .exceptionHandler(ctx.exceptionHandler());
+
+    // Filter out remote labels
+    BackendRegistries.getNow(registryName).config().meterFilter(
+      MeterFilter.replaceTagValues(Label.REMOTE.toString(), s -> "_", "127.0.0.1:9195"));
 
     // Setup server
     Async serverReady = ctx.async();
@@ -137,7 +141,6 @@ public class VertxHttpClientServerMetricsTest {
     for (int i = 0; i < concurrentClients; i++) {
       ForkJoinPool.commonPool().execute(() -> {
         HttpClient httpClient = vertx.createHttpClient();
-        createdClients.add(httpClient);
         httpRequest(httpClient, ctx);
         if (ws) {
           wsRequest(httpClient, ctx);

@@ -18,6 +18,7 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Tag;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.micrometer.Label;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +45,7 @@ public final class Labels {
     }
     List<Tag> tags = new ArrayList<>(keys.length);
     for (int i = 0; i < keys.length; i++) {
-      String lowKey = keys[i].toString().toLowerCase();
+      String lowKey = keys[i].toString();
       tags.add(Tag.of(lowKey, values[i]));
     }
     return tags;

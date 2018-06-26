@@ -20,6 +20,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.core.spi.metrics.DatagramSocketMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Summaries;
@@ -38,7 +39,7 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
     super(registry, MetricsDomain.DATAGRAM_SOCKET);
     bytesReceived = summaries("bytesReceived", "Total number of datagram bytes received", Label.LOCAL);
     bytesSent = summaries("bytesSent", "Total number of datagram bytes sent");
-    errorCount = counters("errors", "Total number of datagram errors", Label.CLASS);
+    errorCount = counters("errors", "Total number of datagram errors", Label.CLASS_NAME);
   }
 
   @Override

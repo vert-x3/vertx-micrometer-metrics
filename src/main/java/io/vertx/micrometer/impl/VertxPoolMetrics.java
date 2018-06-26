@@ -18,6 +18,7 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.spi.metrics.PoolMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;

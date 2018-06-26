@@ -22,6 +22,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxInfluxDbOptions;
 import org.junit.After;
@@ -63,6 +64,7 @@ public class InfluxDbReporterITest {
           .setDb("mydb")
           .setEnabled(true))
         .setRegistryName(REGITRY_NAME)
+        .addLabels(Label.EB_ADDRESS)
         .setEnabled(true)));
 
     // Send something on the eventbus and wait til it's received

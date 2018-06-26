@@ -35,8 +35,8 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
-import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsService;
 import io.vertx.micrometer.MicrometerMetricsOptions;
@@ -45,7 +45,9 @@ import io.vertx.micrometer.VertxJmxMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 
-import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Joel Takvorian
@@ -183,32 +185,26 @@ public class MicrometerMetricsExamples {
         .setEnabled(true)));
   }
 
-  public void setupWithMatcherReset() {
+  public void setupWithLabelsEnabled() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-        .setLabelMatchs(new ArrayList<>())
-        .setEnabled(true)));
-  }
-
-  public void setupWithMatcherForIgnoring() {
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-        .addLabelMatch(new Match()
-          // Set all values for "remote" label to "_", for all domains. In other words, it's like disabling the "remote" label.
-          .setLabel("remote")
-          .setType(MatchType.REGEX)
-          .setValue(".*")
-          .setAlias("_"))
+        .setLabels(EnumSet.of(Label.REMOTE, Label.LOCAL, Label.HTTP_CODE, Label.HTTP_PATH))
         .setEnabled(true)));
   }
 
   public void useMicrometerFilters() {
     MeterRegistry registry = BackendRegistries.getDefaultNow();
+    Pattern pattern = Pattern.compile("/foo/bar/.*");
 
-    registry.config().meterFilter(MeterFilter.ignoreTags("address", "remote"))
-      .meterFilter(MeterFilter.renameTag("vertx.verticle", "deployed", "instances"));
+    registry.config().meterFilter(
+      MeterFilter.replaceTagValues(Label.HTTP_PATH.toString(), actualPath -> {
+        Matcher m = pattern.matcher(actualPath);
+        if (m.matches()) {
+          return "/foo/bar/:id";
+        }
+        return actualPath;
+      }, ""));
   }
 
   public void createFullSnapshot() {

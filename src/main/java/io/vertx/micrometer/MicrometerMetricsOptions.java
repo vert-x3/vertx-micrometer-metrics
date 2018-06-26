@@ -47,31 +47,12 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   /**
    * Default label match for public http server: exclude remote label
    */
-  public static final Match DEFAULT_HTTP_SERVER_MATCH = new Match()
-    .setDomain(MetricsDomain.HTTP_SERVER)
-    .setLabel("remote")
-    .setType(MatchType.REGEX)
-    .setValue(".*")
-    .setAlias("_");
-
-  /**
-   * Default label match for public net server: exclude remote label
-   */
-  public static final Match DEFAULT_NET_SERVER_MATCH = new Match()
-    .setDomain(MetricsDomain.NET_SERVER)
-    .setLabel("remote")
-    .setType(MatchType.REGEX)
-    .setValue(".*")
-    .setAlias("_");
-
-  /**
-   * The default label matches: empty by default
-   */
-  public static final List<Match> DEFAULT_LABEL_MATCHES = Arrays.asList(DEFAULT_HTTP_SERVER_MATCH, DEFAULT_NET_SERVER_MATCH);
+  public static final List<Label> DEFAULT_LABELS = Arrays.asList(Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_TYPE, Label.EB_SIDE);
 
   private Set<MetricsDomain> disabledMetricsCategories;
   private String registryName;
-  private List<Match> labelMatchs;
+  private Set<Label> labels;
+  private List<Match> labelMatches;
   private MeterRegistry micrometerRegistry;
   private VertxInfluxDbOptions influxDbOptions;
   private VertxPrometheusOptions prometheusOptions;
@@ -83,7 +64,8 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   public MicrometerMetricsOptions() {
     disabledMetricsCategories = EnumSet.noneOf(MetricsDomain.class);
     registryName = DEFAULT_REGISTRY_NAME;
-    labelMatchs = new ArrayList<>(DEFAULT_LABEL_MATCHES);
+    labels = EnumSet.copyOf(DEFAULT_LABELS);
+    labelMatches = new ArrayList<>();
   }
 
   /**
@@ -93,7 +75,8 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     super(other);
     disabledMetricsCategories = other.disabledMetricsCategories != null ? EnumSet.copyOf(other.disabledMetricsCategories) : EnumSet.noneOf(MetricsDomain.class);
     registryName = other.registryName;
-    labelMatchs = new ArrayList<>(other.labelMatchs);
+    labels = other.labels != null ? EnumSet.copyOf(other.labels) : EnumSet.noneOf(Label.class);
+    labelMatches = new ArrayList<>(other.labelMatches);
     micrometerRegistry = other.micrometerRegistry;
     if (other.influxDbOptions != null) {
       influxDbOptions = new VertxInfluxDbOptions(other.influxDbOptions);
@@ -112,13 +95,13 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   public MicrometerMetricsOptions(JsonObject json) {
     this();
     MicrometerMetricsOptionsConverter.fromJson(json, this);
-    labelMatchs = loadLabelMatches(json);
+    labelMatches = loadLabelMatches(json);
   }
 
   private List<Match> loadLabelMatches(JsonObject json) {
     List<Match> list = new ArrayList<>();
 
-    JsonArray monitored = json.getJsonArray("labelMatchs", new JsonArray());
+    JsonArray monitored = json.getJsonArray("labelMatches", new JsonArray());
     monitored.forEach(object -> {
       if (object instanceof JsonObject) list.add(new Match((JsonObject) object));
     });
@@ -197,10 +180,43 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   }
 
   /**
+   * @return the enabled labels.
+   */
+  public Set<Label> getLabels() {
+    return labels;
+  }
+
+  /**
+   * Sets enabled labels. These labels can be fine-tuned later on using Micrometer's Meter filters (see http://micrometer.io/docs/concepts#_meter_filters)
+   *
+   * @param labels the set of enabled labels - this set will replace any previously enabled labels, including the default ones
+   * @return a reference to this, so that the API can be used fluently
+   */
+  public MicrometerMetricsOptions setLabels(Set<Label> labels) {
+    this.labels = labels;
+    return this;
+  }
+
+  /**
+   * Add a labels to enable. These labels can be fine-tuned later on using Micrometer's Meter filters (see http://micrometer.io/docs/concepts#_meter_filters)
+   *
+   * @param labels the labels to enable
+   * @return a reference to this, so that the API can be used fluently
+   */
+  @GenIgnore
+  public MicrometerMetricsOptions addLabels(Label... labels) {
+    if (this.labels == null) {
+      this.labels = EnumSet.noneOf(Label.class);
+    }
+    this.labels.addAll(Arrays.asList(labels));
+    return this;
+  }
+
+  /**
    * @return the list of label matching rules
    */
-  public List<Match> getLabelMatchs() {
-    return labelMatchs;
+  public List<Match> getLabelMatches() {
+    return labelMatches;
   }
 
   /**
@@ -209,8 +225,8 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    * @param matches the new list of rules
    * @return a reference to this, so the API can be used fluently
    */
-  public MicrometerMetricsOptions setLabelMatchs(List<Match> matches) {
-    labelMatchs = new ArrayList<>(matches);
+  public MicrometerMetricsOptions setLabelMatches(List<Match> matches) {
+    labelMatches = new ArrayList<>(matches);
     return this;
   }
 
@@ -221,7 +237,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MicrometerMetricsOptions addLabelMatch(Match match) {
-    labelMatchs.add(match);
+    labelMatches.add(match);
     return this;
   }
 

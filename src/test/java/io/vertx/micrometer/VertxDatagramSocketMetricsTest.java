@@ -34,6 +34,7 @@ public class VertxDatagramSocketMetricsTest {
   public void shouldReportDatagramMetrics(TestContext context) throws InterruptedException {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .addLabels(Label.LOCAL)
       .setEnabled(true)))
       .exceptionHandler(context.exceptionHandler());
 
