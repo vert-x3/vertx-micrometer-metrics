@@ -28,7 +28,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-micrometer-metrics</artifactId>
-  <version>3.5.2</version>
+  <version>3.5.3.CR1</version>
 </dependency>
 <dependency>
   <groupId>io.micrometer</groupId>
@@ -41,7 +41,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-micrometer-metrics:3.5.2'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.3.CR1'
 compile 'io.micrometer:micrometer-registry-influx:1.0.0'
 ----
 
@@ -114,7 +114,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-micrometer-metrics</artifactId>
-  <version>3.5.2</version>
+  <version>3.5.3.CR1</version>
 </dependency>
 <dependency>
   <groupId>io.micrometer</groupId>
@@ -124,7 +124,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-web</artifactId>
-  <version>3.5.2</version>
+  <version>3.5.3.CR1</version>
 </dependency>
 ----
 
@@ -132,9 +132,9 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-micrometer-metrics:3.5.2'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.3.CR1'
 compile 'io.micrometer:micrometer-registry-prometheus:1.0.0'
-compile 'io.vertx:vertx-web:3.5.2'
+compile 'io.vertx:vertx-web:3.5.3.CR1'
 ----
 
 === Configuration examples
@@ -217,7 +217,7 @@ Maven users should add this to their project POM file:
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-micrometer-metrics</artifactId>
-  <version>3.5.2</version>
+  <version>3.5.3.CR1</version>
 </dependency>
 <dependency>
   <groupId>io.micrometer</groupId>
@@ -230,7 +230,7 @@ And Gradle users, to their build file:
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-micrometer-metrics:3.5.2'
+compile 'io.vertx:vertx-micrometer-metrics:3.5.3.CR1'
 compile 'io.micrometer:micrometer-registry-jmx:1.0.0'
 ----
 
