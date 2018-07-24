@@ -63,7 +63,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     @Override
     public Handler requestBegin(String remote, HttpServerRequest request) {
       Handler handler = new Handler(remote, request.path(), request.method().name());
-      requests.get(local, handler.address, handler.path, handler.method).increment();
+      requests.get(local, remote, handler.path, handler.method).increment();
       handler.timer = processingTime.start(local, remote, handler.path,handler.method);
       return handler;
     }
@@ -77,7 +77,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     @Override
     public Handler responsePushed(String remote, HttpMethod method, String uri, HttpServerResponse response) {
       Handler handler = new Handler(remote, uri, method.name());
-      requests.get(local, handler.address, handler.path, handler.method).increment();
+      requests.get(local, remote, handler.path, handler.method).increment();
       return handler;
     }
 
