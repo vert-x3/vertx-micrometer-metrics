@@ -117,16 +117,16 @@ public class VertxHttpClientServerMetricsTest {
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.server."));
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
       "vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.requests[local=127.0.0.1:9195,path=/resource,remote=_]$VALUE",
+      "vertx.http.server.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
       "vertx.http.server.connections[local=127.0.0.1:9195,remote=_]$VALUE",
       "vertx.http.server.wsConnections[local=127.0.0.1:9195,remote=_]$VALUE",
       "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL",
       "vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL",
-      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$TOTAL_TIME",
-      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.responseTime[local=127.0.0.1:9195,path=/resource,remote=_]$MAX");
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL_TIME",
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$MAX");
 
     assertThat(datapoints).contains(
       dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
