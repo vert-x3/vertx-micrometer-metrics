@@ -1,0 +1,104 @@
+= Enums
+
+[[Label]]
+== Label
+
+++++
+ List of labels used in various Vert.x metrics. Labels that may not have bounded values are disabled by default.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[LOCAL]]`LOCAL`|+++
+Local address in client-host or host-client connections (used in net, http and datagram domains)
++++
+|[[REMOTE]]`REMOTE`|+++
+Remote address in client-host or host-client connections (used in net and http domains)
++++
+|[[HTTP_PATH]]`HTTP_PATH`|+++
+Path of the URI for client or server requests (used in http domain)
++++
+|[[HTTP_METHOD]]`HTTP_METHOD`|+++
+Method (GET, POST, PUT, etc.) of an HTTP requests (used in http domain)
++++
+|[[HTTP_CODE]]`HTTP_CODE`|+++
+HTTP response code (used in http domain)
++++
+|[[CLASS_NAME]]`CLASS_NAME`|+++
+Class name. When used in error counters (in net, http, datagram and eventbus domains) it relates to an exception that occurred.
+ When used in verticle domain, it relates to the verticle class name.
++++
+|[[EB_ADDRESS]]`EB_ADDRESS`|+++
+Event bus address
++++
+|[[EB_SIDE]]`EB_SIDE`|+++
+Event bus side of the metric, it can be either "local" or "remote"
++++
+|[[EB_FAILURE]]`EB_FAILURE`|+++
+Event bus failure name from a ReplyFailure object
++++
+|[[POOL_TYPE]]`POOL_TYPE`|+++
+Pool type, such as "worker" or "datasource" (used in pools domain)
++++
+|[[POOL_NAME]]`POOL_NAME`|+++
+Pool name (used in pools domain)
++++
+|===
+
+[[MatchType]]
+== MatchType
+
+++++
+ The type of match.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[EQUALS]]`EQUALS`|-
+|[[REGEX]]`REGEX`|-
+|===
+
+[[MetricsDomain]]
+== MetricsDomain
+
+++++
+ Metric domains with their associated prefixes.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[NET_SERVER]]`NET_SERVER`|+++
+Net server metrics.
++++
+|[[NET_CLIENT]]`NET_CLIENT`|+++
+Net client metrics.
++++
+|[[HTTP_SERVER]]`HTTP_SERVER`|+++
+Http server metrics.
++++
+|[[HTTP_CLIENT]]`HTTP_CLIENT`|+++
+Http client metrics.
++++
+|[[DATAGRAM_SOCKET]]`DATAGRAM_SOCKET`|+++
+Datagram socket metrics.
++++
+|[[EVENT_BUS]]`EVENT_BUS`|+++
+Event bus metrics.
++++
+|[[NAMED_POOLS]]`NAMED_POOLS`|+++
+Named pools metrics.
++++
+|[[VERTICLES]]`VERTICLES`|+++
+Verticle metrics.
++++
+|===
+

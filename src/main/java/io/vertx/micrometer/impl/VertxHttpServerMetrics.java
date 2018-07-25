@@ -64,13 +64,13 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     public Handler requestBegin(String remote, HttpServerRequest request) {
       Handler handler = new Handler(remote, request.path(), request.method().name());
       requests.get(local, remote, handler.path, handler.method).increment();
-      handler.timer = processingTime.start(local, remote, handler.path,handler.method);
+      handler.timer = processingTime.start(local, remote, handler.path, handler.method);
       return handler;
     }
 
     @Override
     public void requestReset(Handler handler) {
-      requestResetCount.get(local, handler.address, handler.path,handler.method).increment();
+      requestResetCount.get(local, handler.address, handler.path, handler.method).increment();
       requests.get(local, handler.address, handler.path, handler.method).decrement();
     }
 
