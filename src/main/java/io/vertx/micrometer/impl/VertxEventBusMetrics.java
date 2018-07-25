@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Joel Takvorian
  */
 class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<VertxEventBusMetrics.Handler> {
+  private final static Handler IGNORED = new Handler(null);
+
   private final Gauges<LongAdder> handlers;
   private final Gauges<LongAdder> pending;
   private final Counters published;
@@ -65,8 +67,8 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   @Override
   public Handler handlerRegistered(String address, String repliedAddress) {
     if (isInternal(address)) {
-      // Ignore interna metrics
-      return Handler.ignored();
+      // Ignore internal metrics
+      return IGNORED;
     }
     handlers.get(address).increment();
     return new Handler(address);
@@ -160,10 +162,6 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
     Handler(String address) {
       this.address = address;
-    }
-
-    static Handler ignored() {
-      return new Handler(null);
     }
 
     boolean isIgnored() {
