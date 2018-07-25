@@ -102,9 +102,12 @@ public class VertxHttpClientServerMetricsTest {
         dp("vertx.http.client.requestCount[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT));
 
     assertThat(datapoints).extracting(Datapoint::id).contains(
-      "vertx.http.client.responseTime[local=?,path=/resource,remote=127.0.0.1:9195]$TOTAL_TIME",
-      "vertx.http.client.responseTime[local=?,path=/resource,remote=127.0.0.1:9195]$COUNT",
-      "vertx.http.client.responseTime[local=?,path=/resource,remote=127.0.0.1:9195]$MAX");
+      "vertx.http.client.responseTime[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$TOTAL_TIME",
+      "vertx.http.client.responseTime[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT",
+      "vertx.http.client.responseTime[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$MAX",
+      "vertx.http.client.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$VALUE",
+      "vertx.http.client.responseCount[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT",
+      "vertx.http.client.connections[local=?,remote=127.0.0.1:9195]$VALUE");
   }
 
   @Test

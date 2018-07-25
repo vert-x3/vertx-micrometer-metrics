@@ -42,10 +42,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
   VertxHttpClientMetrics(MeterRegistry registry) {
     super(registry, MetricsDomain.HTTP_CLIENT);
-    requests = longGauges("requests", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH);
+    requests = longGauges("requests", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestCount = counters("requestCount", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH);
-    responseCount = counters("responseCount", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_CODE);
+    responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    responseCount = counters("responseCount", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_CODE, Label.HTTP_METHOD);
     wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
@@ -87,10 +87,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
     @Override
     public Handler requestBegin(Void endpointMetric, String remote, SocketAddress localAddress, SocketAddress remoteAddress, HttpClientRequest request) {
-      Handler handler = new Handler(remote, request.path());
-      requests.get(local, remote, handler.path).increment();
-      requestCount.get(local, remote, handler.path, request.method().name()).increment();
-      handler.timer = responseTime.start(local, remote, handler.path);
+      Handler handler = new Handler(remote, request.path(),request.method().name());
+      requests.get(local, remote, handler.path, handler.method).increment();
+      requestCount.get(local, remote, handler.path, handler.method).increment();
+      handler.timer = responseTime.start(local, remote, handler.path, handler.method);
       return handler;
     }
 
@@ -109,13 +109,13 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
     @Override
     public void requestReset(Handler handler) {
-      requests.get(local, handler.address, handler.path).decrement();
+      requests.get(local, handler.address, handler.path, handler.method).decrement();
     }
 
     @Override
     public void responseEnd(Handler handler, HttpClientResponse response) {
-      requests.get(local, handler.address, handler.path).decrement();
-      responseCount.get(local, handler.address, handler.path, String.valueOf(response.statusCode()));
+      requests.get(local, handler.address, handler.path, handler.method).decrement();
+      responseCount.get(local, handler.address, handler.path, String.valueOf(response.statusCode()), handler.method);
       handler.timer.end();
     }
 
@@ -143,11 +143,13 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
   public static class Handler {
     private final String address;
     private final String path;
+    private final String method;
     private Timers.EventTiming timer;
 
-    Handler(String address, String path) {
+    Handler(String address, String path, String method) {
       this.address = address;
       this.path = path;
+      this.method = method;
+        }
     }
-  }
 }

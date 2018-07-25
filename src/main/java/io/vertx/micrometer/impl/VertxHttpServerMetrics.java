@@ -44,7 +44,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     super(registry, MetricsDomain.HTTP_SERVER);
     requests = longGauges("requests", "Number of requests being processed", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestCount = counters("requestCount", "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    requestResetCount = counters("requestResetCount", "Number of requests reset", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH,Label.HTTP_METHOD);
+    requestResetCount = counters("requestResetCount", "Number of requests reset", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     processingTime = timers("responseTime", "Request processing time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
