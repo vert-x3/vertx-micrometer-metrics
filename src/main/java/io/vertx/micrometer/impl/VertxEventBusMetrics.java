@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Joel Takvorian
  */
 class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<VertxEventBusMetrics.Handler> {
+  private final static Handler IGNORED = new Handler(null);
+
   private final Gauges<LongAdder> handlers;
   private final Gauges<LongAdder> pending;
   private final Counters published;
@@ -58,15 +60,25 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
   }
 
+  private static boolean isInternal(String address) {
+    return address.startsWith("__vertx.");
+  }
+
   @Override
   public Handler handlerRegistered(String address, String repliedAddress) {
+    if (isInternal(address)) {
+      // Ignore internal metrics
+      return IGNORED;
+    }
     handlers.get(address).increment();
     return new Handler(address);
   }
 
   @Override
   public void handlerUnregistered(Handler handler) {
-    handlers.get(handler.address).decrement();
+    if (!handler.isIgnored()) {
+      handlers.get(handler.address).decrement();
+    }
   }
 
   @Override
@@ -75,50 +87,64 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   @Override
   public void beginHandleMessage(Handler handler, boolean local) {
-    pending.get(handler.address, Labels.getSide(local)).decrement();
-    handler.timer = processTime.start(handler.address);
+    if (!handler.isIgnored()) {
+      pending.get(handler.address, Labels.getSide(local)).decrement();
+      handler.timer = processTime.start(handler.address);
+    }
   }
 
   @Override
   public void endHandleMessage(Handler handler, Throwable failure) {
-    handler.timer.end();
-    if (failure != null) {
-      errorCount.get(handler.address, failure.getClass().getSimpleName()).increment();
+    if (!handler.isIgnored()) {
+      handler.timer.end();
+      if (failure != null) {
+        errorCount.get(handler.address, failure.getClass().getSimpleName()).increment();
+      }
     }
   }
 
   @Override
   public void messageSent(String address, boolean publish, boolean local, boolean remote) {
-    if (publish) {
-      published.get( address, Labels.getSide(local)).increment();
-    } else {
-      sent.get(address, Labels.getSide(local)).increment();
+    if (!isInternal(address)) {
+      if (publish) {
+        published.get(address, Labels.getSide(local)).increment();
+      } else {
+        sent.get(address, Labels.getSide(local)).increment();
+      }
     }
   }
 
   @Override
   public void messageReceived(String address, boolean publish, boolean local, int handlers) {
-    String origin = Labels.getSide(local);
-    pending.get(address, origin).add(handlers);
-    received.get(address, origin).increment();
-    if (handlers > 0) {
-      delivered.get(address, origin).increment();
+    if (!isInternal(address)) {
+      String origin = Labels.getSide(local);
+      pending.get(address, origin).add(handlers);
+      received.get(address, origin).increment();
+      if (handlers > 0) {
+        delivered.get(address, origin).increment();
+      }
     }
   }
 
   @Override
   public void messageWritten(String address, int numberOfBytes) {
-    bytesWritten.get(address).record(numberOfBytes);
+    if (!isInternal(address)) {
+      bytesWritten.get(address).record(numberOfBytes);
+    }
   }
 
   @Override
   public void messageRead(String address, int numberOfBytes) {
-    bytesRead.get(address).record(numberOfBytes);
+    if (!isInternal(address)) {
+      bytesRead.get(address).record(numberOfBytes);
+    }
   }
 
   @Override
   public void replyFailure(String address, ReplyFailure failure) {
-    replyFailures.get(address, failure.name()).increment();
+    if (!isInternal(address)) {
+      replyFailures.get(address, failure.name()).increment();
+    }
   }
 
   @Override
@@ -136,6 +162,10 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
     Handler(String address) {
       this.address = address;
+    }
+
+    boolean isIgnored() {
+      return address == null;
     }
   }
 }

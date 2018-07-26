@@ -45,7 +45,7 @@ public class VertxHttpClientServerMetricsTest {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .setRegistryName(registryName)
-      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH)
+      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS)
       .setEnabled(true)))
       .exceptionHandler(ctx.exceptionHandler());
 
@@ -137,6 +137,17 @@ public class VertxHttpClientServerMetricsTest {
       dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
       dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
       dp("vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT));
+  }
+
+  @Test
+  public void shouldIgnoreInternalEventbusMetrics(TestContext ctx) throws InterruptedException {
+    runClientRequests(ctx, true);
+
+    waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
+      value -> value.intValue() == concurrentClients * SENT_COUNT);
+
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.eventbus."));
+    assertThat(datapoints).isEmpty();
   }
 
   private void runClientRequests(TestContext ctx, boolean ws) throws InterruptedException {
