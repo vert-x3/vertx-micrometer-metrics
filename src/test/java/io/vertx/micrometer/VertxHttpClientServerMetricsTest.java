@@ -98,7 +98,8 @@ public class VertxHttpClientServerMetricsTest {
         dp("vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
         dp("vertx.http.client.bytesSent[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
         dp("vertx.http.client.bytesSent[local=?,remote=127.0.0.1:9195]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-        dp("vertx.http.client.requestCount[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT));
+        dp("vertx.http.client.requestCount[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+        dp("vertx.http.client.responseCount[code=200,local=?,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT));
 
     List<RegistryInspector.Datapoint> timersDp = RegistryInspector.listTimers("vertx.http.client.", registryName);
     assertThat(timersDp).extracting(RegistryInspector.Datapoint::id).containsOnly(
