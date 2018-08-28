@@ -115,7 +115,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     @Override
     public void responseEnd(Handler handler, HttpClientResponse response) {
       requests.get(local, handler.address, handler.path, handler.method).decrement();
-      responseCount.get(local, handler.address, handler.path, String.valueOf(response.statusCode()), handler.method);
+      responseCount.get(local, handler.address, handler.path, String.valueOf(response.statusCode()), handler.method).increment();
       handler.timer.end();
     }
 
