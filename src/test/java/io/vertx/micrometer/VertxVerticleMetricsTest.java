@@ -7,6 +7,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -22,11 +23,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(VertxUnitRunner.class)
 public class VertxVerticleMetricsTest {
 
+  private Vertx vertx;
+
+  @After
+  public void tearDown(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
+  }
+
   @Test
   public void shouldReportVerticleMetrics(TestContext context) throws InterruptedException {
     String metricName = "vertx.verticle.deployed[class=" + SampleVerticle.class.getName() + "]";
 
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
+    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .setEnabled(true)))
       .exceptionHandler(context.exceptionHandler());
