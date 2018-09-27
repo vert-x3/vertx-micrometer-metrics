@@ -89,14 +89,9 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     }
 
     @Override
-    public String upgrade(Handler handler, ServerWebSocket serverWebSocket) {
+    public String connected(String socketMetric, Handler handler, ServerWebSocket serverWebSocket) {
+      wsConnections.get(local, handler.address).increment();
       return handler.address;
-    }
-
-    @Override
-    public String connected(String remote, ServerWebSocket serverWebSocket) {
-      wsConnections.get(local, remote).increment();
-      return remote;
     }
 
     @Override
