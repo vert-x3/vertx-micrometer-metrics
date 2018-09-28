@@ -1,52 +1,5 @@
 = Enums
 
-[[MetricsDomain]]
-== MetricsDomain
-
-++++
- Metric domains with their associated prefixes.
-++++
-'''
-
-[cols=">25%,75%"]
-[frame="topbot"]
-|===
-^|Name | Description
-|[[NET_SERVER]]`NET_SERVER`|
-+++
-Net server metrics.
-+++
-|[[NET_CLIENT]]`NET_CLIENT`|
-+++
-Net client metrics.
-+++
-|[[HTTP_SERVER]]`HTTP_SERVER`|
-+++
-Http server metrics.
-+++
-|[[HTTP_CLIENT]]`HTTP_CLIENT`|
-+++
-Http client metrics.
-+++
-|[[DATAGRAM_SOCKET]]`DATAGRAM_SOCKET`|
-+++
-Datagram socket metrics.
-+++
-|[[EVENT_BUS]]`EVENT_BUS`|
-+++
-Event bus metrics.
-+++
-|[[NAMED_POOLS]]`NAMED_POOLS`|
-+++
-Named pools metrics.
-+++
-|[[VERTICLES]]`VERTICLES`|
-+++
-Verticle metrics.
-+++
-|===
-
-
 [[Label]]
 == Label
 
@@ -59,71 +12,93 @@ Verticle metrics.
 [frame="topbot"]
 |===
 ^|Name | Description
-|[[LOCAL]]`LOCAL`|
+|[[LOCAL]]`LOCAL`|+++
+Local address in client-host or host-client connections (used in net, http and datagram domains)
 +++
-Local address in client-host or host-client connections (used in net, http and datagram domains).
-
-Output name: "local". Disabled by default.
+|[[REMOTE]]`REMOTE`|+++
+Remote address in client-host or host-client connections (used in net and http domains)
 +++
-|[[REMOTE]]`REMOTE`|
+|[[HTTP_PATH]]`HTTP_PATH`|+++
+Path of the URI for client or server requests (used in http domain)
 +++
-Remote address in client-host or host-client connections (used in net and http domains).
-
-Output name: "remote". Disabled by default.
+|[[HTTP_METHOD]]`HTTP_METHOD`|+++
+Method (GET, POST, PUT, etc.) of an HTTP requests (used in http domain)
 +++
-|[[HTTP_PATH]]`HTTP_PATH`|
+|[[HTTP_CODE]]`HTTP_CODE`|+++
+HTTP response code (used in http domain)
 +++
-Path of the URI for client or server requests (used in http domain).
-
-Output name: "path". Disabled by default.
-+++
-|[[HTTP_METHOD]]`HTTP_METHOD`|
-+++
-Method (GET, POST, PUT, etc.) of an HTTP requests (used in http domain).
-
-Output name: "method". Enabled by default.
-+++
-|[[HTTP_CODE]]`HTTP_CODE`|
-+++
-HTTP response code (used in http domain).
-
-Output name: "code". Enabled by default.
-+++
-|[[CLASS_NAME]]`CLASS_NAME`|
-+++
+|[[CLASS_NAME]]`CLASS_NAME`|+++
 Class name. When used in error counters (in net, http, datagram and eventbus domains) it relates to an exception that occurred.
-When used in verticle domain, it relates to the verticle class name.
-
-Output name: "class". Disabled by default.
+ When used in verticle domain, it relates to the verticle class name.
 +++
-|[[EB_ADDRESS]]`EB_ADDRESS`|
+|[[EB_ADDRESS]]`EB_ADDRESS`|+++
+Event bus address
 +++
-Event bus address.
-
-Output name: "address". Disabled by default.
+|[[EB_SIDE]]`EB_SIDE`|+++
+Event bus side of the metric, it can be either "local" or "remote"
 +++
-|[[EB_SIDE]]`EB_SIDE`|
+|[[EB_FAILURE]]`EB_FAILURE`|+++
+Event bus failure name from a ReplyFailure object
 +++
-Event bus side of the metric, it can be either "local" or "remote".
-
-Output name: "side". Enabled by default.
+|[[POOL_TYPE]]`POOL_TYPE`|+++
+Pool type, such as "worker" or "datasource" (used in pools domain)
 +++
-|[[EB_FAILURE]]`EB_FAILURE`|
-+++
-Event bus failure name from a ReplyFailure object.
-
-Output name: "failure". Disabled by default.
-+++
-|[[POOL_TYPE]]`POOL_TYPE`|
-+++
-Pool type, such as "worker" or "datasource" (used in pools domain).
-
-Output name: "pool_type". Enabled by default.
-+++
-|[[POOL_NAME]]`POOL_NAME`|
-+++
-Pool name (used in pools domain).
-
-Output name: "pool_name". Disabled by default.
+|[[POOL_NAME]]`POOL_NAME`|+++
+Pool name (used in pools domain)
 +++
 |===
+
+[[MatchType]]
+== MatchType
+
+++++
+ The type of match.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[EQUALS]]`EQUALS`|-
+|[[REGEX]]`REGEX`|-
+|===
+
+[[MetricsDomain]]
+== MetricsDomain
+
+++++
+ Metric domains with their associated prefixes.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[NET_SERVER]]`NET_SERVER`|+++
+Net server metrics.
++++
+|[[NET_CLIENT]]`NET_CLIENT`|+++
+Net client metrics.
++++
+|[[HTTP_SERVER]]`HTTP_SERVER`|+++
+Http server metrics.
++++
+|[[HTTP_CLIENT]]`HTTP_CLIENT`|+++
+Http client metrics.
++++
+|[[DATAGRAM_SOCKET]]`DATAGRAM_SOCKET`|+++
+Datagram socket metrics.
++++
+|[[EVENT_BUS]]`EVENT_BUS`|+++
+Event bus metrics.
++++
+|[[NAMED_POOLS]]`NAMED_POOLS`|+++
+Named pools metrics.
++++
+|[[VERTICLES]]`VERTICLES`|+++
+Verticle metrics.
++++
+|===
+

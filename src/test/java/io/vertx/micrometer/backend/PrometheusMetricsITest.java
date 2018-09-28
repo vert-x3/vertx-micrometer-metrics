@@ -136,24 +136,15 @@ public class PrometheusMetricsITest {
 
     // Read metrics on HTTP endpoint for eventbus metrics
     Async async = context.async();
-    HttpClientRequest req = vertx.createHttpClient()
-      .get(9090, "localhost", "/metrics")
-      .exceptionHandler(context::fail)
-      .handler(res -> {
-        context.assertEquals(200, res.statusCode());
-        res.exceptionHandler(context::fail);
-        res.bodyHandler(body -> {
-          String str = body.toString();
-          context.verify(v -> assertThat(str)
-            .contains("vertx_eventbus_published_total{address=\"test-eb\",side=\"local\",} 1.0",
-              "vertx_eventbus_received_total{address=\"test-eb\",side=\"local\",} 1.0",
-              "vertx_eventbus_handlers{address=\"test-eb\",} 1.0",
-              "vertx_eventbus_delivered_total{address=\"test-eb\",side=\"local\",} 1.0",
-              "vertx_eventbus_processingTime_seconds_count{address=\"test-eb\",} 1.0"));
-          async.complete();
-        });
-      });
-    req.end();
+    tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+      context.verify(v -> assertThat(body)
+        .contains("vertx_eventbus_published_total{address=\"test-eb\",side=\"local\",} 1.0",
+          "vertx_eventbus_received_total{address=\"test-eb\",side=\"local\",} 1.0",
+          "vertx_eventbus_handlers{address=\"test-eb\",} 1.0",
+          "vertx_eventbus_delivered_total{address=\"test-eb\",side=\"local\",} 1.0",
+          "vertx_eventbus_processingTime_seconds_count{address=\"test-eb\",} 1.0"));
+      async.complete();
+    }, 0);
     async.awaitSuccess(15000);
   }
 
