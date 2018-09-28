@@ -138,8 +138,10 @@ public class PrometheusMetricsITest {
     Async async = context.async();
     HttpClientRequest req = vertx.createHttpClient()
       .get(9090, "localhost", "/metrics")
+      .exceptionHandler(context::fail)
       .handler(res -> {
         context.assertEquals(200, res.statusCode());
+        res.exceptionHandler(context::fail);
         res.bodyHandler(body -> {
           String str = body.toString();
           context.verify(v -> assertThat(str)
@@ -152,7 +154,7 @@ public class PrometheusMetricsITest {
         });
       });
     req.end();
-    async.awaitSuccess(10000);
+    async.awaitSuccess(15000);
   }
 
   private static void tryConnect(Vertx vertx, TestContext context, int port, String host, String requestURI, Consumer<String> bodyReader, int attempt) {
