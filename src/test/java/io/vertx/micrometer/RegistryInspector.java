@@ -37,6 +37,10 @@ public final class RegistryInspector {
   private RegistryInspector() {
   }
 
+  public static void dump(String regName) {
+    listDatapoints(regName, a -> true).forEach(System.out::println);
+  }
+
   public static Predicate<Meter> startsWith(String start) {
     return m -> m.getId().getName().startsWith(start);
   }

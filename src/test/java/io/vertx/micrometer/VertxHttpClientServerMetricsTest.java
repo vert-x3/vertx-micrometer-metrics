@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class VertxHttpClientServerMetricsTest {
 
   private static final int HTTP_SENT_COUNT = 68;
-  private static final int SENT_COUNT = HTTP_SENT_COUNT +1 ;
+  private static final int SENT_COUNT = HTTP_SENT_COUNT + 1 ;
   private static final String SERVER_RESPONSE = "some text";
   private static final String CLIENT_REQUEST = "pitchounette";
   private static final long REQ_DELAY = 30L;
@@ -114,8 +114,9 @@ public class VertxHttpClientServerMetricsTest {
   public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx, true);
 
+    // Remark, with websockets, an extra "GET" request is performed so increase by one the expected value
     waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
-      value -> value.intValue() == concurrentClients * SENT_COUNT);
+      value -> value.intValue() == concurrentClients * (SENT_COUNT + 1));
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.server."));
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
@@ -129,10 +130,16 @@ public class VertxHttpClientServerMetricsTest {
       "vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL",
       "vertx.http.server.responseTime[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL_TIME",
       "vertx.http.server.responseTime[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.responseTime[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$MAX");
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$MAX",
+      // Following ones result from the WS connection
+      "vertx.http.server.requestResetCount[local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
+      "vertx.http.server.requests[local=127.0.0.1:9195,method=GET,path=/,remote=_]$VALUE",
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,method=GET,path=/,remote=_]$TOTAL_TIME",
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
+      "vertx.http.server.responseTime[local=127.0.0.1:9195,method=GET,path=/,remote=_]$MAX");
 
     assertThat(datapoints).contains(
-      dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
+      dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * (SENT_COUNT + 1)),
       dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
       dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
       dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
@@ -144,7 +151,7 @@ public class VertxHttpClientServerMetricsTest {
     runClientRequests(ctx, true);
 
     waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
-      value -> value.intValue() == concurrentClients * SENT_COUNT);
+      value -> value.intValue() == concurrentClients * (SENT_COUNT + 1));
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.eventbus."));
     assertThat(datapoints).isEmpty();
