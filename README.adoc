@@ -1,7 +1,7 @@
 = vertx-micrometer-metrics
 :source-language: java
 
-image::https://vertx.ci.cloudbees.com/buildStatus/icon?job=vert.x3-micrometer-metrics[link=https://vertx.ci.cloudbees.com/job/vert.x3-micrometer-metrics/]
+image:https://travis-ci.org/vert-x3/vertx-micrometer-metrics.svg?branch=master["Build Status",link="https://travis-ci.org/vert-x3/micrometer-metrics"]
 
 Vert.x Micrometer Metrics contains metrics collection and reporting to various target systems through link:http://micrometer.io/[Micrometer].
 
