@@ -132,7 +132,7 @@ public class PrometheusMetricsITest {
     Async asyncEB = context.async();
     vertx.eventBus().consumer("test-eb", msg -> asyncEB.complete());
     vertx.eventBus().publish("test-eb", "test message");
-    asyncEB.await(2000);
+    asyncEB.awaitSuccess(15000);
 
     // Read metrics on HTTP endpoint for eventbus metrics
     Async async = context.async();
