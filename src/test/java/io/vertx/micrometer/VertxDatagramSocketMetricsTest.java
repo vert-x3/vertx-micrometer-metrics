@@ -44,17 +44,20 @@ public class VertxDatagramSocketMetricsTest {
     // Setup server
     int port = 9192;
     String host = "localhost";
-    Async async = context.async(loops);
-    vertx.createDatagramSocket().listen(port, host, res -> {
-      res.result().handler(packet -> async.countDown());
-    });
+    Async receiveLatch = context.async(loops);
+    Async listenLatch = context.async();
+    vertx.createDatagramSocket().listen(port, host, context.asyncAssertSuccess(so -> {
+      so.handler(packet -> receiveLatch.countDown());
+      listenLatch.complete();
+    }));
+    listenLatch.awaitSuccess(15000);
 
     // Send to server
     DatagramSocket client = vertx.createDatagramSocket();
     for (int i = 0; i < loops; i++) {
       client.send(datagramContent, port, host, context.asyncAssertSuccess());
     }
-    async.awaitSuccess(15000);
+    receiveLatch.awaitSuccess(15000);
 
     waitForValue(vertx, context, "vertx.datagram.bytesSent[]$COUNT", value -> value.intValue() == 5);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.datagram."));
