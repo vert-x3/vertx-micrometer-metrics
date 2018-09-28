@@ -54,7 +54,7 @@ public class VertxDatagramSocketMetricsTest {
     for (int i = 0; i < loops; i++) {
       client.send(datagramContent, port, host, context.asyncAssertSuccess());
     }
-    async.awaitSuccess();
+    async.awaitSuccess(15000);
 
     waitForValue(vertx, context, "vertx.datagram.bytesSent[]$COUNT", value -> value.intValue() == 5);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.datagram."));
