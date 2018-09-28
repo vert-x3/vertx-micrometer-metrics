@@ -21,5 +21,6 @@ notifications:
   email:
     recipients:
       - vertx3-ci@googlegroups.com
+      - joel.takvorian@qaraywa.net
     on_success: always
     on_failure: always
