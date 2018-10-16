@@ -93,11 +93,6 @@ Maven users should add this to their project POM file:
   <artifactId>micrometer-registry-prometheus</artifactId>
   <version>${micrometer.version}</version>
 </dependency>
-<dependency>
-  <groupId>io.vertx</groupId>
-  <artifactId>vertx-web</artifactId>
-  <version>${maven.version}</version>
-</dependency>
 ----
 
 And Gradle users, to their build file:
@@ -106,7 +101,6 @@ And Gradle users, to their build file:
 ----
 compile 'io.vertx:vertx-micrometer-metrics:${maven.version}'
 compile 'io.micrometer:micrometer-registry-prometheus:${micrometer.version}'
-compile 'io.vertx:vertx-web:${maven.version}'
 ----
 
 === Configuration examples
@@ -118,7 +112,7 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 {@link examples.MicrometerMetricsExamples#setupMinimalPrometheus()}
 ----
 
-==== Using an embedded HTTP server wih custom endpoint
+==== Using an embedded HTTP server with custom endpoint
 
 [source,$lang]
 ----
@@ -127,7 +121,7 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 
 If the embedded server endpoint is not specified, it defaults to _/metrics_.
 
-==== Binding metrics to an existing Vert.x router
+==== Binding metrics to an existing Vert.x Web router
 
 [source,$lang]
 ----
