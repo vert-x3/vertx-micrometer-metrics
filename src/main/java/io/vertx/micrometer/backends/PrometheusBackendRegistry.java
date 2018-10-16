@@ -19,11 +19,13 @@ package io.vertx.micrometer.backends;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.exporter.common.TextFormat;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.Router;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
 /**
@@ -55,15 +57,20 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
       if (serverOptions == null) {
         serverOptions = new HttpServerOptions();
       }
-      Router router = Router.router(vertx);
-      router.route(options.getEmbeddedServerEndpoint()).handler(routingContext -> {
-        String response = registry.scrape();
-        routingContext.response().end(response);
-      });
       vertx.createHttpServer(serverOptions)
-        .requestHandler(router)
+        .requestHandler(this::handleRequest)
         .exceptionHandler(t -> LOGGER.error("Error in Prometheus registry embedded server", t))
         .listen(serverOptions.getPort(), serverOptions.getHost());
+    }
+  }
+
+  private void handleRequest(HttpServerRequest request) {
+    if (options.getEmbeddedServerEndpoint().equals(request.path())) {
+      request.response()
+        .putHeader(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_004)
+        .end(registry.scrape());
+    } else {
+      request.response().setStatusCode(404).end();
     }
   }
 
