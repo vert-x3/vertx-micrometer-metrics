@@ -27,7 +27,6 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.graphite.GraphiteMeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
@@ -35,14 +34,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.Match;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsService;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxInfluxDbOptions;
-import io.vertx.micrometer.VertxJmxMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.util.EnumSet;
@@ -106,15 +98,7 @@ public class MicrometerMetricsExamples {
 
     // Later on, creating a router
     Router router = Router.router(vertx);
-    router.route("/metrics").handler(routingContext -> {
-      PrometheusMeterRegistry prometheusRegistry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
-      if (prometheusRegistry != null) {
-        String response = prometheusRegistry.scrape();
-        routingContext.response().end(response);
-      } else {
-        routingContext.fail(500);
-      }
-    });
+    router.route("/metrics").handler(PrometheusScrapingHandler.create());
     vertx.createHttpServer().requestHandler(router).listen(8080);
   }
 
