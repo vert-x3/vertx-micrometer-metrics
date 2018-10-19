@@ -16,6 +16,7 @@
 package io.vertx.micrometer.impl;
 
 import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.VertxMetricsFactory;
 import io.vertx.core.spi.metrics.VertxMetrics;
@@ -44,6 +45,11 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
 
   @Override
   public MetricsOptions newOptions() {
-    return new MicrometerMetricsOptions();
+    return newOptions(null);
+  }
+
+  @Override
+  public MetricsOptions newOptions(JsonObject jsonObject) {
+    return jsonObject == null ? new MicrometerMetricsOptions() : new MicrometerMetricsOptions(jsonObject);
   }
 }
