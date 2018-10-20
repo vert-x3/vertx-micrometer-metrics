@@ -80,6 +80,15 @@ public class VertxJmxMetricsOptions {
   }
 
   /**
+   * @return a JSON representation of these options
+   */
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    VertxJmxMetricsOptionsConverter.toJson(this, json);
+    return json;
+  }
+
+  /**
    * Will JMX reporting be enabled?
    *
    * @return true if enabled, false if not.
