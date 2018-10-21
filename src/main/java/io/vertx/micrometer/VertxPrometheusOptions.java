@@ -81,6 +81,16 @@ public class VertxPrometheusOptions {
     VertxPrometheusOptionsConverter.fromJson(json, this);
   }
 
+
+  /**
+   * @return a JSON representation of these options
+   */
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    VertxPrometheusOptionsConverter.toJson(this, json);
+    return json;
+  }
+
   /**
    * Will Prometheus reporting be enabled?
    *

@@ -22,17 +22,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
- * Vert.x micrometer configuration.<br/>
+ * Vert.x micrometer configuration.
+ * <p>
  * It is required to set either {@code influxDbOptions}, {@code prometheusOptions} or {@code jmxMetricsOptions}
- * (or, programmatically, {@code micrometerRegistry})
- * in order to actually report metrics.
+ * (or, programmatically, {@code micrometerRegistry}) in order to actually report metrics.
  *
  * @author Joel Takvorian
  */
@@ -49,6 +45,11 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public static final List<Label> DEFAULT_LABELS = Arrays.asList(Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_TYPE, Label.EB_SIDE);
 
+  /**
+   * Whether JVM metrics should be collected by default = false.
+   */
+  public static final boolean DEFAULT_JVM_METRICS_ENABLED = false;
+
   private Set<MetricsDomain> disabledMetricsCategories;
   private String registryName;
   private Set<Label> labels;
@@ -57,6 +58,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private VertxInfluxDbOptions influxDbOptions;
   private VertxPrometheusOptions prometheusOptions;
   private VertxJmxMetricsOptions jmxMetricsOptions;
+  private boolean jvmMetricsEnabled;
 
   /**
    * Creates default options for Micrometer metrics.
@@ -66,6 +68,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     registryName = DEFAULT_REGISTRY_NAME;
     labels = EnumSet.copyOf(DEFAULT_LABELS);
     labelMatches = new ArrayList<>();
+    jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
   }
 
   /**
@@ -87,6 +90,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     if (other.jmxMetricsOptions != null) {
       jmxMetricsOptions = new VertxJmxMetricsOptions(other.jmxMetricsOptions);
     }
+    jvmMetricsEnabled = other.jvmMetricsEnabled;
   }
 
   /**
@@ -96,6 +100,16 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     this();
     MicrometerMetricsOptionsConverter.fromJson(json, this);
     labelMatches = loadLabelMatches(json);
+  }
+
+  /**
+   * @return a JSON representation of these options
+   */
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    MicrometerMetricsOptionsConverter.toJson(this, json);
+    return json;
   }
 
   private List<Match> loadLabelMatches(JsonObject json) {
@@ -321,6 +335,24 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions setJmxMetricsOptions(VertxJmxMetricsOptions jmxMetricsOptions) {
     this.jmxMetricsOptions = jmxMetricsOptions;
+    return this;
+  }
+
+  /**
+   * @return true if JVM metrics should be collected, false otherwise
+   */
+  public boolean isJvmMetricsEnabled() {
+    return jvmMetricsEnabled;
+  }
+
+  /**
+   * Whether JVM metrics should be collected. Defaults to {@code false}.
+   *
+   * @param jvmMetricsEnabled true to collect JVM metrics, false otherwise. Defaults to {@code false}.
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MicrometerMetricsOptions setJvmMetricsEnabled(boolean jvmMetricsEnabled) {
+    this.jvmMetricsEnabled = jvmMetricsEnabled;
     return this;
   }
 }

@@ -15,6 +15,11 @@
  */
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
@@ -28,6 +33,7 @@ import io.vertx.micrometer.backends.BackendRegistry;
  * @author Joel Takvorian
  */
 public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
+
   @Override
   public VertxMetrics metrics(VertxOptions vertxOptions) {
     MetricsOptions metricsOptions = vertxOptions.getMetricsOptions();
@@ -40,6 +46,15 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
     BackendRegistry backendRegistry = BackendRegistries.setupBackend(options);
     VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry);
     metrics.init();
+
+    if (options.isJvmMetricsEnabled()) {
+      new ClassLoaderMetrics().bindTo(backendRegistry.getMeterRegistry());
+      new JvmMemoryMetrics().bindTo(backendRegistry.getMeterRegistry());
+      new JvmGcMetrics().bindTo(backendRegistry.getMeterRegistry());
+      new ProcessorMetrics().bindTo(backendRegistry.getMeterRegistry());
+      new JvmThreadMetrics().bindTo(backendRegistry.getMeterRegistry());
+    }
+
     return metrics;
   }
 

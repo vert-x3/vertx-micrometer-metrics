@@ -130,6 +130,15 @@ public class VertxInfluxDbOptions {
   }
 
   /**
+   * @return a JSON representation of these options
+   */
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    VertxInfluxDbOptionsConverter.toJson(this, json);
+    return json;
+  }
+
+  /**
    * Will InfluxDB reporting be enabled?
    *
    * @return true if enabled, false if not.
