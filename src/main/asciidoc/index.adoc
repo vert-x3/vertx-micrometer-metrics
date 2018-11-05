@@ -197,6 +197,40 @@ In this example, metrics are reported both for JMX and Graphite:
 
 Please refer to {@link io.vertx.micrometer.MicrometerMetricsOptions} for an exhaustive list of options.
 
+=== Averages and quantiles in Prometheus
+
+By default, when using the Prometheus registry, histogram-kind metrics will not contain averages or quantile stats.
+
+Averages don't come out of the box but they are typically link:https://prometheus.io/docs/practices/histograms/#count-and-sum-of-observations[computed at query time],
+with `promql`. Example, for HTTP client response time average during the last 5 minutes:
+
+[source]
+----
+  rate(vertx_http_client_responseTime_seconds_sum[5m])
+/
+  rate(vertx_http_client_responseTime_seconds_count[5m])
+----
+
+To get quantiles, some additional configuration is needed in Micrometer registry config, as link:https://micrometer.io/docs/concepts#_histograms_and_percentiles[explained here].
+
+For example, here's how to activate percentile stats globally:
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#enablePercentiles()}
+----
+
+And then, the `promql` query for the HTTP client response time, 99th percentile over the last 5 minutes:
+[source]
+----
+  histogram_quantile(0.99, sum(rate(vertx_http_client_responseTime_seconds_bucket[5m])) by (le))
+----
+
+See also link:https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile[Prometheus doc].
+
+You can also check some link:https://github.com/vert-x3/vertx-examples/tree/master/micrometer-metrics-examples[full working examples].
+They come along with few instructions to setup with Prometheus and view dashboards in Grafana.
+
 === Disable some metric domains
 
 Restricting the Vert.x modules being monitored can be done using

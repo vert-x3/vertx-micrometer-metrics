@@ -41,7 +41,7 @@ public class MicrometerMetricsOptionsConverter {
           break;
         case "jvmMetricsEnabled":
           if (member.getValue() instanceof Boolean) {
-            obj.setJvmMetricsEnabled((Boolean) member.getValue());
+            obj.setJvmMetricsEnabled((Boolean)member.getValue());
           }
           break;
         case "labelMatches":
