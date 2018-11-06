@@ -19,6 +19,7 @@ import java.util.List;
 import static io.vertx.micrometer.RegistryInspector.dp;
 import static io.vertx.micrometer.RegistryInspector.listDatapoints;
 import static io.vertx.micrometer.RegistryInspector.startsWith;
+import static io.vertx.micrometer.RegistryInspector.waitForValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -86,6 +87,8 @@ public class VertxEventBusMetricsTest {
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30, \"last\": true}"));
     allReceived.awaitSuccess();
 
+    waitForValue(vertx, context, "vertx.eventbus.processingTime[address=testSubject]$COUNT",
+      value -> value.intValue() == 8 * instances);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
     assertThat(datapoints).hasSize(13).contains(
       dp("vertx.eventbus.handlers[address=testSubject]$VALUE", instances),
