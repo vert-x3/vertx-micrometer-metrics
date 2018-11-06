@@ -176,6 +176,10 @@ HTTP server options for the embedded server
 |[[enabled]]`@enabled`|`Boolean`|+++
 Set true to enable Prometheus reporting
 +++
+|[[publishQuantiles]]`@publishQuantiles`|`Boolean`|+++
+Set true to publish histogram stats, necessary to compute quantiles.
+ Note that it generates many new timeseries for stats, which is why it is deactivated by default.
++++
 |[[startEmbeddedServer]]`@startEmbeddedServer`|`Boolean`|+++
 When true, an embedded server will init to expose metrics with Prometheus format.
 +++

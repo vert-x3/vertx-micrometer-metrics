@@ -61,7 +61,8 @@ public class PrometheusMetricsITest {
     Async async = context.async();
     tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
       context.verify(v -> assertThat(body)
-        .contains("vertx_http_client_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\",} 1.0"));
+        .contains("vertx_http_client_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\",} 1.0")
+        .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
       async.complete();
     }, 0);
     async.awaitSuccess(10000);
@@ -146,6 +147,26 @@ public class PrometheusMetricsITest {
       async.complete();
     }, 0);
     async.awaitSuccess(15000);
+  }
+
+  @Test
+  public void shouldPublishPercentileStats(TestContext context) throws Exception {
+    vertx = Vertx.vertx(new VertxOptions()
+      .setMetricsOptions(new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setPublishQuantiles(true)
+          .setStartEmbeddedServer(true)
+          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+        .addLabels(Label.LOCAL, Label.HTTP_PATH, Label.REMOTE)
+        .setEnabled(true)));
+
+    Async async = context.async();
+    tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+      context.verify(v -> assertThat(body)
+        .contains("vertx_http_client_responseTime_seconds_bucket"));
+      async.complete();
+    }, 0);
+    async.awaitSuccess(10000);
   }
 
   private static void tryConnect(Vertx vertx, TestContext context, int port, String host, String requestURI, Consumer<String> bodyReader, int attempt) {

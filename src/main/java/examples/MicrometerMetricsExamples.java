@@ -225,14 +225,22 @@ public class MicrometerMetricsExamples {
         .setEnabled(true)));
   }
 
-  public void enablePercentiles() {
+  public void enableQuantiles() {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setPublishQuantiles(true))
+        .setEnabled(true)));
+  }
+
+  public void enableLimitedQuantiles() {
     PrometheusMeterRegistry registry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
     registry.config().meterFilter(
         new MeterFilter() {
           @Override
           public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
             return DistributionStatisticConfig.builder()
-                .percentilesHistogram(true)
+                .percentiles(0.95, 0.99)
                 .build()
                 .merge(config);
           }

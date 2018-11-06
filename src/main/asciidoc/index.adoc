@@ -211,24 +211,37 @@ with `promql`. Example, for HTTP client response time average during the last 5 
   rate(vertx_http_client_responseTime_seconds_count[5m])
 ----
 
-To get quantiles, some additional configuration is needed in Micrometer registry config, as link:https://micrometer.io/docs/concepts#_histograms_and_percentiles[explained here].
-
-For example, here's how to activate percentile stats globally:
+To compute quantiles, there are two options available. The first is to activate quantile stats globally
+and make them usable for Prometheus function `histogram_quantile`:
 
 [source,$lang]
 ----
-{@link examples.MicrometerMetricsExamples#enablePercentiles()}
+{@link examples.MicrometerMetricsExamples#enableQuantiles()}
 ----
 
-And then, the `promql` query for the HTTP client response time, 99th percentile over the last 5 minutes:
+And then, for example the `promql` query for the HTTP client response time, 99th percentile over the last 5 minutes:
 [source]
 ----
   histogram_quantile(0.99, sum(rate(vertx_http_client_responseTime_seconds_bucket[5m])) by (le))
 ----
 
-See also link:https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile[Prometheus doc].
+The advantage of this option is that it can be leveraged in `promql`, aggregable across dimensions.
+The downside is that it creates a lot of timeseries for stats under the hood.
 
-You can also check some link:https://github.com/vert-x3/vertx-examples/tree/master/micrometer-metrics-examples[full working examples].
+The second option is to create limited stats, non-aggregable across dimensions.
+It requires to access directly the Micrometer / Prometheus registry:
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#enableLimitedQuantiles()}
+----
+
+See also, more on histograms and percentiles:
+
+* from link:https://micrometer.io/docs/concepts#_histograms_and_percentiles[Micrometer doc]
+* from link:https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile[Prometheus doc]
+
+Furthermore, you can check some link:https://github.com/vert-x3/vertx-examples/tree/master/micrometer-metrics-examples[full working examples].
 They come along with few instructions to setup with Prometheus and view dashboards in Grafana.
 
 === Disable some metric domains

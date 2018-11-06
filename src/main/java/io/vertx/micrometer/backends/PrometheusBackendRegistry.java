@@ -16,7 +16,10 @@
  */
 package io.vertx.micrometer.backends;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -41,6 +44,18 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
   public PrometheusBackendRegistry(VertxPrometheusOptions options) {
     this.options = options;
     registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    if (options.isPublishQuantiles()) {
+      registry.config().meterFilter(
+        new MeterFilter() {
+          @Override
+          public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+            return DistributionStatisticConfig.builder()
+              .percentilesHistogram(true)
+              .build()
+              .merge(config);
+          }
+        });
+    }
   }
 
   @Override
