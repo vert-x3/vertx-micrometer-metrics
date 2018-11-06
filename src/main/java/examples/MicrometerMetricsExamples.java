@@ -16,6 +16,7 @@
 package examples;
 
 import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
@@ -25,8 +26,10 @@ import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.graphite.GraphiteMeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
@@ -220,5 +223,19 @@ public class MicrometerMetricsExamples {
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setMicrometerRegistry(myRegistry)
         .setEnabled(true)));
+  }
+
+  public void enablePercentiles() {
+    PrometheusMeterRegistry registry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
+    registry.config().meterFilter(
+        new MeterFilter() {
+          @Override
+          public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+            return DistributionStatisticConfig.builder()
+                .percentilesHistogram(true)
+                .build()
+                .merge(config);
+          }
+        });
   }
 }
