@@ -29,6 +29,11 @@ public class VertxPrometheusOptionsConverter {
             obj.setEnabled((Boolean)member.getValue());
           }
           break;
+        case "publishQuantiles":
+          if (member.getValue() instanceof Boolean) {
+            obj.setPublishQuantiles((Boolean)member.getValue());
+          }
+          break;
         case "startEmbeddedServer":
           if (member.getValue() instanceof Boolean) {
             obj.setStartEmbeddedServer((Boolean)member.getValue());
@@ -50,6 +55,7 @@ public class VertxPrometheusOptionsConverter {
       json.put("embeddedServerOptions", obj.getEmbeddedServerOptions().toJson());
     }
     json.put("enabled", obj.isEnabled());
+    json.put("publishQuantiles", obj.isPublishQuantiles());
     json.put("startEmbeddedServer", obj.isStartEmbeddedServer());
   }
 }

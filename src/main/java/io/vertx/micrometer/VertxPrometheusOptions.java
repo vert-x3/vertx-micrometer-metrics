@@ -43,10 +43,16 @@ public class VertxPrometheusOptions {
    */
   public static final String DEFAULT_EMBEDDED_SERVER_ENDPOINT = "/metrics";
 
+  /**
+   * Default value for publishing histogram quantiles = false.
+   */
+  public static final boolean DEFAULT_PUBLISH_QUANTILES = false;
+
   private boolean enabled;
   private boolean startEmbeddedServer;
   private HttpServerOptions embeddedServerOptions;
   private String embeddedServerEndpoint;
+  private boolean publishQuantiles;
 
   /**
    * Default constructor
@@ -55,6 +61,7 @@ public class VertxPrometheusOptions {
     enabled = DEFAULT_ENABLED;
     startEmbeddedServer = DEFAULT_START_EMBEDDED_SERVER;
     embeddedServerEndpoint = DEFAULT_EMBEDDED_SERVER_ENDPOINT;
+    publishQuantiles = DEFAULT_PUBLISH_QUANTILES;
   }
 
   /**
@@ -69,6 +76,7 @@ public class VertxPrometheusOptions {
     if (other.embeddedServerOptions != null) {
       embeddedServerOptions = new HttpServerOptions(other.embeddedServerOptions);
     }
+    publishQuantiles = other.publishQuantiles;
   }
 
   /**
@@ -153,5 +161,24 @@ public class VertxPrometheusOptions {
    */
   public String getEmbeddedServerEndpoint() {
     return embeddedServerEndpoint;
+  }
+
+  /**
+   * @return true if quantile stats are published
+   */
+  public boolean isPublishQuantiles() {
+    return publishQuantiles;
+  }
+
+  /**
+   * Set true to publish histogram stats, necessary to compute quantiles.
+   * Note that it generates many new timeseries for stats, which is why it is deactivated by default.
+   *
+   * @param publishQuantiles the publishing quantiles flag
+   * @return a reference to this, so the API can be used fluently
+   */
+  public VertxPrometheusOptions setPublishQuantiles(boolean publishQuantiles) {
+    this.publishQuantiles = publishQuantiles;
+    return this;
   }
 }
