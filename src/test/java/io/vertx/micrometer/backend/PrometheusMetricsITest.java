@@ -84,18 +84,11 @@ public class PrometheusMetricsITest {
     vertx.createHttpServer().requestHandler(router).exceptionHandler(context.exceptionHandler()).listen(8081);
 
     Async async = context.async();
-    HttpClientRequest req = vertx.createHttpClient()
-      .get(8081, "localhost", "/custom")
-      .handler(res -> {
-        context.assertEquals(200, res.statusCode());
-        res.bodyHandler(body -> {
-          context.verify(v -> assertThat(body.toString())
+    tryConnect(vertx, context, 8081, "localhost", "/custom", body -> {
+      context.verify(v -> assertThat(body)
             .contains("vertx_http_"));
-          async.complete();
-        });
-      })
-      .exceptionHandler(context.exceptionHandler());
-    req.end();
+      async.complete();
+    }, 0);
     async.awaitSuccess(10000);
   }
 
