@@ -81,7 +81,7 @@ public class PrometheusMetricsITest {
       String response = prometheusRegistry.scrape();
       routingContext.response().end(response);
     });
-    vertx.createHttpServer().requestHandler(router).listen(8081);
+    vertx.createHttpServer().requestHandler(router).exceptionHandler(context.exceptionHandler()).listen(8081);
 
     Async async = context.async();
     HttpClientRequest req = vertx.createHttpClient()
@@ -93,7 +93,8 @@ public class PrometheusMetricsITest {
             .contains("vertx_http_"));
           async.complete();
         });
-      });
+      })
+      .exceptionHandler(context.exceptionHandler());
     req.end();
     async.awaitSuccess(10000);
   }
