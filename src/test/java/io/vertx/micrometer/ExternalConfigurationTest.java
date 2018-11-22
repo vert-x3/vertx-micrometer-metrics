@@ -18,14 +18,12 @@ package io.vertx.micrometer;
 
 import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.backend.PrometheusTestHelper;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,13 +32,9 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Thomas Segismont
@@ -72,8 +66,9 @@ public class ExternalConfigurationTest {
 
     startVertx(context, metricsOptions);
 
-    Set<String> metrics = getMetricNames(context, prometheusOptions);
-    assertTrue(metrics.toString(), metrics.stream().anyMatch(s -> s.startsWith("vertx_http_client_")));
+    Set<String> metrics = PrometheusTestHelper.getMetricNames(vertx, context, 9999, "localhost", "/metrics", 3000);
+    assertThat(metrics).contains("vertx_http_client_connections")
+      .doesNotContain("jvm_classes_loaded");
   }
 
   @Test
@@ -89,38 +84,12 @@ public class ExternalConfigurationTest {
 
     startVertx(context, metricsOptions);
 
-    Set<String> metrics = getMetricNames(context, prometheusOptions);
-
-    Stream<String> expectedMetrics = Stream.<String>builder()
-      .add("jvm_classes_loaded") // from classloader metrics
-      .add("jvm_buffer_count") // from JVM memory metrics
-      .add("system_cpu_count") // from processor metrics
-      .add("jvm_threads_live") // from JVM thread metrics
-      .build();
-    assertTrue(metrics.toString(), metrics.containsAll(expectedMetrics.collect(toList())));
-  }
-
-  private Set<String> getMetricNames(TestContext context, VertxPrometheusOptions prometheusOptions) {
-    HttpClientOptions httpClientOptions = new HttpClientOptions()
-      .setDefaultPort(prometheusOptions.getEmbeddedServerOptions().getPort());
-
-    Async async = context.async();
-    Set<String> metrics = Collections.synchronizedSet(new HashSet<>());
-    HttpClient httpClient = vertx.createHttpClient(httpClientOptions);
-    httpClient.get(prometheusOptions.getEmbeddedServerEndpoint()).handler(resp -> {
-      RecordParser parser = RecordParser.newDelimited("\n", resp);
-      parser.exceptionHandler(context::fail).endHandler(v -> {
-        async.countDown();
-      }).handler(buffer -> {
-        String line = buffer.toString();
-        if (line.startsWith("# TYPE")) {
-          metrics.add(line.split(" ")[2]);
-        }
-      });
-    }).exceptionHandler(context::fail).end();
-
-    async.await(3000);
-    return metrics;
+    Set<String> metrics = PrometheusTestHelper.getMetricNames(vertx, context, 9999, "localhost", "/metrics", 3000);
+    assertThat(metrics).contains(
+      "jvm_classes_loaded", // from classloader metrics
+      "jvm_buffer_count", // from JVM memory metrics
+      "system_cpu_count", // from processor metrics
+      "jvm_threads_live"); // from JVM thread metrics
   }
 
   private void startVertx(TestContext context, MicrometerMetricsOptions metricsOptions) throws Exception {
