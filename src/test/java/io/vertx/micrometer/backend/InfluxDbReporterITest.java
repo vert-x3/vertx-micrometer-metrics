@@ -49,7 +49,7 @@ public class InfluxDbReporterITest {
     // Mock an influxdb server
     Async asyncInflux = context.async();
     InfluxDbTestHelper.simulateInfluxServer(vertxForSimulatedServer, context, 8086, body -> {
-      if (body.contains("vertx.eventbus.handlers,address=test-eb,metric_type=gauge value=1")) {
+      if (body.contains("vertx_eventbus_handlers,address=test-eb,metric_type=gauge value=1")) {
         asyncInflux.complete();
       }
     });

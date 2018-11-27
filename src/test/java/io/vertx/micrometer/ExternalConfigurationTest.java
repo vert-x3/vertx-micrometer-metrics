@@ -86,10 +86,10 @@ public class ExternalConfigurationTest {
 
     Set<String> metrics = PrometheusTestHelper.getMetricNames(vertx, context, 9999, "localhost", "/metrics", 3000);
     assertThat(metrics).contains(
-      "jvm_classes_loaded", // from classloader metrics
-      "jvm_buffer_count", // from JVM memory metrics
+      "jvm_classes_loaded_classes", // from classloader metrics
+      "jvm_buffer_count_buffers", // from JVM memory metrics
       "system_cpu_count", // from processor metrics
-      "jvm_threads_live"); // from JVM thread metrics
+      "jvm_threads_live_threads"); // from JVM thread metrics
   }
 
   private void startVertx(TestContext context, MicrometerMetricsOptions metricsOptions) throws Exception {
