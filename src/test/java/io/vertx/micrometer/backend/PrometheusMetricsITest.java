@@ -19,7 +19,6 @@ package io.vertx.micrometer.backend;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -33,8 +32,6 @@ import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,12 +56,12 @@ public class PrometheusMetricsITest {
         .setEnabled(true)));
 
     Async async = context.async();
-    tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
-      context.verify(v -> assertThat(body)
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+      context.verify(v -> assertThat(body.toString())
         .contains("vertx_http_client_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\",} 1.0")
         .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
       async.complete();
-    }, 0);
+    });
     async.awaitSuccess(10000);
   }
 
@@ -84,11 +81,11 @@ public class PrometheusMetricsITest {
     vertx.createHttpServer().requestHandler(router).exceptionHandler(context.exceptionHandler()).listen(8081);
 
     Async async = context.async();
-    tryConnect(vertx, context, 8081, "localhost", "/custom", body -> {
-      context.verify(v -> assertThat(body)
+    PrometheusTestHelper.tryConnect(vertx, context, 8081, "localhost", "/custom", body -> {
+      context.verify(v -> assertThat(body.toString())
             .contains("vertx_http_"));
       async.complete();
-    }, 0);
+    });
     async.awaitSuccess(10000);
   }
 
@@ -104,12 +101,12 @@ public class PrometheusMetricsITest {
         .setEnabled(true)));
 
     Async async = context.async();
-    tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
-      context.verify(v -> assertThat(body)
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+      context.verify(v -> assertThat(body.toString())
         .contains("vertx_http_client_connections{local=\"?\",remote=\"localhost:9090\",} 1.0")
         .doesNotContain("vertx_http_server_connections{local=\"0.0.0.0:9090\",remote=\"_\",} 1.0"));
       async.complete();
-    }, 0);
+    });
     async.awaitSuccess(10000);
   }
 
@@ -131,15 +128,15 @@ public class PrometheusMetricsITest {
 
     // Read metrics on HTTP endpoint for eventbus metrics
     Async async = context.async();
-    tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
-      context.verify(v -> assertThat(body)
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+      context.verify(v -> assertThat(body.toString())
         .contains("vertx_eventbus_published_total{address=\"test-eb\",side=\"local\",} 1.0",
           "vertx_eventbus_received_total{address=\"test-eb\",side=\"local\",} 1.0",
           "vertx_eventbus_handlers{address=\"test-eb\",} 1.0",
           "vertx_eventbus_delivered_total{address=\"test-eb\",side=\"local\",} 1.0",
           "vertx_eventbus_processingTime_seconds_count{address=\"test-eb\",} 1.0"));
       async.complete();
-    }, 0);
+    });
     async.awaitSuccess(15000);
   }
 
@@ -155,35 +152,11 @@ public class PrometheusMetricsITest {
         .setEnabled(true)));
 
     Async async = context.async();
-    tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
-      context.verify(v -> assertThat(body)
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+      context.verify(v -> assertThat(body.toString())
         .contains("vertx_http_client_responseTime_seconds_bucket"));
       async.complete();
-    }, 0);
+    });
     async.awaitSuccess(10000);
-  }
-
-  private static void tryConnect(Vertx vertx, TestContext context, int port, String host, String requestURI, Consumer<String> bodyReader, int attempt) {
-    HttpClientRequest req = vertx.createHttpClient()
-      .get(port, host, requestURI)
-      .handler(res -> {
-        context.assertEquals(200, res.statusCode());
-        res.bodyHandler(body -> bodyReader.accept(body.toString()));
-      })
-      .exceptionHandler(e -> {
-        if (attempt < 10) {
-          System.out.println(e);
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException e1) {
-            e1.printStackTrace();
-          }
-          System.out.println("retrying...");
-          tryConnect(vertx, context, port, host, requestURI, bodyReader, attempt + 1);
-        } else {
-          System.out.println("aborting");
-        }
-      });
-    req.end();
   }
 }
