@@ -175,15 +175,12 @@ public class VertxHttpClientServerMetricsTest {
   private void httpRequest(HttpClient httpClient, TestContext ctx) {
     Async async = ctx.async(HTTP_SENT_COUNT);
     for (int i = 0; i < HTTP_SENT_COUNT; i++) {
-      httpClient.post(9195, "127.0.0.1", "/resource", response -> {
+      httpClient.post(9195, "127.0.0.1", "/resource", ctx.asyncAssertSuccess(response -> {
         async.countDown();
         if (response.statusCode() != 200) {
           ctx.fail(response.statusMessage());
         }
-      }).exceptionHandler(t -> {
-        async.countDown();
-        ctx.fail(t);
-      }).putHeader("Content-Length", String.valueOf(CLIENT_REQUEST.getBytes().length))
+      })).putHeader("Content-Length", String.valueOf(CLIENT_REQUEST.getBytes().length))
         .write(CLIENT_REQUEST)
         .end();
     }
