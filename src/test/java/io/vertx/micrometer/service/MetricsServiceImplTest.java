@@ -3,6 +3,7 @@ package io.vertx.micrometer.service;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -131,14 +132,17 @@ public class MetricsServiceImplTest {
   private void runClientRequests(TestContext ctx, HttpClient httpClient, int count, String path) {
     Async async = ctx.async(count);
     for (int i = 0; i < count; i++) {
-      httpClient.post(9195, "127.0.0.1", path, response -> {
-        async.countDown();
-        if (response.statusCode() != 200) {
-          ctx.fail(response.statusMessage());
+      httpClient.post(9195, "127.0.0.1", path, ar -> {
+        if (ar.succeeded()) {
+          HttpClientResponse response = ar.result();
+          async.countDown();
+          if (response.statusCode() != 200) {
+            ctx.fail(response.statusMessage());
+          }
+        } else {
+          async.countDown();
+          ctx.fail(ar.cause());
         }
-      }).exceptionHandler(t -> {
-        async.countDown();
-        ctx.fail(t);
       }).putHeader("Content-Length", String.valueOf(CLIENT_REQUEST.getBytes().length))
         .write(CLIENT_REQUEST)
         .end();

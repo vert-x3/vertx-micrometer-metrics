@@ -96,18 +96,19 @@ public final class PrometheusTestHelper {
                                  int maxAttempts,
                                  long sleepBeforeRetryMs,
                                  int attempt) {
-    HttpClientRequest req = vertx.createHttpClient()
-      .get(port, host, requestURI)
-      .handler(respHandler)
-      .exceptionHandler(e -> {
-        if (attempt < maxAttempts) {
-          vertx.setTimer(sleepBeforeRetryMs, l -> {
-            tryConnect(vertx, context, port, host, requestURI, respHandler, maxAttempts, sleepBeforeRetryMs, attempt + 1);
-          });
+    vertx.createHttpClient()
+      .getNow(port, host, requestURI, ar -> {
+        if (ar.succeeded()) {
+          respHandler.handle(ar.result());
         } else {
-          context.fail(e);
+          if (attempt < maxAttempts) {
+            vertx.setTimer(sleepBeforeRetryMs, l -> {
+              tryConnect(vertx, context, port, host, requestURI, respHandler, maxAttempts, sleepBeforeRetryMs, attempt + 1);
+            });
+          } else {
+            context.fail(ar.cause());
+          }
         }
       });
-    req.end();
   }
 }
