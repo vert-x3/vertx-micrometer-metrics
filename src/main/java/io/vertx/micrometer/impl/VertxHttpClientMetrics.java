@@ -44,8 +44,8 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     super(registry, MetricsDomain.HTTP_CLIENT);
     requests = longGauges("requests", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestCount = counters("requestCount", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    responseCount = counters("responseCount", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_CODE, Label.HTTP_METHOD);
+    responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    responseCount = counters("responseCount", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
@@ -90,7 +90,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
       Handler handler = new Handler(remote, request.path(),request.method().name());
       requests.get(local, remote, handler.path, handler.method).increment();
       requestCount.get(local, remote, handler.path, handler.method).increment();
-      handler.timer = responseTime.start(local, remote, handler.path, handler.method);
+      handler.timer = responseTime.start();
       return handler;
     }
 
@@ -114,9 +114,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
     @Override
     public void responseEnd(Handler handler, HttpClientResponse response) {
+      String code = String.valueOf(response.statusCode());
       requests.get(local, handler.address, handler.path, handler.method).decrement();
-      responseCount.get(local, handler.address, handler.path, String.valueOf(response.statusCode()), handler.method).increment();
-      handler.timer.end();
+      responseCount.get(local, handler.address, handler.path, handler.method, code).increment();
+      handler.timer.end(local, handler.address, handler.path, handler.method, code);
     }
 
     @Override
@@ -150,6 +151,6 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
       this.address = address;
       this.path = path;
       this.method = method;
-        }
     }
+  }
 }

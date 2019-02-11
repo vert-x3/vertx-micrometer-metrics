@@ -66,23 +66,23 @@ class VertxPoolMetrics extends AbstractMetrics {
     @Override
     public Timers.EventTiming submitted() {
       queueSize.get(poolType, poolName).increment();
-      return queueDelay.start(poolType, poolName);
+      return queueDelay.start();
     }
 
     @Override
     public void rejected(Timers.EventTiming submitted) {
       queueSize.get(poolType, poolName).decrement();
-      submitted.end();
+      submitted.end(poolType, poolName);
     }
 
     @Override
     public Timers.EventTiming begin(Timers.EventTiming submitted) {
       queueSize.get(poolType, poolName).decrement();
-      submitted.end();
+      submitted.end(poolType, poolName);
       LongAdder l = inUse.get(poolType, poolName);
       l.increment();
       checkRatio(l.longValue());
-      return usage.start(poolType, poolName);
+      return usage.start();
     }
 
     @Override
@@ -90,7 +90,7 @@ class VertxPoolMetrics extends AbstractMetrics {
       LongAdder l = inUse.get(poolType, poolName);
       l.decrement();
       checkRatio(l.longValue());
-      begin.end();
+      begin.end(poolType, poolName);
       completed.get(poolType, poolName).increment();
     }
 
