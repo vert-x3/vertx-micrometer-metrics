@@ -89,14 +89,14 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void beginHandleMessage(Handler handler, boolean local) {
     if (!handler.isIgnored()) {
       pending.get(handler.address, Labels.getSide(local)).decrement();
-      handler.timer = processTime.start(handler.address);
+      handler.timer = processTime.start();
     }
   }
 
   @Override
   public void endHandleMessage(Handler handler, Throwable failure) {
     if (!handler.isIgnored()) {
-      handler.timer.end();
+      handler.timer.end(handler.address);
       if (failure != null) {
         errorCount.get(handler.address, failure.getClass().getSimpleName()).increment();
       }
