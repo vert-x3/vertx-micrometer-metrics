@@ -45,7 +45,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     requests = longGauges("requests", "Number of requests being processed", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestCount = counters("requestCount", "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     requestResetCount = counters("requestResetCount", "Number of requests reset", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    processingTime = timers("responseTime", "Request processing time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    processingTime = timers("responseTime", "Request processing time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
@@ -64,7 +64,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     public Handler requestBegin(String remote, HttpServerRequest request) {
       Handler handler = new Handler(remote, request.path(), request.method().name());
       requests.get(local, remote, handler.path, handler.method).increment();
-      handler.timer = processingTime.start(local, remote, handler.path, handler.method);
+      handler.timer = processingTime.start();
       return handler;
     }
 
@@ -83,8 +83,9 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
 
     @Override
     public void responseEnd(Handler handler, HttpServerResponse response) {
-      handler.timer.end();
-      requestCount.get(local, handler.address, handler.path, handler.method, String.valueOf(response.getStatusCode())).increment();
+      String code = String.valueOf(response.getStatusCode());
+      handler.timer.end(local, handler.address, handler.path, handler.method, code);
+      requestCount.get(local, handler.address, handler.path, handler.method, code).increment();
       requests.get(local, handler.address, handler.path, handler.method).decrement();
     }
 

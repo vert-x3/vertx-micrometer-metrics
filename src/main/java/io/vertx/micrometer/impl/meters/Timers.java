@@ -50,22 +50,22 @@ public class Timers {
       .register(registry);
   }
 
-  public EventTiming start(String... values) {
-    Timer t = get(values);
-    return new EventTiming(t);
+  public EventTiming start() {
+    return new EventTiming(this);
   }
 
   public static class EventTiming {
-    private final Timer timer;
+    private final Timers ref;
     private final long nanoStart;
 
-    private EventTiming(Timer timer) {
-      this.timer = timer;
+    private EventTiming(Timers ref) {
+      this.ref = ref;
       this.nanoStart = System.nanoTime();
     }
 
-    public void end() {
-      timer.record(System.nanoTime() - nanoStart, TimeUnit.NANOSECONDS);
+    public void end(String... values) {
+      Timer t = ref.get(values);
+      t.record(System.nanoTime() - nanoStart, TimeUnit.NANOSECONDS);
     }
   }
 }

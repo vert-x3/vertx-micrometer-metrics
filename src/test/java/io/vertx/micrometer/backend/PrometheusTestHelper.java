@@ -19,7 +19,6 @@ package io.vertx.micrometer.backend;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.unit.Async;

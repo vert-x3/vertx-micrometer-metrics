@@ -56,11 +56,17 @@ public class PrometheusMetricsITest {
         .setEnabled(true)));
 
     Async async = context.async();
-    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
-      context.verify(v -> assertThat(body.toString())
-        .contains("vertx_http_client_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\",} 1.0")
-        .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
-      async.complete();
+    // First "blank" connection to trigger some metrics
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", r1 -> {
+      // Delay to make "sure" metrics are populated
+      vertx.setTimer(500, l ->
+        // Second connection, this time actually reading the metrics content
+        PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+            context.verify(v2 -> assertThat(body.toString())
+              .contains("vertx_http_client_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
+              .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
+            async.complete();
+        }));
     });
     async.awaitSuccess(10000);
   }
@@ -148,14 +154,20 @@ public class PrometheusMetricsITest {
           .setPublishQuantiles(true)
           .setStartEmbeddedServer(true)
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-        .addLabels(Label.LOCAL, Label.HTTP_PATH, Label.REMOTE)
+        .addLabels(Label.LOCAL, Label.HTTP_PATH, Label.REMOTE, Label.HTTP_CODE)
         .setEnabled(true)));
 
     Async async = context.async();
-    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
-      context.verify(v -> assertThat(body.toString())
-        .contains("vertx_http_client_responseTime_seconds_bucket"));
-      async.complete();
+    // First "blank" connection to trigger some metrics
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", r1 -> {
+      // Delay to make "sure" metrics are populated
+      vertx.setTimer(500, l ->
+        // Second connection, this time actually reading the metrics content
+        PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+          context.verify(v2 -> assertThat(body.toString())
+            .contains("vertx_http_client_responseTime_seconds_bucket{code=\"200\""));
+          async.complete();
+        }));
     });
     async.awaitSuccess(10000);
   }
