@@ -95,11 +95,6 @@ class VertxPoolMetrics extends AbstractMetrics {
     }
 
     @Override
-    public boolean isEnabled() {
-      return true;
-    }
-
-    @Override
     public void close() {
     }
 

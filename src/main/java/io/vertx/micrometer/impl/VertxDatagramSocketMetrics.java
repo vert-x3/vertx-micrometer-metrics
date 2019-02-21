@@ -65,11 +65,6 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
   }
 
   @Override
-  public boolean isEnabled() {
-    return true;
-  }
-
-  @Override
   public void close() {
   }
 }

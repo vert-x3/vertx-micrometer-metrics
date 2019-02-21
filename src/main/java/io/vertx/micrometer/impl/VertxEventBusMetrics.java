@@ -148,11 +148,6 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   }
 
   @Override
-  public boolean isEnabled() {
-    return true;
-  }
-
-  @Override
   public void close() {
   }
 

@@ -132,11 +132,6 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     }
 
     @Override
-    public boolean isEnabled() {
-      return true;
-    }
-
-    @Override
     public void close() {
     }
   }
