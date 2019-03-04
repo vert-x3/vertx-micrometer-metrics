@@ -82,8 +82,8 @@ public class VertxEventBusMetricsTest {
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": true, \"sleep\": 10}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": true, \"sleep\": 10}"));
-    vertx.eventBus().publish("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
-    vertx.eventBus().publish("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
+    vertx.eventBus().send("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"), ar -> {});
+    vertx.eventBus().send("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"), ar -> {});
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30, \"last\": true}"));
     allReceived.awaitSuccess();
 
@@ -94,7 +94,7 @@ public class VertxEventBusMetricsTest {
       dp("vertx.eventbus.handlers[address=testSubject]$VALUE", instances),
       dp("vertx.eventbus.pending[address=no handler,side=local]$VALUE", 0),
       dp("vertx.eventbus.pending[address=testSubject,side=local]$VALUE", 0),
-      dp("vertx.eventbus.published[address=no handler,side=local]$COUNT", 2),
+      dp("vertx.eventbus.sent[address=no handler,side=local]$COUNT", 2),
       dp("vertx.eventbus.published[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.received[address=no handler,side=local]$COUNT", 2),
       dp("vertx.eventbus.received[address=testSubject,side=local]$COUNT", 8),
