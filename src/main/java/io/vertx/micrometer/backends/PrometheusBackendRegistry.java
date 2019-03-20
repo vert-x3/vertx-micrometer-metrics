@@ -16,12 +16,14 @@
  */
 package io.vertx.micrometer.backends;
 
+import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -43,7 +45,11 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
 
   public PrometheusBackendRegistry(VertxPrometheusOptions options) {
     this.options = options;
-    registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    CollectorRegistry collectorRegistry = options.getCollectorRegistry();
+    if (collectorRegistry == null) {
+      collectorRegistry = new CollectorRegistry();
+    }
+    registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM);
     if (options.isPublishQuantiles()) {
       registry.config().meterFilter(
         new MeterFilter() {

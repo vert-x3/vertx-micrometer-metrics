@@ -30,6 +30,7 @@ import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.graphite.GraphiteMeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.CollectorRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
@@ -103,6 +104,15 @@ public class MicrometerMetricsExamples {
     Router router = Router.router(vertx);
     router.route("/metrics").handler(PrometheusScrapingHandler.create());
     vertx.createHttpServer().requestHandler(router).listen(8080);
+  }
+
+  public void setupPrometheusCollectorRegistry() {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions()
+          .setEnabled(true)
+          .setCollectorRegistry(new CollectorRegistry()))
+        .setEnabled(true)));
   }
 
   public void setupMinimalJMX() {

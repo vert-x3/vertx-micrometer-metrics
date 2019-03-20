@@ -16,6 +16,7 @@
  */
 package io.vertx.micrometer;
 
+import io.prometheus.client.CollectorRegistry;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
@@ -53,6 +54,7 @@ public class VertxPrometheusOptions {
   private HttpServerOptions embeddedServerOptions;
   private String embeddedServerEndpoint;
   private boolean publishQuantiles;
+  private CollectorRegistry collectorRegistry;
 
   /**
    * Default constructor
@@ -180,5 +182,21 @@ public class VertxPrometheusOptions {
   public VertxPrometheusOptions setPublishQuantiles(boolean publishQuantiles) {
     this.publishQuantiles = publishQuantiles;
     return this;
+  }
+
+  /**
+   * Set collector registry. The new one will be created if not set.
+   * @param collectorRegistry the registry
+   */
+  public VertxPrometheusOptions setCollectorRegistry(CollectorRegistry collectorRegistry) {
+    this.collectorRegistry = collectorRegistry;
+    return this;
+  }
+
+  /**
+   * Get the collector registry if configured.
+   */
+  public CollectorRegistry getCollectorRegistry() {
+    return collectorRegistry;
   }
 }
