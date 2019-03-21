@@ -279,7 +279,17 @@ As an example, here is a custom timer that will track the execution time of a pi
 For more examples, documentation about the Micrometer registry and how to create metrics, check
 link:http://micrometer.io/docs/concepts#_registry[Micrometer doc].
 
-=== Other instrumentation
+=== Reusing an existing registry
+
+It is possible to reuse an existing Micrometer registry (or `CollectorRegistry` from the Prometheus java client),
+and inject it into the Vert.x metrics options:
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#useExistingRegistry()}
+----
+
+=== JVM or other instrumentations
 
 Since plain access to Micrometer registries is provided, it is possible to leverage the Micrometer API.
 For instance, to instrument the JVM:

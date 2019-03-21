@@ -19,6 +19,7 @@ package io.vertx.micrometer.backends;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MetricsDomain;
@@ -57,7 +58,13 @@ public final class BackendRegistries {
     return REGISTRIES.computeIfAbsent(options.getRegistryName(), k -> {
       final BackendRegistry reg;
       if (options.getMicrometerRegistry() != null) {
-        reg = options::getMicrometerRegistry;
+        if (options.getMicrometerRegistry() instanceof PrometheusMeterRegistry && options.getPrometheusOptions() != null) {
+          // If a Prometheus registry is provided, extra initialization steps may have to be performed
+          reg = new PrometheusBackendRegistry(options.getPrometheusOptions(), (PrometheusMeterRegistry) options.getMicrometerRegistry());
+        } else {
+          // Other backend registries have no special extra steps
+          reg = options::getMicrometerRegistry;
+        }
       } else if (options.getInfluxDbOptions() != null && options.getInfluxDbOptions().isEnabled()) {
         reg = new InfluxDbBackendRegistry(options.getInfluxDbOptions());
       } else if (options.getPrometheusOptions() != null && options.getPrometheusOptions().isEnabled()) {
