@@ -29,7 +29,9 @@ import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.graphite.GraphiteMeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.CollectorRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
@@ -245,5 +247,23 @@ public class MicrometerMetricsExamples {
                 .merge(config);
           }
         });
+  }
+
+  public void useExistingRegistry() {
+    // This registry might be used to collect metrics other than Vert.x ones
+    PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+
+    // You could also reuse an existing registry from the Prometheus java client:
+    CollectorRegistry prometheusClientRegistry = new CollectorRegistry();
+    registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusClientRegistry, Clock.SYSTEM);
+
+    // It's reused in MicrometerMetricsOptions.
+    // Prometheus options configured here, such as "setPublishQuantiles(true)", will affect the whole registry.
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setPublishQuantiles(true))
+        .setMicrometerRegistry(registry)
+        .setEnabled(true)));
   }
 }

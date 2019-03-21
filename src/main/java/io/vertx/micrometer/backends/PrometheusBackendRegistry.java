@@ -42,8 +42,12 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
   private Vertx vertx;
 
   public PrometheusBackendRegistry(VertxPrometheusOptions options) {
+    this(options, new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
+  }
+
+  public PrometheusBackendRegistry(VertxPrometheusOptions options, PrometheusMeterRegistry registry) {
     this.options = options;
-    registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    this.registry = registry;
     if (options.isPublishQuantiles()) {
       registry.config().meterFilter(
         new MeterFilter() {
