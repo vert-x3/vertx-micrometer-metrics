@@ -111,6 +111,34 @@ public class VertxHttpClientServerMetricsTest {
   }
 
   @Test
+  public void shouldReportHttpServerMetricsWithoutWS(TestContext ctx) throws InterruptedException {
+    runClientRequests(ctx, false);
+
+    waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
+      value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
+
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.server."));
+    assertThat(datapoints).extracting(Datapoint::id).containsOnly(
+      "vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
+      "vertx.http.server.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
+      "vertx.http.server.connections[local=127.0.0.1:9195,remote=_]$VALUE",
+      "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
+      "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL",
+      "vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT",
+      "vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL",
+      "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL_TIME",
+      "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
+      "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$MAX");
+
+    assertThat(datapoints).contains(
+      dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+      dp("vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT));
+  }
+
+  @Test
   public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
     runClientRequests(ctx, true);
 
@@ -132,13 +160,16 @@ public class VertxHttpClientServerMetricsTest {
       "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
       "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$MAX",
       // Following ones result from the WS connection
-      "vertx.http.server.requestResetCount[local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
-      "vertx.http.server.requests[local=127.0.0.1:9195,method=GET,path=/,remote=_]$VALUE");
+      "vertx.http.server.requests[local=127.0.0.1:9195,method=GET,path=/,remote=_]$VALUE",
+      "vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
+      "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=GET,path=/,remote=_]$TOTAL_TIME",
+      "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
+      "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=GET,path=/,remote=_]$MAX");
 
     assertThat(datapoints).contains(
       dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * (SENT_COUNT + 1)),
       dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
+      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * (SENT_COUNT + 1)),
       dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
       dp("vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT));
   }
