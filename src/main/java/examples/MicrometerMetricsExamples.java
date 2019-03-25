@@ -253,7 +253,7 @@ public class MicrometerMetricsExamples {
     // This registry might be used to collect metrics other than Vert.x ones
     PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
-    // You could also reuse an existing registry from the Prometheus java client:
+    // You could also reuse an existing registry from the Prometheus Java client:
     CollectorRegistry prometheusClientRegistry = new CollectorRegistry();
     registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusClientRegistry, Clock.SYSTEM);
 
