@@ -21,14 +21,18 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.influx.InfluxConfig;
 import io.micrometer.influx.InfluxMeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -110,5 +114,29 @@ public class CustomMicrometerMetricsITest {
 
     // Await influx
     asyncInflux.awaitSuccess();
+  }
+
+  @Test
+  public void shouldPublishQuantilesWithProvidedRegistry(TestContext context) throws Exception {
+    PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    vertx = Vertx.vertx(new VertxOptions()
+      .setMetricsOptions(new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setPublishQuantiles(true)
+          .setStartEmbeddedServer(true)
+          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+        .setMicrometerRegistry(registry)
+        .setEnabled(true)));
+
+    Async async = context.async();
+    // Dummy connection to trigger some metrics
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", r1 -> {
+      // Delay to make "sure" metrics are populated
+      vertx.setTimer(500, l -> {
+        assertThat(registry.scrape()).contains("vertx_http_client_responseTime_seconds_bucket{code=\"200\"");
+        async.complete();
+      });
+    });
+    async.awaitSuccess(10000);
   }
 }
