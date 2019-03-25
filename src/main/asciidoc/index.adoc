@@ -281,7 +281,7 @@ link:http://micrometer.io/docs/concepts#_registry[Micrometer doc].
 
 === Reusing an existing registry
 
-It is possible to reuse an existing Micrometer registry (or `CollectorRegistry` from the Prometheus java client),
+It is possible to reuse an existing Micrometer registry (or `CollectorRegistry` from the Prometheus Java client),
 and inject it into the Vert.x metrics options:
 
 [source,$lang]
