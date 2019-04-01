@@ -25,6 +25,8 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.micrometer.Label;
+import io.vertx.micrometer.Match;
+import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
@@ -46,7 +48,7 @@ public class PrometheusMetricsITest {
   }
 
   @Test
-  public void shouldStartEmbeddedServer(TestContext context) throws Exception {
+  public void shouldStartEmbeddedServer(TestContext context) {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
@@ -147,7 +149,7 @@ public class PrometheusMetricsITest {
   }
 
   @Test
-  public void shouldPublishPercentileStats(TestContext context) throws Exception {
+  public void shouldPublishPercentileStats(TestContext context) {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
@@ -166,6 +168,37 @@ public class PrometheusMetricsITest {
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
           context.verify(v2 -> assertThat(body.toString())
             .contains("vertx_http_client_responseTime_seconds_bucket{code=\"200\""));
+          async.complete();
+        }));
+    });
+    async.awaitSuccess(10000);
+  }
+
+  @Test
+  public void shouldCanMatchLabels(TestContext context) throws Exception {
+    vertx = Vertx.vertx(new VertxOptions()
+      .setMetricsOptions(new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setStartEmbeddedServer(true)
+          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+        .addLabels(Label.HTTP_PATH)
+        .addLabelMatch(new Match()
+          .setDomain(MetricsDomain.HTTP_CLIENT)
+          .setValue(".*")
+          .setLabel(Label.HTTP_PATH.toString())
+          .setType(MatchType.REGEX))
+        .setEnabled(true)));
+
+    Async async = context.async();
+    // First "blank" connection to trigger some metrics
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", r1 -> {
+      // Delay to make "sure" metrics are populated
+      vertx.setTimer(500, l ->
+        // Second connection, this time actually reading the metrics content
+        PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
+          context.verify(v2 -> assertThat(body.toString())
+            .contains("vertx_http_client_requests{method=\"GET\",path=\"/metrics\",}")
+            .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
           async.complete();
         }));
     });

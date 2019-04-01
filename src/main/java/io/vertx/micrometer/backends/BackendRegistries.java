@@ -157,6 +157,9 @@ public final class BackendRegistries {
                 return true;
               }
               String tagValue = id.getTag(m.getLabel());
+              if (tagValue == null) {
+                return false;
+              }
               return pattern.matcher(tagValue).matches();
             }));
           } else {
