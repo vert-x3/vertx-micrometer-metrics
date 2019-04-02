@@ -45,8 +45,10 @@ public final class Labels {
     }
     List<Tag> tags = new ArrayList<>(keys.length);
     for (int i = 0; i < keys.length; i++) {
-      String lowKey = keys[i].toString();
-      tags.add(Tag.of(lowKey, values[i]));
+      if (values[i] != null) {
+        String lowKey = keys[i].toString();
+        tags.add(Tag.of(lowKey, values[i]));
+      }
     }
     return tags;
   }
