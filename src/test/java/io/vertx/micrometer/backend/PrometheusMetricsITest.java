@@ -175,7 +175,7 @@ public class PrometheusMetricsITest {
   }
 
   @Test
-  public void shouldCanMatchLabels(TestContext context) throws Exception {
+  public void canMatchLabels(TestContext context) {
     vertx = Vertx.vertx(new VertxOptions()
       .setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
