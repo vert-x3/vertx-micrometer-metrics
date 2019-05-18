@@ -58,7 +58,7 @@ public final class BackendRegistries {
     return REGISTRIES.computeIfAbsent(options.getRegistryName(), k -> {
       final BackendRegistry reg;
       if (options.getMicrometerRegistry() != null) {
-        if (options.getMicrometerRegistry() instanceof PrometheusMeterRegistry && options.getPrometheusOptions() != null) {
+        if (options.getPrometheusOptions() != null && options.getMicrometerRegistry() instanceof PrometheusMeterRegistry) {
           // If a Prometheus registry is provided, extra initialization steps may have to be performed
           reg = new PrometheusBackendRegistry(options.getPrometheusOptions(), (PrometheusMeterRegistry) options.getMicrometerRegistry());
         } else {
