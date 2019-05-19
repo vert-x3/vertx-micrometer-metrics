@@ -217,13 +217,13 @@ public class VertxHttpClientServerMetricsTest {
 
   private void wsRequest(HttpClient httpClient, TestContext ctx) {
     Async async = ctx.async();
-    httpClient.websocket(9195, "127.0.0.1", "", ws -> {
+    httpClient.webSocket(9195, "127.0.0.1", "", ctx.asyncAssertSuccess(ws -> {
       ws.handler(event -> {
         async.complete();
         ws.close();
       });
       ws.writeTextMessage(CLIENT_REQUEST);
-    }, ctx::fail);
+    }));
     async.await();
   }
 }
