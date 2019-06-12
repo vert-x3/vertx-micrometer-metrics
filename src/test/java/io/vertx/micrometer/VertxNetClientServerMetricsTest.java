@@ -3,6 +3,7 @@ package io.vertx.micrometer;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.net.NetClient;
@@ -59,7 +60,7 @@ public class VertxNetClientServerMetricsTest {
     Async serverReady = ctx.async();
     vertx.deployVerticle(new AbstractVerticle() {
       @Override
-      public void start(Future<Void> future) throws Exception {
+      public void start(Promise<Void> future) throws Exception {
         netServer = vertx.createNetServer();
         netServer
           .connectHandler(socket -> socket.handler(buffer -> socket.write(SERVER_RESPONSE)))

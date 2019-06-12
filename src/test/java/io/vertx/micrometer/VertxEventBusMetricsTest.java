@@ -3,6 +3,7 @@ package io.vertx.micrometer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
@@ -54,7 +55,7 @@ public class VertxEventBusMetricsTest {
     // Setup eventbus handler
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
-      public void start(Future<Void> future) throws Exception {
+      public void start(Promise<Void> future) throws Exception {
         vertx.eventBus().consumer("testSubject", msg -> {
           JsonObject body = (JsonObject) msg.body();
           try {
