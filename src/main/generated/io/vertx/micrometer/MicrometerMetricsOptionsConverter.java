@@ -4,12 +4,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter for {@link io.vertx.micrometer.MicrometerMetricsOptions}.
+ * Converter and Codec for {@link io.vertx.micrometer.MicrometerMetricsOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.micrometer.MicrometerMetricsOptions} original class using Vert.x codegen.
  */
-public class MicrometerMetricsOptionsConverter {
+public class MicrometerMetricsOptionsConverter implements JsonCodec<MicrometerMetricsOptions, JsonObject> {
+
+  public static final MicrometerMetricsOptionsConverter INSTANCE = new MicrometerMetricsOptionsConverter();
+
+  @Override public JsonObject encode(MicrometerMetricsOptions value) { return (value != null) ? value.toJson() : null; }
+
+  @Override public MicrometerMetricsOptions decode(JsonObject value) { return (value != null) ? new MicrometerMetricsOptions(value) : null; }
+
+  @Override public Class<MicrometerMetricsOptions> getTargetClass() { return MicrometerMetricsOptions.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MicrometerMetricsOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
@@ -31,12 +40,12 @@ public class MicrometerMetricsOptionsConverter {
           break;
         case "influxDbOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setInfluxDbOptions(new io.vertx.micrometer.VertxInfluxDbOptions((JsonObject)member.getValue()));
+            obj.setInfluxDbOptions(io.vertx.micrometer.VertxInfluxDbOptionsConverter.INSTANCE.decode((JsonObject)member.getValue()));
           }
           break;
         case "jmxMetricsOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setJmxMetricsOptions(new io.vertx.micrometer.VertxJmxMetricsOptions((JsonObject)member.getValue()));
+            obj.setJmxMetricsOptions(io.vertx.micrometer.VertxJmxMetricsOptionsConverter.INSTANCE.decode((JsonObject)member.getValue()));
           }
           break;
         case "jvmMetricsEnabled":
@@ -49,7 +58,7 @@ public class MicrometerMetricsOptionsConverter {
             java.util.ArrayList<io.vertx.micrometer.Match> list =  new java.util.ArrayList<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                list.add(new io.vertx.micrometer.Match((JsonObject)item));
+                list.add(io.vertx.micrometer.MatchConverter.INSTANCE.decode((JsonObject)item));
             });
             obj.setLabelMatches(list);
           }
@@ -58,7 +67,7 @@ public class MicrometerMetricsOptionsConverter {
           if (member.getValue() instanceof JsonArray) {
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                obj.addLabelMatch(new io.vertx.micrometer.Match((JsonObject)item));
+                obj.addLabelMatch(io.vertx.micrometer.MatchConverter.INSTANCE.decode((JsonObject)item));
             });
           }
           break;
@@ -74,7 +83,7 @@ public class MicrometerMetricsOptionsConverter {
           break;
         case "prometheusOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setPrometheusOptions(new io.vertx.micrometer.VertxPrometheusOptions((JsonObject)member.getValue()));
+            obj.setPrometheusOptions(io.vertx.micrometer.VertxPrometheusOptionsConverter.INSTANCE.decode((JsonObject)member.getValue()));
           }
           break;
         case "registryName":
@@ -98,10 +107,10 @@ public class MicrometerMetricsOptionsConverter {
     }
     json.put("enabled", obj.isEnabled());
     if (obj.getInfluxDbOptions() != null) {
-      json.put("influxDbOptions", obj.getInfluxDbOptions().toJson());
+      json.put("influxDbOptions", io.vertx.micrometer.VertxInfluxDbOptionsConverter.INSTANCE.encode(obj.getInfluxDbOptions()));
     }
     if (obj.getJmxMetricsOptions() != null) {
-      json.put("jmxMetricsOptions", obj.getJmxMetricsOptions().toJson());
+      json.put("jmxMetricsOptions", io.vertx.micrometer.VertxJmxMetricsOptionsConverter.INSTANCE.encode(obj.getJmxMetricsOptions()));
     }
     json.put("jvmMetricsEnabled", obj.isJvmMetricsEnabled());
     if (obj.getLabels() != null) {
@@ -110,7 +119,7 @@ public class MicrometerMetricsOptionsConverter {
       json.put("labels", array);
     }
     if (obj.getPrometheusOptions() != null) {
-      json.put("prometheusOptions", obj.getPrometheusOptions().toJson());
+      json.put("prometheusOptions", io.vertx.micrometer.VertxPrometheusOptionsConverter.INSTANCE.encode(obj.getPrometheusOptions()));
     }
     if (obj.getRegistryName() != null) {
       json.put("registryName", obj.getRegistryName());

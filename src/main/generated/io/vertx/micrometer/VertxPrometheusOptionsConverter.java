@@ -4,12 +4,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter for {@link io.vertx.micrometer.VertxPrometheusOptions}.
+ * Converter and Codec for {@link io.vertx.micrometer.VertxPrometheusOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.micrometer.VertxPrometheusOptions} original class using Vert.x codegen.
  */
-public class VertxPrometheusOptionsConverter {
+public class VertxPrometheusOptionsConverter implements JsonCodec<VertxPrometheusOptions, JsonObject> {
+
+  public static final VertxPrometheusOptionsConverter INSTANCE = new VertxPrometheusOptionsConverter();
+
+  @Override public JsonObject encode(VertxPrometheusOptions value) { return (value != null) ? value.toJson() : null; }
+
+  @Override public VertxPrometheusOptions decode(JsonObject value) { return (value != null) ? new VertxPrometheusOptions(value) : null; }
+
+  @Override public Class<VertxPrometheusOptions> getTargetClass() { return VertxPrometheusOptions.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, VertxPrometheusOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
@@ -21,7 +30,7 @@ public class VertxPrometheusOptionsConverter {
           break;
         case "embeddedServerOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setEmbeddedServerOptions(new io.vertx.core.http.HttpServerOptions((JsonObject)member.getValue()));
+            obj.setEmbeddedServerOptions(io.vertx.core.http.HttpServerOptionsConverter.INSTANCE.decode((JsonObject)member.getValue()));
           }
           break;
         case "enabled":
@@ -52,7 +61,7 @@ public class VertxPrometheusOptionsConverter {
       json.put("embeddedServerEndpoint", obj.getEmbeddedServerEndpoint());
     }
     if (obj.getEmbeddedServerOptions() != null) {
-      json.put("embeddedServerOptions", obj.getEmbeddedServerOptions().toJson());
+      json.put("embeddedServerOptions", io.vertx.core.http.HttpServerOptionsConverter.INSTANCE.encode(obj.getEmbeddedServerOptions()));
     }
     json.put("enabled", obj.isEnabled());
     json.put("publishQuantiles", obj.isPublishQuantiles());
