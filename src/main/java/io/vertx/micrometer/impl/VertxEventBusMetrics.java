@@ -76,7 +76,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   @Override
   public void handlerUnregistered(Handler handler) {
-    if (!handler.isIgnored()) {
+    if (isValid(handler)) {
       handlers.get(handler.address).decrement();
     }
   }
@@ -87,7 +87,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   @Override
   public void beginHandleMessage(Handler handler, boolean local) {
-    if (!handler.isIgnored()) {
+    if (isValid(handler)) {
       pending.get(handler.address, Labels.getSide(local)).decrement();
       handler.timer = processTime.start();
     }
@@ -95,7 +95,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   @Override
   public void endHandleMessage(Handler handler, Throwable failure) {
-    if (!handler.isIgnored()) {
+    if (isValid(handler)) {
       handler.timer.end(handler.address);
       if (failure != null) {
         errorCount.get(handler.address, failure.getClass().getSimpleName()).increment();
@@ -156,16 +156,16 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void close() {
   }
 
-  public static class Handler {
+  private static boolean isValid(Handler handler) {
+    return handler != null && handler.address != null;
+  }
+
+  static class Handler {
     private final String address;
     private Timers.EventTiming timer;
 
     Handler(String address) {
       this.address = address;
-    }
-
-    boolean isIgnored() {
-      return address == null;
     }
   }
 }
