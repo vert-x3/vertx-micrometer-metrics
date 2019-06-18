@@ -54,7 +54,7 @@ public class MetricsServiceImplTest {
       .requestHandler(req -> {
         // Timer as artificial processing time
         vertx.setTimer(30L, handler ->
-          req.response().setChunked(true).putHeader("Content-Type", "text/plain").write(SERVER_RESPONSE).end());
+          req.response().setChunked(true).putHeader("Content-Type", "text/plain").end(SERVER_RESPONSE));
       })
       .listen(9195, "127.0.0.1", r -> {
         if (r.failed()) {
@@ -144,8 +144,7 @@ public class MetricsServiceImplTest {
           ctx.fail(ar.cause());
         }
       }).putHeader("Content-Length", String.valueOf(CLIENT_REQUEST.getBytes().length))
-        .write(CLIENT_REQUEST)
-        .end();
+        .end(CLIENT_REQUEST);
     }
     async.await();
   }

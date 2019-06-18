@@ -63,12 +63,15 @@ public class VertxHttpClientServerMetricsTest {
         httpServer
           .websocketHandler(ws ->
             ws.handler(event -> {
-              vertx.setTimer(REQ_DELAY, timer -> ws.writeTextMessage(SERVER_RESPONSE).end());
+              vertx.setTimer(REQ_DELAY, timer -> {
+                ws.writeTextMessage(SERVER_RESPONSE);
+                ws.end();
+              });
             }))
           .requestHandler(req -> {
             // Timer as artificial processing time
             vertx.setTimer(REQ_DELAY, handler ->
-              req.response().setChunked(true).putHeader("Content-Type", "text/plain").write(SERVER_RESPONSE).end());
+              req.response().setChunked(true).putHeader("Content-Type", "text/plain").end(SERVER_RESPONSE));
           })
           .listen(9195, "127.0.0.1", r -> {
             if (r.failed()) {
@@ -210,8 +213,7 @@ public class VertxHttpClientServerMetricsTest {
           ctx.fail(response.statusMessage());
         }
       })).putHeader("Content-Length", String.valueOf(CLIENT_REQUEST.getBytes().length))
-        .write(CLIENT_REQUEST)
-        .end();
+        .end(CLIENT_REQUEST);
     }
     async.await();
   }
