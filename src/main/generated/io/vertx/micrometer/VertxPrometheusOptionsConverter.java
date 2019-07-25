@@ -30,7 +30,7 @@ public class VertxPrometheusOptionsConverter implements JsonCodec<VertxPrometheu
           break;
         case "embeddedServerOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setEmbeddedServerOptions(io.vertx.core.http.HttpServerOptionsConverter.INSTANCE.decode((JsonObject)member.getValue()));
+            obj.setEmbeddedServerOptions(new io.vertx.core.http.HttpServerOptions((JsonObject)member.getValue()));
           }
           break;
         case "enabled":
@@ -61,7 +61,7 @@ public class VertxPrometheusOptionsConverter implements JsonCodec<VertxPrometheu
       json.put("embeddedServerEndpoint", obj.getEmbeddedServerEndpoint());
     }
     if (obj.getEmbeddedServerOptions() != null) {
-      json.put("embeddedServerOptions", io.vertx.core.http.HttpServerOptionsConverter.INSTANCE.encode(obj.getEmbeddedServerOptions()));
+      json.put("embeddedServerOptions", obj.getEmbeddedServerOptions().toJson());
     }
     json.put("enabled", obj.isEnabled());
     json.put("publishQuantiles", obj.isPublishQuantiles());

@@ -40,12 +40,12 @@ public class MicrometerMetricsOptionsConverter implements JsonCodec<MicrometerMe
           break;
         case "influxDbOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setInfluxDbOptions(io.vertx.micrometer.VertxInfluxDbOptionsConverter.INSTANCE.decode((JsonObject)member.getValue()));
+            obj.setInfluxDbOptions(new io.vertx.micrometer.VertxInfluxDbOptions((JsonObject)member.getValue()));
           }
           break;
         case "jmxMetricsOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setJmxMetricsOptions(io.vertx.micrometer.VertxJmxMetricsOptionsConverter.INSTANCE.decode((JsonObject)member.getValue()));
+            obj.setJmxMetricsOptions(new io.vertx.micrometer.VertxJmxMetricsOptions((JsonObject)member.getValue()));
           }
           break;
         case "jvmMetricsEnabled":
@@ -58,7 +58,7 @@ public class MicrometerMetricsOptionsConverter implements JsonCodec<MicrometerMe
             java.util.ArrayList<io.vertx.micrometer.Match> list =  new java.util.ArrayList<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                list.add(io.vertx.micrometer.MatchConverter.INSTANCE.decode((JsonObject)item));
+                list.add(new io.vertx.micrometer.Match((JsonObject)item));
             });
             obj.setLabelMatches(list);
           }
@@ -67,7 +67,7 @@ public class MicrometerMetricsOptionsConverter implements JsonCodec<MicrometerMe
           if (member.getValue() instanceof JsonArray) {
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                obj.addLabelMatch(io.vertx.micrometer.MatchConverter.INSTANCE.decode((JsonObject)item));
+                obj.addLabelMatch(new io.vertx.micrometer.Match((JsonObject)item));
             });
           }
           break;
@@ -83,7 +83,7 @@ public class MicrometerMetricsOptionsConverter implements JsonCodec<MicrometerMe
           break;
         case "prometheusOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setPrometheusOptions(io.vertx.micrometer.VertxPrometheusOptionsConverter.INSTANCE.decode((JsonObject)member.getValue()));
+            obj.setPrometheusOptions(new io.vertx.micrometer.VertxPrometheusOptions((JsonObject)member.getValue()));
           }
           break;
         case "registryName":
@@ -107,10 +107,10 @@ public class MicrometerMetricsOptionsConverter implements JsonCodec<MicrometerMe
     }
     json.put("enabled", obj.isEnabled());
     if (obj.getInfluxDbOptions() != null) {
-      json.put("influxDbOptions", io.vertx.micrometer.VertxInfluxDbOptionsConverter.INSTANCE.encode(obj.getInfluxDbOptions()));
+      json.put("influxDbOptions", obj.getInfluxDbOptions().toJson());
     }
     if (obj.getJmxMetricsOptions() != null) {
-      json.put("jmxMetricsOptions", io.vertx.micrometer.VertxJmxMetricsOptionsConverter.INSTANCE.encode(obj.getJmxMetricsOptions()));
+      json.put("jmxMetricsOptions", obj.getJmxMetricsOptions().toJson());
     }
     json.put("jvmMetricsEnabled", obj.isJvmMetricsEnabled());
     if (obj.getLabels() != null) {
@@ -119,7 +119,7 @@ public class MicrometerMetricsOptionsConverter implements JsonCodec<MicrometerMe
       json.put("labels", array);
     }
     if (obj.getPrometheusOptions() != null) {
-      json.put("prometheusOptions", io.vertx.micrometer.VertxPrometheusOptionsConverter.INSTANCE.encode(obj.getPrometheusOptions()));
+      json.put("prometheusOptions", obj.getPrometheusOptions().toJson());
     }
     if (obj.getRegistryName() != null) {
       json.put("registryName", obj.getRegistryName());
