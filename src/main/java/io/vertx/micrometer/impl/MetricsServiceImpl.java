@@ -1,11 +1,7 @@
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.DistributionSummary;
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.*;
 import io.micrometer.core.instrument.distribution.HistogramSnapshot;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.Measured;
@@ -13,12 +9,7 @@ import io.vertx.core.spi.metrics.Metrics;
 import io.vertx.core.spi.metrics.MetricsProvider;
 import io.vertx.micrometer.MetricsService;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,26 +78,22 @@ public class MetricsServiceImpl implements MetricsService {
         Collectors.groupingBy(m -> m.getId().getName(),
           LinkedHashMap::new,
           Collectors.mapping(MetricsServiceImpl::metricToJson, Collectors.toList())));
-    return new JsonObject((Map<String, Object>)(Object) map);
+    return new JsonObject((Map<String, Object>) (Object) map);
   }
 
   private static JsonObject metricToJson(Meter meter) {
     JsonObject tags = new JsonObject();
     meter.getId().getTags().forEach(tag -> tags.put(tag.getKey(), tag.getValue()));
     JsonObject obj = new JsonObject().put("tags", tags);
-    switch (meter.getId().getType()) {
-      case COUNTER:
-        return counterToJson(obj, (Counter)meter);
-      case GAUGE:
-        return gaugeToJson(obj, (Gauge)meter);
-      case TIMER:
-        return timerToJson(obj, (Timer)meter);
-      case DISTRIBUTION_SUMMARY:
-        return summaryToJson(obj, (DistributionSummary)meter);
-      case OTHER:
-      default:
-        return obj.put("type", "unknown");
-    }
+    return meter.match(gauge -> gaugeToJson(obj, gauge),
+      counter -> counterToJson(obj, counter),
+      timer -> timerToJson(obj, timer),
+      summary -> summaryToJson(obj, summary),
+      longTaskTimer -> longTaskTimerToJson(obj, longTaskTimer),
+      timeGauge -> timeGaugeToJson(obj, timeGauge),
+      functionCounter -> functionCounterToJson(obj, functionCounter),
+      functionTimer -> functionTimerToJson(obj, functionTimer),
+      m -> obj.put("type", "unknown"));
   }
 
   private static JsonObject summaryToJson(JsonObject obj, DistributionSummary summary) {
@@ -134,5 +121,28 @@ public class MetricsServiceImpl implements MetricsService {
   private static JsonObject counterToJson(JsonObject obj, Counter counter) {
     return obj.put("type", "counter")
       .put("count", counter.count());
+  }
+
+  private static JsonObject longTaskTimerToJson(JsonObject obj, LongTaskTimer longTaskTimer) {
+    return obj.put("type", "longTaskTimer")
+      .put("activeTasks", longTaskTimer.activeTasks())
+      .put("durationMs", longTaskTimer.duration(TimeUnit.MILLISECONDS));
+  }
+
+  private static JsonObject timeGaugeToJson(JsonObject obj, TimeGauge timeGauge) {
+    return obj.put("type", "timeGauge")
+      .put("valueMs", timeGauge.value(TimeUnit.MILLISECONDS));
+  }
+
+  private static JsonObject functionCounterToJson(JsonObject obj, FunctionCounter functionCounter) {
+    return obj.put("type", "functionCounter")
+      .put("count", functionCounter.count());
+  }
+
+  private static JsonObject functionTimerToJson(JsonObject obj, FunctionTimer functionTimer) {
+    return obj.put("type", "functionTimer")
+      .put("count", functionTimer.count())
+      .put("totalTimeMs", functionTimer.totalTime(TimeUnit.MILLISECONDS))
+      .put("meanMs", functionTimer.mean(TimeUnit.MILLISECONDS));
   }
 }
