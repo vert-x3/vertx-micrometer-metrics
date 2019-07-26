@@ -1,11 +1,14 @@
 package io.vertx.micrometer.service;
 
+import io.micrometer.core.instrument.LongTaskTimer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -24,6 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Joel Takvorian
@@ -93,19 +97,19 @@ public class MetricsServiceImplTest {
       "vertx.http.server.requests",
       "vertx.http.server.responseTime");
 
-    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>)((JsonArray)(e.getValue())).getList())
+    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("counter"))
       .hasSize(6)
       .flatExtracting(JsonObject::fieldNames)
       .contains("count");
 
-    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>)((JsonArray)(e.getValue())).getList())
+    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("summary"))
       .hasSize(4)
       .flatExtracting(JsonObject::fieldNames)
       .contains("mean", "max", "total");
 
-    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>)((JsonArray)(e.getValue())).getList())
+    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("timer"))
       .hasSize(4)
       .flatExtracting(JsonObject::fieldNames)
@@ -144,5 +148,23 @@ public class MetricsServiceImplTest {
         .end();
     }
     async.await();
+  }
+
+  @Test
+  public void shouldGetJvmMetricsInSnapshot(TestContext ctx) {
+    MetricsOptions metricsOptions = new MicrometerMetricsOptions()
+      .setJvmMetricsEnabled(true)
+      .setMicrometerRegistry(new SimpleMeterRegistry())
+      .setRegistryName(registryName)
+      .setEnabled(true);
+    VertxOptions vertxOptions = new VertxOptions().setMetricsOptions(metricsOptions);
+    Vertx vertx = Vertx.vertx(vertxOptions)
+      .exceptionHandler(ctx.exceptionHandler());
+
+    JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot("jvm");
+
+    assertFalse(snapshot.isEmpty());
+
+    vertx.close(ctx.asyncAssertSuccess());
   }
 }
