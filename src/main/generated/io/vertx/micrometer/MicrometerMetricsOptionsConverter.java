@@ -4,21 +4,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter and Codec for {@link io.vertx.micrometer.MicrometerMetricsOptions}.
+ * Converter and mapper for {@link io.vertx.micrometer.MicrometerMetricsOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.micrometer.MicrometerMetricsOptions} original class using Vert.x codegen.
  */
-public class MicrometerMetricsOptionsConverter implements JsonCodec<MicrometerMetricsOptions, JsonObject> {
+public class MicrometerMetricsOptionsConverter {
 
-  public static final MicrometerMetricsOptionsConverter INSTANCE = new MicrometerMetricsOptionsConverter();
-
-  @Override public JsonObject encode(MicrometerMetricsOptions value) { return (value != null) ? value.toJson() : null; }
-
-  @Override public MicrometerMetricsOptions decode(JsonObject value) { return (value != null) ? new MicrometerMetricsOptions(value) : null; }
-
-  @Override public Class<MicrometerMetricsOptions> getTargetClass() { return MicrometerMetricsOptions.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MicrometerMetricsOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {

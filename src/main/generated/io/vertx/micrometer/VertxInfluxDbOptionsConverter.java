@@ -4,21 +4,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter and Codec for {@link io.vertx.micrometer.VertxInfluxDbOptions}.
+ * Converter and mapper for {@link io.vertx.micrometer.VertxInfluxDbOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.micrometer.VertxInfluxDbOptions} original class using Vert.x codegen.
  */
-public class VertxInfluxDbOptionsConverter implements JsonCodec<VertxInfluxDbOptions, JsonObject> {
+public class VertxInfluxDbOptionsConverter {
 
-  public static final VertxInfluxDbOptionsConverter INSTANCE = new VertxInfluxDbOptionsConverter();
-
-  @Override public JsonObject encode(VertxInfluxDbOptions value) { return (value != null) ? value.toJson() : null; }
-
-  @Override public VertxInfluxDbOptions decode(JsonObject value) { return (value != null) ? new VertxInfluxDbOptions(value) : null; }
-
-  @Override public Class<VertxInfluxDbOptions> getTargetClass() { return VertxInfluxDbOptions.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, VertxInfluxDbOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
