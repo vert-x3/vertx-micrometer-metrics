@@ -2,7 +2,6 @@ package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -61,7 +60,7 @@ public class VertxHttpClientServerMetricsTest {
       public void start(Promise<Void> future) throws Exception {
         httpServer = vertx.createHttpServer();
         httpServer
-          .websocketHandler(ws ->
+          .webSocketHandler(ws ->
             ws.handler(event -> {
               vertx.setTimer(REQ_DELAY, timer -> {
                 ws.writeTextMessage(SERVER_RESPONSE);
