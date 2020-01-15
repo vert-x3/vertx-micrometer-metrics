@@ -91,7 +91,7 @@ public class VertxEventBusMetricsTest {
     waitForValue(vertx, context, "vertx.eventbus.processingTime[address=testSubject]$COUNT",
       value -> value.intValue() == 8 * instances);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
-    assertThat(datapoints).hasSize(13).contains(
+    assertThat(datapoints).hasSize(12).contains(
       dp("vertx.eventbus.handlers[address=testSubject]$VALUE", instances),
       dp("vertx.eventbus.pending[address=no handler,side=local]$VALUE", 0),
       dp("vertx.eventbus.pending[address=testSubject,side=local]$VALUE", 0),
@@ -101,7 +101,7 @@ public class VertxEventBusMetricsTest {
       dp("vertx.eventbus.received[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.delivered[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.replyFailures[address=no handler,failure=NO_HANDLERS]$COUNT", 2),
-      dp("vertx.eventbus.errors[address=testSubject,class=RuntimeException]$COUNT", 2 * instances),
+      // dp("vertx.eventbus.errors[address=testSubject,class=RuntimeException]$COUNT", 2 * instances),
       dp("vertx.eventbus.processingTime[address=testSubject]$COUNT", 8d * instances));
 
     assertThat(datapoints)
