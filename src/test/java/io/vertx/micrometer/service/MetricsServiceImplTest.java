@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpServer;
@@ -136,7 +137,7 @@ public class MetricsServiceImplTest {
   private void runClientRequests(TestContext ctx, HttpClient httpClient, int count, String path) {
     Async async = ctx.async(count);
     for (int i = 0; i < count; i++) {
-      httpClient.post(9195, "127.0.0.1", path, ar -> {
+      httpClient.post(9195, "127.0.0.1", path, Buffer.buffer(CLIENT_REQUEST), ar -> {
         if (ar.succeeded()) {
           HttpClientResponse response = ar.result();
           async.countDown();
@@ -147,8 +148,7 @@ public class MetricsServiceImplTest {
           async.countDown();
           ctx.fail(ar.cause());
         }
-      }).putHeader("Content-Length", String.valueOf(CLIENT_REQUEST.getBytes().length))
-        .end(CLIENT_REQUEST);
+      });
     }
     async.await();
   }

@@ -96,7 +96,7 @@ public final class PrometheusTestHelper {
                                  long sleepBeforeRetryMs,
                                  int attempt) {
     vertx.createHttpClient()
-      .getNow(port, host, requestURI, ar -> {
+      .get(port, host, requestURI, ar -> {
         if (ar.succeeded()) {
           respHandler.handle(ar.result());
         } else {

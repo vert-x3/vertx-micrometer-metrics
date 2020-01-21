@@ -5,6 +5,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.unit.Async;
@@ -206,13 +207,12 @@ public class VertxHttpClientServerMetricsTest {
   private void httpRequest(HttpClient httpClient, TestContext ctx) {
     Async async = ctx.async(HTTP_SENT_COUNT);
     for (int i = 0; i < HTTP_SENT_COUNT; i++) {
-      httpClient.post(9195, "127.0.0.1", "/resource", ctx.asyncAssertSuccess(response -> {
+      httpClient.post(9195, "127.0.0.1", "/resource", Buffer.buffer(CLIENT_REQUEST), ctx.asyncAssertSuccess(response -> {
         async.countDown();
         if (response.statusCode() != 200) {
           ctx.fail(response.statusMessage());
         }
-      })).putHeader("Content-Length", String.valueOf(CLIENT_REQUEST.getBytes().length))
-        .end(CLIENT_REQUEST);
+      }));
     }
     async.await();
   }
