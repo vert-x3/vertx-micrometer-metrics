@@ -125,13 +125,13 @@ public final class BackendRegistries {
         case EQUALS:
           if (m.getAlias() == null) {
             // Exact match => accept
-            registry.config().meterFilter(MeterFilter.accept(id -> {
+            registry.config().meterFilter(MeterFilter.deny(id -> {
               if (m.getDomain() != null && !id.getName().startsWith(m.getDomain().getPrefix())) {
                 // If domain has been specified and we're not in that domain, ignore rule
-                return true;
+                return false;
               }
               String tagValue = id.getTag(m.getLabel());
-              return m.getValue().equals(tagValue);
+              return !m.getValue().equals(tagValue);
             }));
           } else {
             // Exact match => alias
