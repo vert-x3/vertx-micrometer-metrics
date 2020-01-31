@@ -173,7 +173,7 @@ public class VertxHttpClientServerMetricsTest {
     assertThat(datapoints).contains(
       dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * (SENT_COUNT + 1)),
       dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * (SENT_COUNT + 1)),
+      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
       dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
       dp("vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT));
   }
