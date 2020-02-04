@@ -86,15 +86,20 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   }
 
   @Override
-  public void beginHandleMessage(Handler handler, boolean local) {
+  public void messageDelivered(Handler handler, boolean local) {
+    // Optimize that and replace timer with counter
+    beginHandleMessage(handler, local);
+    endHandleMessage(handler, null);
+  }
+
+  private void beginHandleMessage(Handler handler, boolean local) {
     if (isValid(handler)) {
       pending.get(handler.address, Labels.getSide(local)).decrement();
       handler.timer = processTime.start();
     }
   }
 
-  @Override
-  public void endHandleMessage(Handler handler, Throwable failure) {
+  private void endHandleMessage(Handler handler, Throwable failure) {
     if (isValid(handler)) {
       handler.timer.end(handler.address);
       if (failure != null) {
