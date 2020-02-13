@@ -21,6 +21,7 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
+import io.vertx.core.spi.VertxMetricsFactory;
 
 import java.util.*;
 
@@ -129,6 +130,12 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   @Override
   public MicrometerMetricsOptions setEnabled(boolean enable) {
     super.setEnabled(enable);
+    return this;
+  }
+
+  @Override
+  public MicrometerMetricsOptions setFactory(VertxMetricsFactory factory) {
+    super.setFactory(factory);
     return this;
   }
 
