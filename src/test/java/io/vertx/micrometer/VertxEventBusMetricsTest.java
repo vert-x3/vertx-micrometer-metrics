@@ -1,11 +1,7 @@
 package io.vertx.micrometer;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -16,11 +12,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static io.vertx.micrometer.RegistryInspector.dp;
-import static io.vertx.micrometer.RegistryInspector.listDatapoints;
-import static io.vertx.micrometer.RegistryInspector.startsWith;
-import static io.vertx.micrometer.RegistryInspector.waitForValue;
+import static io.vertx.micrometer.RegistryInspector.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -37,7 +32,7 @@ public class VertxEventBusMetricsTest {
   }
 
   @Test
-  public void shouldReportEventbusMetrics(TestContext context) throws InterruptedException {
+  public void shouldReportEventbusMetrics(TestContext context) {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .addLabels(Label.EB_ADDRESS, Label.EB_FAILURE, Label.CLASS_NAME)
@@ -55,7 +50,7 @@ public class VertxEventBusMetricsTest {
     // Setup eventbus handler
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
-      public void start(Promise<Void> future) throws Exception {
+      public void start(Promise<Void> future) {
         vertx.eventBus().consumer("testSubject", msg -> {
           JsonObject body = (JsonObject) msg.body();
           try {
@@ -110,5 +105,62 @@ public class VertxEventBusMetricsTest {
       .contains(
         dp("vertx.eventbus.processingTime[address=testSubject]$TOTAL_TIME", 180d * instances / 1000d),
         dp("vertx.eventbus.processingTime[address=testSubject]$MAX", 30d / 1000d));
+  }
+
+  @Test
+  public void shouldFlushPendingOnUnregister(TestContext context) {
+    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .setEnabled(true)))
+      .exceptionHandler(t -> {
+        if (t.getMessage() == null || !t.getMessage().contains("expected failure")) {
+          context.exceptionHandler().handle(t);
+        }
+      });
+
+    Async step1EBReady = context.async();
+    Async step2FirstReceived = context.async();
+    Async step3BlockWorker = context.async();
+    AtomicBoolean first = new AtomicBoolean(true);
+    AtomicReference<MessageConsumer<Object>> consumerRef = new AtomicReference<>();
+
+    // Setup eventbus handler
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      @Override
+      public void start(Promise<Void> future) {
+        MessageConsumer<Object> consumer = vertx.eventBus().consumer("testSubject", msg -> {
+          if (first.getAndSet(false)) {
+            step2FirstReceived.complete();
+          }
+          step3BlockWorker.await();
+        });
+        consumerRef.set(consumer);
+        step1EBReady.complete();
+      }
+    }, new DeploymentOptions().setWorker(true));
+    step1EBReady.awaitSuccess();
+
+    // Send to eventbus
+    vertx.eventBus().publish("testSubject", new JsonObject());
+    vertx.eventBus().publish("testSubject", new JsonObject());
+    vertx.eventBus().publish("testSubject", new JsonObject());
+    vertx.eventBus().publish("testSubject", new JsonObject());
+
+    // Check pending count, as first event should block the other ones => expect 3 pending
+    step2FirstReceived.awaitSuccess();
+    // RegistryInspector.dump(startsWith("vertx.eventbus"));
+    waitForValue(vertx, context, "vertx.eventbus.published[side=local]$COUNT", value -> value.intValue() == 4);
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
+    assertThat(datapoints).contains(dp("vertx.eventbus.pending[side=local]$VALUE", 3));
+
+    // Unregister handler, then check pending again => should be 0
+    consumerRef.get().unregister();
+    // RegistryInspector.dump(startsWith("vertx.eventbus"));
+    waitForValue(vertx, context, "vertx.eventbus.handlers[]$VALUE", value -> value.intValue() == 0);
+    datapoints = listDatapoints(startsWith("vertx.eventbus"));
+    assertThat(datapoints).contains(dp("vertx.eventbus.pending[side=local]$VALUE", 0));
+
+    // (Unblock thread)
+    step3BlockWorker.complete();
   }
 }

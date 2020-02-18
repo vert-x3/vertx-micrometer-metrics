@@ -37,8 +37,12 @@ public final class RegistryInspector {
   private RegistryInspector() {
   }
 
-  public static void dump(String regName) {
-    listDatapoints(regName, a -> true).forEach(System.out::println);
+  public static void dump(Predicate<Meter> predicate) {
+    dump(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME, predicate);
+  }
+
+  public static void dump(String regName, Predicate<Meter> predicate) {
+    listDatapoints(regName, predicate).forEach(System.out::println);
   }
 
   public static Predicate<Meter> startsWith(String start) {
