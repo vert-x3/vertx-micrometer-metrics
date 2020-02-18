@@ -23,7 +23,6 @@ import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Summaries;
-import io.vertx.micrometer.impl.meters.Timers;
 
 import java.util.concurrent.atomic.LongAdder;
 
@@ -35,13 +34,12 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   private final Gauges<LongAdder> handlers;
   private final Gauges<LongAdder> pending;
+  private final Counters processed;
   private final Counters published;
   private final Counters sent;
   private final Counters received;
   private final Counters delivered;
-  private final Counters errorCount;
   private final Counters replyFailures;
-  private final Timers processTime;
   private final Summaries bytesRead;
   private final Summaries bytesWritten;
 
@@ -49,13 +47,12 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     super(registry, MetricsDomain.EVENT_BUS);
     handlers = longGauges("handlers", "Number of event bus handlers in use", Label.EB_ADDRESS);
     pending = longGauges("pending", "Number of messages not processed yet", Label.EB_ADDRESS, Label.EB_SIDE);
+    processed = counters("processed", "Number of processed messages", Label.EB_ADDRESS, Label.EB_SIDE);
     published = counters("published", "Number of messages published (publish / subscribe)", Label.EB_ADDRESS, Label.EB_SIDE);
     sent = counters("sent", "Number of messages sent (point-to-point)", Label.EB_ADDRESS, Label.EB_SIDE);
     received = counters("received", "Number of messages received", Label.EB_ADDRESS, Label.EB_SIDE);
     delivered = counters("delivered", "Number of messages delivered to handlers", Label.EB_ADDRESS, Label.EB_SIDE);
-    errorCount = counters("errors", "Number of errors", Label.EB_ADDRESS, Label.CLASS_NAME);
     replyFailures = counters("replyFailures", "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
-    processTime = timers("processingTime", "Processing time", Label.EB_ADDRESS);
     bytesRead = summaries("bytesRead", "Number of bytes received while reading messages from event bus cluster peers", Label.EB_ADDRESS);
     bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
   }
@@ -87,24 +84,9 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   @Override
   public void messageDelivered(Handler handler, boolean local) {
-    // Optimize that and replace timer with counter
-    beginHandleMessage(handler, local);
-    endHandleMessage(handler, null);
-  }
-
-  private void beginHandleMessage(Handler handler, boolean local) {
     if (isValid(handler)) {
       pending.get(handler.address, Labels.getSide(local)).decrement();
-      handler.timer = processTime.start();
-    }
-  }
-
-  private void endHandleMessage(Handler handler, Throwable failure) {
-    if (isValid(handler)) {
-      handler.timer.end(handler.address);
-      if (failure != null) {
-        errorCount.get(handler.address, failure.getClass().getSimpleName()).increment();
-      }
+      processed.get(handler.address, Labels.getSide(local)).increment();
     }
   }
 
@@ -162,7 +144,6 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   static class Handler {
     private final String address;
-    private Timers.EventTiming timer;
 
     Handler(String address) {
       this.address = address;
