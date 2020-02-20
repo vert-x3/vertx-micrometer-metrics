@@ -80,6 +80,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
       handlers.get(handler.address).decrement();
       // Mirroring behaviour in vertx-core: any pending message gets discarded
       pending.get(handler.address, Labels.getSide(true)).reset();
+      pending.get(handler.address, Labels.getSide(false)).reset();
     }
   }
 
