@@ -137,7 +137,7 @@ public class VertxEventBusMetricsTest {
         consumerRef.set(consumer);
         step1EBReady.complete();
       }
-    }, new DeploymentOptions());
+    }, new DeploymentOptions().setWorker(true));
     step1EBReady.awaitSuccess();
 
     // Send to eventbus
