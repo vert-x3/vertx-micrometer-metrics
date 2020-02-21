@@ -142,7 +142,7 @@ public class PrometheusMetricsITest {
           "vertx_eventbus_received_total{address=\"test-eb\",side=\"local\",} 1.0",
           "vertx_eventbus_handlers{address=\"test-eb\",} 1.0",
           "vertx_eventbus_delivered_total{address=\"test-eb\",side=\"local\",} 1.0",
-          "vertx_eventbus_processingTime_seconds_count{address=\"test-eb\",} 1.0"));
+          "vertx_eventbus_processed_total{address=\"test-eb\",side=\"local\",} 1.0"));
       async.complete();
     });
     async.awaitSuccess(15000);

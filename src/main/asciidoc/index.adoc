@@ -607,11 +607,6 @@ depending on the backend used.
 |Gauge
 |Number of event bus handlers in use.
 
-|`vertx_eventbus_errors`
-|`address`,`class`
-|Counter
-|Number of errors.
-
 |`vertx_eventbus_bytesWritten`
 |`address`
 |Summary
@@ -627,6 +622,11 @@ depending on the backend used.
 |Gauge
 |Number of messages not processed yet. One message published will count for `N` pending if `N` handlers
 are registered to the corresponding address.
+
+|`vertx_eventbus_processed`
+|`address`,`side` (local/remote)
+|Counter
+|Number of processed messages.
 
 |`vertx_eventbus_published`
 |`address`,`side` (local/remote)
@@ -652,11 +652,6 @@ are registered to the corresponding address.
 |`address`,`failure`
 |Counter
 |Number of message reply failures.
-
-|`vertx_eventbus_processingTime`
-|`address`
-|Timer
-|Processing time for handlers listening to the `address`.
 
 |===
 
