@@ -1,16 +1,11 @@
 package io.vertx.micrometer;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.assertj.core.util.DoubleComparator;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -126,14 +121,18 @@ public class VertxEventBusMetricsTest {
       public void start(Promise<Void> future) {
         MessageConsumer<Object> consumer = vertx.eventBus().consumer("testSubject", msg -> {
           if (first.getAndSet(false)) {
+            System.out.println("First received!");
             step2FirstReceived.complete();
           }
+          System.out.println("Await thread unblock...");
           step3BlockWorker.await();
         });
         consumerRef.set(consumer);
+        System.out.println("EB ready!");
         step1EBReady.complete();
       }
-    }, new DeploymentOptions().setWorker(true));
+    }, new DeploymentOptions().setWorker(true).setWorkerPoolSize(1));
+    System.out.println("Await EB ready...");
     step1EBReady.awaitSuccess();
 
     // Send to eventbus
@@ -143,20 +142,23 @@ public class VertxEventBusMetricsTest {
     vertx.eventBus().publish("testSubject", new JsonObject());
 
     // Check pending count, as first event should block the other ones => expect 3 pending
+    System.out.println("Await first received...");
     step2FirstReceived.awaitSuccess();
-    // RegistryInspector.dump(startsWith("vertx.eventbus"));
+    RegistryInspector.dump(startsWith("vertx.eventbus"));
     waitForValue(vertx, context, "vertx.eventbus.published[side=local]$COUNT", value -> value.intValue() == 4);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
     assertThat(datapoints).contains(dp("vertx.eventbus.pending[side=local]$VALUE", 3));
 
     // Unregister handler, then check pending again => should be 0
+    System.out.println("Unregister!");
     consumerRef.get().unregister();
-    // RegistryInspector.dump(startsWith("vertx.eventbus"));
+    RegistryInspector.dump(startsWith("vertx.eventbus"));
     waitForValue(vertx, context, "vertx.eventbus.handlers[]$VALUE", value -> value.intValue() == 0);
     datapoints = listDatapoints(startsWith("vertx.eventbus"));
     assertThat(datapoints).contains(dp("vertx.eventbus.pending[side=local]$VALUE", 0));
 
     // (Unblock thread)
+    System.out.println("Unblock thread!");
     step3BlockWorker.complete();
   }
 }
