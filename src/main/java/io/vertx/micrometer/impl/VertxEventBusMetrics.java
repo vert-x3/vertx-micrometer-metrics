@@ -16,6 +16,7 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
 import io.vertx.micrometer.Label;
@@ -39,6 +40,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   private final Counters sent;
   private final Counters received;
   private final Counters delivered;
+  private final Counters discarded;
   private final Counters errorCount;
   private final Counters replyFailures;
   private final Timers processTime;
@@ -53,6 +55,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     sent = counters("sent", "Number of messages sent (point-to-point)", Label.EB_ADDRESS, Label.EB_SIDE);
     received = counters("received", "Number of messages received", Label.EB_ADDRESS, Label.EB_SIDE);
     delivered = counters("delivered", "Number of messages delivered to handlers", Label.EB_ADDRESS, Label.EB_SIDE);
+    discarded = counters("discarded", "Number of discarded messages", Label.EB_ADDRESS, Label.EB_SIDE);
     errorCount = counters("errors", "Number of errors", Label.EB_ADDRESS, Label.CLASS_NAME);
     replyFailures = counters("replyFailures", "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
     processTime = timers("processingTime", "Processing time", Label.EB_ADDRESS);
@@ -78,9 +81,6 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void handlerUnregistered(Handler handler) {
     if (isValid(handler)) {
       handlers.get(handler.address).decrement();
-      // Mirroring behaviour in vertx-core: any pending message gets discarded
-      pending.get(handler.address, Labels.getSide(true)).reset();
-      pending.get(handler.address, Labels.getSide(false)).reset();
     }
   }
 
@@ -103,6 +103,14 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
       if (failure != null) {
         errorCount.get(handler.address, failure.getClass().getSimpleName()).increment();
       }
+    }
+  }
+
+  @Override
+  public void discardMessage(Handler handler, boolean local, Message<?> msg) {
+    if (isValid(handler)) {
+      pending.get(handler.address, Labels.getSide(local)).decrement();
+      discarded.get(handler.address, Labels.getSide(local)).increment();
     }
   }
 
