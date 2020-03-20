@@ -16,6 +16,7 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
 import io.vertx.micrometer.Label;
@@ -39,6 +40,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   private final Counters sent;
   private final Counters received;
   private final Counters delivered;
+  private final Counters discarded;
   private final Counters replyFailures;
   private final Summaries bytesRead;
   private final Summaries bytesWritten;
@@ -52,6 +54,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     sent = counters("sent", "Number of messages sent (point-to-point)", Label.EB_ADDRESS, Label.EB_SIDE);
     received = counters("received", "Number of messages received", Label.EB_ADDRESS, Label.EB_SIDE);
     delivered = counters("delivered", "Number of messages delivered to handlers", Label.EB_ADDRESS, Label.EB_SIDE);
+    discarded = counters("discarded", "Number of discarded messages", Label.EB_ADDRESS, Label.EB_SIDE);
     replyFailures = counters("replyFailures", "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
     bytesRead = summaries("bytesRead", "Number of bytes received while reading messages from event bus cluster peers", Label.EB_ADDRESS);
     bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
@@ -87,6 +90,14 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     if (isValid(handler)) {
       pending.get(handler.address, Labels.getSide(local)).decrement();
       processed.get(handler.address, Labels.getSide(local)).increment();
+    }
+  }
+
+  @Override
+  public void discardMessage(Handler handler, boolean local, Message<?> msg) {
+    if (isValid(handler)) {
+      pending.get(handler.address, Labels.getSide(local)).decrement();
+      discarded.get(handler.address, Labels.getSide(local)).increment();
     }
   }
 

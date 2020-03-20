@@ -633,6 +633,11 @@ are registered to the corresponding address.
 |Counter
 |Number of messages published (publish / subscribe).
 
+|`vertx_eventbus_discarded`
+|`address`,`side` (local/remote)
+|Counter
+|Number of discarded messages (e.g. still pending messages while handler is unregistered, or overflowing messages).
+
 |`vertx_eventbus_sent`
 |`address`,`side` (local/remote)
 |Counter

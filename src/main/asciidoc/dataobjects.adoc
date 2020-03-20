@@ -50,29 +50,11 @@ Sets metrics types that are disabled.
 |[[enabled]]`@enabled`|`Boolean`|+++
 Set whether metrics will be enabled on the Vert.x instance. Metrics are not enabled by default.
 +++
-|[[influxDbOptions]]`@influxDbOptions`|`link:dataobjects.html#VertxInfluxDbOptions[VertxInfluxDbOptions]`|+++
-Set InfluxDB options.
- Setting a registry backend option is mandatory in order to effectively report metrics.
-+++
-|[[jmxMetricsOptions]]`@jmxMetricsOptions`|`link:dataobjects.html#VertxJmxMetricsOptions[VertxJmxMetricsOptions]`|+++
-Set JMX metrics options.
- Setting a registry backend option is mandatory in order to effectively report metrics.
-+++
 |[[jvmMetricsEnabled]]`@jvmMetricsEnabled`|`Boolean`|+++
 Whether JVM metrics should be collected. Defaults to <code>false</code>.
 +++
-|[[labelMatches]]`@labelMatches`|`Array of link:dataobjects.html#Match[Match]`|+++
-Set a list of rules for label matching.
-+++
-|[[labelMatchs]]`@labelMatchs`|`Array of link:dataobjects.html#Match[Match]`|+++
-Add a rule for label matching.
-+++
 |[[labels]]`@labels`|`Array of link:enums.html#Label[Label]`|+++
 Sets enabled labels. These labels can be fine-tuned later on using Micrometer's Meter filters (see http://micrometer.io/docs/concepts#_meter_filters)
-+++
-|[[prometheusOptions]]`@prometheusOptions`|`link:dataobjects.html#VertxPrometheusOptions[VertxPrometheusOptions]`|+++
-Set Prometheus options.
- Setting a registry backend option is mandatory in order to effectively report metrics.
 +++
 |[[registryName]]`@registryName`|`String`|+++
 Set a name for the metrics registry, so that a new registry will be created and associated with this name.
@@ -169,9 +151,6 @@ Push interval steps, in seconds. Default is 10 seconds.
 ^|Name | Type ^| Description
 |[[embeddedServerEndpoint]]`@embeddedServerEndpoint`|`String`|+++
 Set metrics endpoint. Use conjointly with the embedded server options. Defaults to <i>/metrics</i>.
-+++
-|[[embeddedServerOptions]]`@embeddedServerOptions`|`link:dataobjects.html#HttpServerOptions[HttpServerOptions]`|+++
-HTTP server options for the embedded server
 +++
 |[[enabled]]`@enabled`|`Boolean`|+++
 Set true to enable Prometheus reporting
