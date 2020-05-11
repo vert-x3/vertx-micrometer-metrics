@@ -19,7 +19,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>34</version>
+    <version>35</version>
   </parent>
 
   <artifactId>vertx-micrometer-metrics</artifactId>
@@ -194,7 +194,6 @@
               <systemPropertyVariables>
                 <java.util.logging.config.file>${project.basedir}/log-test.properties</java.util.logging.config.file>
               </systemPropertyVariables>
-              <argLine>@{surefireArgLine}</argLine>
             </configuration>
             <executions>
               <execution>
