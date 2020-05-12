@@ -19,7 +19,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>34</version>
+    <version>35</version>
   </parent>
 
   <artifactId>vertx-micrometer-metrics</artifactId>
@@ -244,7 +244,6 @@
               <systemPropertyVariables>
                 <java.util.logging.config.file>${project.basedir}/log-test.properties</java.util.logging.config.file>
               </systemPropertyVariables>
-              <argLine>@{surefireArgLine}</argLine>
             </configuration>
             <executions>
               <execution>
@@ -252,37 +251,6 @@
                   <goal>integration-test</goal>
                   <goal>verify</goal>
                 </goals>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${maven.jacoco.plugin.version}</version>
-            <executions>
-              <execution>
-                <id>pre-integration-test</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-                <phase>pre-integration-test</phase>
-                <configuration>
-                  <destFile>${sonar.jacoco.reportPath}</destFile>
-                  <propertyName>surefireArgLine</propertyName>
-                </configuration>
-              </execution>
-
-              <execution>
-                <id>post-integration-test</id>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-                <phase>post-integration-test</phase>
-                <configuration>
-                  <dataFile>${sonar.jacoco.reportPath}</dataFile>
-                  <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
-                </configuration>
               </execution>
             </executions>
           </plugin>
