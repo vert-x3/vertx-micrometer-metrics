@@ -39,6 +39,7 @@
     <junit.version>4.12</junit.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
     <micrometer.version>1.1.0</micrometer.version>
+    <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
   </properties>
 
   <dependencyManagement>
