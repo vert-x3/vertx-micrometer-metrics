@@ -32,12 +32,12 @@ public class MicrometerMetricsOptionsConverter {
           break;
         case "influxDbOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setInfluxDbOptions(new io.vertx.micrometer.VertxInfluxDbOptions((JsonObject)member.getValue()));
+            obj.setInfluxDbOptions(new io.vertx.micrometer.VertxInfluxDbOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "jmxMetricsOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setJmxMetricsOptions(new io.vertx.micrometer.VertxJmxMetricsOptions((JsonObject)member.getValue()));
+            obj.setJmxMetricsOptions(new io.vertx.micrometer.VertxJmxMetricsOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "jvmMetricsEnabled":
@@ -50,7 +50,7 @@ public class MicrometerMetricsOptionsConverter {
             java.util.ArrayList<io.vertx.micrometer.Match> list =  new java.util.ArrayList<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                list.add(new io.vertx.micrometer.Match((JsonObject)item));
+                list.add(new io.vertx.micrometer.Match((io.vertx.core.json.JsonObject)item));
             });
             obj.setLabelMatches(list);
           }
@@ -59,7 +59,7 @@ public class MicrometerMetricsOptionsConverter {
           if (member.getValue() instanceof JsonArray) {
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                obj.addLabelMatch(new io.vertx.micrometer.Match((JsonObject)item));
+                obj.addLabelMatch(new io.vertx.micrometer.Match((io.vertx.core.json.JsonObject)item));
             });
           }
           break;
@@ -75,7 +75,7 @@ public class MicrometerMetricsOptionsConverter {
           break;
         case "prometheusOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setPrometheusOptions(new io.vertx.micrometer.VertxPrometheusOptions((JsonObject)member.getValue()));
+            obj.setPrometheusOptions(new io.vertx.micrometer.VertxPrometheusOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "registryName":

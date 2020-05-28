@@ -22,7 +22,7 @@ public class VertxPrometheusOptionsConverter {
           break;
         case "embeddedServerOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setEmbeddedServerOptions(new io.vertx.core.http.HttpServerOptions((JsonObject)member.getValue()));
+            obj.setEmbeddedServerOptions(new io.vertx.core.http.HttpServerOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "enabled":
