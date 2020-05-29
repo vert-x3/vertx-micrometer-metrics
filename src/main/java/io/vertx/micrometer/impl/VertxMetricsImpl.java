@@ -47,7 +47,6 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final VertxHttpClientMetrics httpClientMetrics;
   private final VertxHttpServerMetrics httpServerMetrics;
   private final VertxPoolMetrics poolMetrics;
-  private final VertxVerticleMetrics verticleMetrics;
 
   /**
    * @param options Vertx Prometheus options
@@ -72,26 +71,10 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       : new VertxHttpServerMetrics(registry);
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
       : new VertxPoolMetrics(registry);
-    verticleMetrics = options.isMetricsCategoryDisabled(VERTICLES) ? null
-      : new VertxVerticleMetrics(registry);
   }
 
   void init() {
     backendRegistry.init();
-  }
-
-  @Override
-  public void verticleDeployed(Verticle verticle) {
-    if (verticleMetrics != null) {
-      verticleMetrics.verticleDeployed(verticle);
-    }
-  }
-
-  @Override
-  public void verticleUndeployed(Verticle verticle) {
-    if (verticleMetrics != null) {
-      verticleMetrics.verticleUndeployed(verticle);
-    }
   }
 
   @Override
