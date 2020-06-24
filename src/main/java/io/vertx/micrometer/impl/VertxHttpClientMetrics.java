@@ -21,6 +21,7 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.HttpClientMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
@@ -54,74 +55,41 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     return new Instance(localAddress);
   }
 
-  class Instance extends VertxNetClientMetrics.Instance implements HttpClientMetrics<VertxHttpClientMetrics.Handler, String, String, Void, Void> {
+  class Instance extends VertxNetClientMetrics.Instance implements HttpClientMetrics<VertxHttpClientMetrics.Handler, String, String, Void> {
     Instance(String localAddress) {
       super(localAddress);
     }
 
     @Override
-    public Void createEndpoint(String host, int port, int maxPoolSize) {
-      return null;
+    public ClientMetrics<Handler, Void, HttpClientRequest, HttpClientResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
+      String remote = remoteAddress.toString();
+      return new ClientMetrics<Handler, Void, HttpClientRequest, HttpClientResponse>() {
+        @Override
+        public Handler requestBegin(String uri, HttpClientRequest request) {
+          Handler handler = new Handler(remote, request.path(),request.method().name());
+          requests.get(local, remote, handler.path, handler.method).increment();
+          requestCount.get(local, remote, handler.path, handler.method).increment();
+          handler.timer = responseTime.start();
+          return handler;
+        }
+        @Override
+        public void requestReset(Handler handler) {
+          requests.get(local, handler.address, handler.path, handler.method).decrement();
+        }
+        @Override
+        public void responseEnd(Handler handler, HttpClientResponse response) {
+          String code = String.valueOf(response.statusCode());
+          requests.get(local, handler.address, handler.path, handler.method).decrement();
+          responseCount.get(local, handler.address, handler.path, handler.method, code).increment();
+          handler.timer.end(local, handler.address, handler.path, handler.method, code);
+        }
+      };
     }
 
-    @Override
-    public void closeEndpoint(String host, int port, Void endpointMetric) {
-    }
 
     @Override
-    public Void enqueueRequest(Void endpointMetric) {
-      return null;
-    }
-
-    @Override
-    public void dequeueRequest(Void endpointMetric, Void taskMetric) {
-    }
-
-    @Override
-    public void endpointConnected(Void endpointMetric, String socketMetric) {
-    }
-
-    @Override
-    public void endpointDisconnected(Void endpointMetric, String socketMetric) {
-    }
-
-    @Override
-    public Handler requestBegin(Void endpointMetric, String remote, SocketAddress localAddress, SocketAddress remoteAddress, HttpClientRequest request) {
-      Handler handler = new Handler(remote, request.path(),request.method().name());
-      requests.get(local, remote, handler.path, handler.method).increment();
-      requestCount.get(local, remote, handler.path, handler.method).increment();
-      handler.timer = responseTime.start();
-      return handler;
-    }
-
-    @Override
-    public void requestEnd(Handler requestMetric) {
-    }
-
-    @Override
-    public void responseBegin(Handler requestMetric, HttpClientResponse response) {
-    }
-
-    @Override
-    public Handler responsePushed(Void endpointMetric, String remote, SocketAddress localAddress, SocketAddress remoteAddress, HttpClientRequest request) {
-      return requestBegin(null, remote, localAddress, remoteAddress, request);
-    }
-
-    @Override
-    public void requestReset(Handler handler) {
-      requests.get(local, handler.address, handler.path, handler.method).decrement();
-    }
-
-    @Override
-    public void responseEnd(Handler handler, HttpClientResponse response) {
-      String code = String.valueOf(response.statusCode());
-      requests.get(local, handler.address, handler.path, handler.method).decrement();
-      responseCount.get(local, handler.address, handler.path, handler.method, code).increment();
-      handler.timer.end(local, handler.address, handler.path, handler.method, code);
-    }
-
-    @Override
-    public String connected(Void endpointMetric, String remote, WebSocket webSocket) {
+    public String connected(WebSocket webSocket) {
+      String remote = webSocket.remoteAddress().toString();
       wsConnections.get(local, remote).increment();
       return remote;
     }

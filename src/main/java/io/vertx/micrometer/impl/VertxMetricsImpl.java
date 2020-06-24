@@ -94,7 +94,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public HttpClientMetrics<?, ?, ?, ?, ?> createHttpClientMetrics(HttpClientOptions httpClientOptions) {
+  public HttpClientMetrics<?, ?, ?, ?> createHttpClientMetrics(HttpClientOptions httpClientOptions) {
     if (httpClientMetrics != null) {
       return httpClientMetrics.forAddress(httpClientOptions.getLocalAddress());
     }
