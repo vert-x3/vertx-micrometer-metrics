@@ -66,4 +66,9 @@ public enum MetricsDomain {
   public String getPrefix() {
     return prefix;
   }
+
+  public String toCategory() {
+    // E.g. "vertx.net.server." => "net.server"
+    return prefix.substring(6, prefix.length() - 1);
+  }
 }

@@ -51,7 +51,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public static final boolean DEFAULT_JVM_METRICS_ENABLED = false;
 
-  private Set<MetricsDomain> disabledMetricsCategories;
+  private Set<String> disabledMetricsCategories;
   private String registryName;
   private Set<Label> labels;
   private List<Match> labelMatches;
@@ -65,7 +65,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    * Creates default options for Micrometer metrics.
    */
   public MicrometerMetricsOptions() {
-    disabledMetricsCategories = EnumSet.noneOf(MetricsDomain.class);
+    disabledMetricsCategories = new HashSet<>();
     registryName = DEFAULT_REGISTRY_NAME;
     labels = EnumSet.copyOf(DEFAULT_LABELS);
     labelMatches = new ArrayList<>();
@@ -77,7 +77,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions(MicrometerMetricsOptions other) {
     super(other);
-    disabledMetricsCategories = other.disabledMetricsCategories != null ? EnumSet.copyOf(other.disabledMetricsCategories) : EnumSet.noneOf(MetricsDomain.class);
+    disabledMetricsCategories = other.disabledMetricsCategories != null ? new HashSet<>(other.disabledMetricsCategories) : new HashSet<>();
     registryName = other.registryName;
     labels = other.labels != null ? EnumSet.copyOf(other.labels) : EnumSet.noneOf(Label.class);
     labelMatches = new ArrayList<>(other.labelMatches);
@@ -142,7 +142,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   /**
    * @return the disabled metrics types.
    */
-  public Set<MetricsDomain> getDisabledMetricsCategories() {
+  public Set<String> getDisabledMetricsCategories() {
     return disabledMetricsCategories;
   }
 
@@ -152,7 +152,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    * @param disabledMetricsCategories to specify the set of metrics types to be disabled.
    * @return a reference to this, so that the API can be used fluently
    */
-  public MicrometerMetricsOptions setDisabledMetricsCategories(Set<MetricsDomain> disabledMetricsCategories) {
+  public MicrometerMetricsOptions setDisabledMetricsCategories(Set<String> disabledMetricsCategories) {
     this.disabledMetricsCategories = disabledMetricsCategories;
     return this;
   }
@@ -167,9 +167,25 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   @GenIgnore
   public MicrometerMetricsOptions addDisabledMetricsCategory(MetricsDomain metricsDomain) {
     if (disabledMetricsCategories == null) {
-      disabledMetricsCategories = EnumSet.noneOf(MetricsDomain.class);
+      disabledMetricsCategories = new HashSet<>();
     }
-    this.disabledMetricsCategories.add(metricsDomain);
+    this.disabledMetricsCategories.add(metricsDomain.toCategory());
+    return this;
+  }
+
+  /**
+   * Set metric that will not be registered. Schedulers will check the set {@code disabledMetricsCategories} when
+   * registering metrics suppliers
+   *
+   * @param category the type of metrics
+   * @return a reference to this, so that the API can be used fluently
+   */
+  @GenIgnore
+  public MicrometerMetricsOptions addDisabledMetricsCategory(String category) {
+    if (disabledMetricsCategories == null) {
+      disabledMetricsCategories = new HashSet<>();
+    }
+    this.disabledMetricsCategories.add(category);
     return this;
   }
 
@@ -179,7 +195,16 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   @GenIgnore
   public boolean isMetricsCategoryDisabled(MetricsDomain metricsDomain) {
-    return disabledMetricsCategories != null && disabledMetricsCategories.contains(metricsDomain);
+    return disabledMetricsCategories != null && disabledMetricsCategories.contains(metricsDomain.toCategory());
+  }
+
+  /**
+   * Is the given metrics category disabled?
+   * @return true if it is disabled
+   */
+  @GenIgnore
+  public boolean isMetricsCategoryDisabled(String category) {
+    return disabledMetricsCategories != null && disabledMetricsCategories.contains(category);
   }
 
   /**

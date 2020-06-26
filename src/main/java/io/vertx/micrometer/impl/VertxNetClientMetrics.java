@@ -98,7 +98,7 @@ class VertxNetClientMetrics extends AbstractMetrics {
 
     @Override
     public String baseName() {
-      return domain.getPrefix();
+      return VertxNetClientMetrics.this.baseName();
     }
   }
 }
