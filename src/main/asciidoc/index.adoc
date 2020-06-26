@@ -725,3 +725,46 @@ NOTE: Vert.x creates two worker pools upfront, _worker-thread_ and _internal-blo
 |Number of verticle instances deployed.
 
 |===
+
+=== Other clients
+
+Vert.x clients, other than the core HTTP / Net clients, may implement a standard set of client metrics. This is the case, for instance, of the SQL client.
+
+Such client metrics are named after a "client type" identifier, displayed as `$TYPE` in the table below.
+For instance, `vertx_$TYPE_queue_size` is `vertx_sql_queue_size` for the SQL client.
+
+The meaning of the `namespace` label is left to the discretion of the client implementation.
+
+[cols="35,20,10,35", options="header"]
+|===
+|Metric name
+|Labels
+|Type
+|Description
+
+|`vertx_$TYPE_queue_pending`
+|`remote`, `namespace`
+|Gauge
+|Number of pending elements in queue.
+
+|`vertx_$TYPE_queue_time`
+|`remote`, `namespace`
+|Timer
+|Time spent in queue before being processed.
+
+|`vertx_$TYPE_processing_pending`
+|`remote`, `namespace`
+|Gauge
+|Number of elements being processed.
+
+|`vertx_$TYPE_processing_time`
+|`remote`, `namespace`
+|Timer
+|Processing time, from request start to response end.
+
+|`vertx_$TYPE_reset`
+|`remote`, `namespace`
+|Counter
+|Total number of requests reset.
+
+|===

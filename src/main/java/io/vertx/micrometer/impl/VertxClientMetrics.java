@@ -30,26 +30,26 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Joel Takvorian
  */
 class VertxClientMetrics extends AbstractMetrics {
-  private final Timers queueTime;
+  private final Timers queueDelay;
+  private final Gauges<LongAdder> queueSize;
   private final Timers processingTime;
-  private final Gauges<LongAdder> queuePending;
   private final Gauges<LongAdder> processingPending;
   private final Counters resetCount;
 
   VertxClientMetrics(MeterRegistry registry, String type) {
     super(registry, type);
-    queueTime = timers("queueTime", "Time in queue, before processing", Label.REMOTE, Label.NAMESPACE);
-    queuePending = longGauges("queuePending", "Number of messages not processed yet", Label.REMOTE, Label.NAMESPACE);
-    processingTime = timers("processingTime", "Full processing time, including network latency", Label.REMOTE, Label.NAMESPACE);
-    processingPending = longGauges("processingPending", "Number of messages being processed", Label.REMOTE, Label.NAMESPACE);
-    resetCount = counters("resetCount", "Number of requests reset", Label.REMOTE, Label.NAMESPACE);
+    queueDelay = timers("queue.time", "Time spent in queue before being processed", Label.REMOTE, Label.NAMESPACE);
+    queueSize = longGauges("queue.pending", "Number of pending elements in queue", Label.REMOTE, Label.NAMESPACE);
+    processingTime = timers("processing.time", "Processing time, from request start to response end", Label.REMOTE, Label.NAMESPACE);
+    processingPending = longGauges("processing.pending", "Number of elements being processed", Label.REMOTE, Label.NAMESPACE);
+    resetCount = counters("reset", "Total number of requests reset", Label.REMOTE, Label.NAMESPACE);
   }
 
   ClientMetrics forInstance(SocketAddress remoteAddress, String namespace) {
     return new Instance(remoteAddress, namespace);
   }
 
-  class Instance implements ClientMetrics<Timers.EventTiming, Timers.EventTiming, Void, Void> {
+  class Instance implements ClientMetrics<Timers.EventTiming, Timers.EventTiming, Object, Object> {
     private final String remote;
     private final String namespace;
 
@@ -60,18 +60,18 @@ class VertxClientMetrics extends AbstractMetrics {
 
     @Override
     public Timers.EventTiming enqueueRequest() {
-      queuePending.get(remote, namespace).increment();
-      return queueTime.start();
+      queueSize.get(remote, namespace).increment();
+      return queueDelay.start();
     }
 
     @Override
     public void dequeueRequest(Timers.EventTiming taskMetric) {
-      queuePending.get(remote, namespace).decrement();
+      queueSize.get(remote, namespace).decrement();
       taskMetric.end(remote, namespace);
     }
 
     @Override
-    public Timers.EventTiming requestBegin(String uri, Void request) {
+    public Timers.EventTiming requestBegin(String uri, Object request) {
       // Ignore parameters at the moment; need to carefully figure out what can be labelled or not
       processingPending.get(remote, namespace).increment();
       return processingTime.start();
@@ -83,7 +83,7 @@ class VertxClientMetrics extends AbstractMetrics {
     }
 
     @Override
-    public void responseBegin(Timers.EventTiming requestMetric, Void response) {
+    public void responseBegin(Timers.EventTiming requestMetric, Object response) {
       // Ignoring response-alone metrics at the moment
     }
 
@@ -95,7 +95,7 @@ class VertxClientMetrics extends AbstractMetrics {
     }
 
     @Override
-    public void responseEnd(Timers.EventTiming requestMetric, Void response) {
+    public void responseEnd(Timers.EventTiming requestMetric, Object response) {
       processingPending.get(remote, namespace).decrement();
       requestMetric.end(remote, namespace);
     }
