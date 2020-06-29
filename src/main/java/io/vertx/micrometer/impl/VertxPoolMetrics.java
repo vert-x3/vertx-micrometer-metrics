@@ -40,8 +40,8 @@ class VertxPoolMetrics extends AbstractMetrics {
 
   VertxPoolMetrics(MeterRegistry registry) {
     super(registry, MetricsDomain.NAMED_POOLS);
-    queueDelay = timers("queue.delay", "Queue time for a resource", Label.POOL_TYPE, Label.POOL_NAME);
-    queueSize = longGauges("queue.size", "Number of elements waiting for a resource", Label.POOL_TYPE, Label.POOL_NAME);
+    queueDelay = timers("queue.delay", "Time spent in queue before being processed", Label.POOL_TYPE, Label.POOL_NAME);
+    queueSize = longGauges("queue.size", "Number of pending elements in queue", Label.POOL_TYPE, Label.POOL_NAME);
     usage = timers("usage", "Time using a resource", Label.POOL_TYPE, Label.POOL_NAME);
     inUse = longGauges("inUse", "Number of resources used", Label.POOL_TYPE, Label.POOL_NAME);
     usageRatio = doubleGauges("ratio", "Pool usage ratio, only present if maximum pool size could be determined", Label.POOL_TYPE, Label.POOL_NAME);
