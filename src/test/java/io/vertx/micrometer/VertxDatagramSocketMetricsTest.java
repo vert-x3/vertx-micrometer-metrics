@@ -6,7 +6,6 @@ import io.vertx.core.datagram.DatagramSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +13,6 @@ import org.junit.runner.RunWith;
 import java.util.List;
 
 import static io.vertx.micrometer.RegistryInspector.*;
-import static io.vertx.micrometer.RegistryInspector.dp;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

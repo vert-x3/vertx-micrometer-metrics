@@ -34,6 +34,8 @@ import java.util.stream.StreamSupport;
  * @author Joel Takvorian
  */
 public final class RegistryInspector {
+  public static Predicate<Meter> ALL = a -> true;
+
   private RegistryInspector() {
   }
 

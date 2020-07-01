@@ -34,11 +34,21 @@ import java.util.concurrent.atomic.LongAdder;
  */
 public abstract class AbstractMetrics implements MicrometerMetrics {
   protected final MeterRegistry registry;
-  protected final MetricsDomain domain;
+  protected final String category;
+
+  AbstractMetrics(MeterRegistry registry) {
+    this.registry = registry;
+    this.category = null;
+  }
+
+  AbstractMetrics(MeterRegistry registry, String category) {
+    this.registry = registry;
+    this.category = category;
+  }
 
   AbstractMetrics(MeterRegistry registry, MetricsDomain domain) {
     this.registry = registry;
-    this.domain = domain;
+    this.category = (domain == null) ? null : domain.toCategory();
   }
 
   /**
@@ -51,26 +61,26 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
 
   @Override
   public String baseName() {
-    return domain == null ? null : domain.getPrefix();
+    return category == null ? null : "vertx." + category + ".";
   }
 
   Counters counters(String name, String description, Label... keys) {
-    return new Counters(domain.getPrefix() + name, description, registry, keys);
+    return new Counters(baseName() + name, description, registry, keys);
   }
 
   Gauges<LongAdder> longGauges(String name, String description, Label... keys) {
-    return new Gauges<>(domain.getPrefix() + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
+    return new Gauges<>(baseName() + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
   }
 
   Gauges<AtomicReference<Double>> doubleGauges(String name, String description, Label... keys) {
-    return new Gauges<>(domain.getPrefix() + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
+    return new Gauges<>(baseName() + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
   }
 
   Summaries summaries(String name, String description, Label... keys) {
-    return new Summaries(domain.getPrefix() + name, description, registry, keys);
+    return new Summaries(baseName() + name, description, registry, keys);
   }
 
   Timers timers(String name, String description, Label... keys) {
-    return new Timers(domain.getPrefix() + name, description, registry, keys);
+    return new Timers(baseName() + name, description, registry, keys);
   }
 }

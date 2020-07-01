@@ -17,10 +17,10 @@ public class MicrometerMetricsOptionsConverter {
       switch (member.getKey()) {
         case "disabledMetricsCategories":
           if (member.getValue() instanceof JsonArray) {
-            java.util.LinkedHashSet<io.vertx.micrometer.MetricsDomain> list =  new java.util.LinkedHashSet<>();
+            java.util.LinkedHashSet<java.lang.String> list =  new java.util.LinkedHashSet<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof String)
-                list.add(io.vertx.micrometer.MetricsDomain.valueOf((String)item));
+                list.add((String)item);
             });
             obj.setDisabledMetricsCategories(list);
           }
@@ -94,7 +94,7 @@ public class MicrometerMetricsOptionsConverter {
   public static void toJson(MicrometerMetricsOptions obj, java.util.Map<String, Object> json) {
     if (obj.getDisabledMetricsCategories() != null) {
       JsonArray array = new JsonArray();
-      obj.getDisabledMetricsCategories().forEach(item -> array.add(item.name()));
+      obj.getDisabledMetricsCategories().forEach(item -> array.add(item));
       json.put("disabledMetricsCategories", array);
     }
     json.put("enabled", obj.isEnabled());

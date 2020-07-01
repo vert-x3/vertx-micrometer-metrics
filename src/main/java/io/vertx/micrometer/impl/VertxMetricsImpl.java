@@ -17,7 +17,6 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.core.Verticle;
 import io.vertx.core.datagram.DatagramSocketOptions;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
@@ -29,6 +28,11 @@ import io.vertx.core.spi.metrics.*;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static io.vertx.micrometer.MetricsDomain.*;
 
@@ -47,15 +51,20 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final VertxHttpClientMetrics httpClientMetrics;
   private final VertxHttpServerMetrics httpServerMetrics;
   private final VertxPoolMetrics poolMetrics;
+  private final Map<String, VertxClientMetrics> mapClientMetrics = new HashMap<>();
+  private final Set<String> disabledCaterogies = new HashSet<>();
 
   /**
    * @param options Vertx Prometheus options
    */
   public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry) {
-    super(backendRegistry.getMeterRegistry(), null);
+    super(backendRegistry.getMeterRegistry());
     this.backendRegistry = backendRegistry;
     registryName = options.getRegistryName();
     MeterRegistry registry = backendRegistry.getMeterRegistry();
+    if (options.getDisabledMetricsCategories() != null) {
+      disabledCaterogies.addAll(options.getDisabledMetricsCategories());
+    }
 
     eventBusMetrics = options.isMetricsCategoryDisabled(EVENT_BUS) ? null
       : new VertxEventBusMetrics(registry);
@@ -131,6 +140,15 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       return poolMetrics.forInstance(poolType, poolName, maxPoolSize);
     }
     return DummyVertxMetrics.DummyWorkerPoolMetrics.INSTANCE;
+  }
+
+  @Override
+  public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
+    if (disabledCaterogies.contains(type)) {
+      return DummyVertxMetrics.DummyClientMetrics.INSTANCE;
+    }
+    VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type));
+    return clientMetrics.forInstance(remoteAddress, namespace);
   }
 
   @Override

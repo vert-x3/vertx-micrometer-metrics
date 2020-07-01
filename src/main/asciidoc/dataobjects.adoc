@@ -44,7 +44,7 @@ Set the matched value.
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[disabledMetricsCategories]]`@disabledMetricsCategories`|`Array of link:enums.html#MetricsDomain[MetricsDomain]`|+++
+|[[disabledMetricsCategories]]`@disabledMetricsCategories`|`Array of String`|+++
 Sets metrics types that are disabled.
 +++
 |[[enabled]]`@enabled`|`Boolean`|+++

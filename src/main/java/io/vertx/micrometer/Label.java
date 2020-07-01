@@ -68,7 +68,11 @@ public enum Label {
   /**
    * Pool name (used in pools domain)
    */
-  POOL_NAME("pool_name");
+  POOL_NAME("pool_name"),
+  /**
+   * Client namespace
+   */
+  NAMESPACE("client_namespace");
 
   private String labelOutput;
 

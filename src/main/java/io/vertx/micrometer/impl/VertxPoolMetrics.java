@@ -112,7 +112,7 @@ class VertxPoolMetrics extends AbstractMetrics {
 
     @Override
     public String baseName() {
-      return domain.getPrefix();
+      return VertxPoolMetrics.this.baseName();
     }
   }
 }

@@ -46,6 +46,9 @@ Pool type, such as "worker" or "datasource" (used in pools domain)
 |[[POOL_NAME]]`POOL_NAME`|+++
 Pool name (used in pools domain)
 +++
+|[[NAMESPACE]]`NAMESPACE`|+++
+Client namespace
++++
 |===
 
 [[MatchType]]
