@@ -453,6 +453,16 @@ depending on the backend used.
 |Counter
 |Number of errors.
 
+|`vertx_http_client_queue_delay`
+|`local`, `remote`
+|Timer
+|Time spent in queue before being processed.
+
+|`vertx_http_client_queue_size`
+|`local`, `remote`
+|Gauge
+|Number of pending elements in queue.
+
 |`vertx_http_client_requests`
 |`local`, `remote`, `path`, `method`
 |Gauge
@@ -681,12 +691,12 @@ NOTE: Vert.x creates two worker pools upfront, _worker-thread_ and _internal-blo
 |`vertx_pool_queue_delay`
 |`pool_type`,`pool_name`
 |Timer
-|Time waiting for a resource (queue time).
+|Time spent in queue before being processed.
 
 |`vertx_pool_queue_size`
 |`pool_type`,`pool_name`
 |Gauge
-|Number of elements waiting for a resource.
+|Number of pending elements in queue.
 
 |`vertx_pool_usage`
 |`pool_type`,`pool_name`

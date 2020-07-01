@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Joel Takvorian
  */
 class VertxHttpClientMetrics extends VertxNetClientMetrics {
+  private final Timers queueDelay;
+  private final Gauges<LongAdder> queueSize;
   private final Gauges<LongAdder> requests;
   private final Counters requestCount;
   private final Timers responseTime;
@@ -43,6 +45,8 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
   VertxHttpClientMetrics(MeterRegistry registry) {
     super(registry, MetricsDomain.HTTP_CLIENT);
+    queueDelay = timers("queue.delay", "Time spent in queue before being processed", Label.LOCAL, Label.REMOTE);
+    queueSize = longGauges("queue.size", "Number of pending elements in queue", Label.LOCAL, Label.REMOTE);
     requests = longGauges("requests", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestCount = counters("requestCount", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
@@ -55,27 +59,41 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     return new Instance(localAddress);
   }
 
-  class Instance extends VertxNetClientMetrics.Instance implements HttpClientMetrics<VertxHttpClientMetrics.Handler, String, String, Void> {
+  class Instance extends VertxNetClientMetrics.Instance implements HttpClientMetrics<VertxHttpClientMetrics.Handler, String, String, Timers.EventTiming> {
     Instance(String localAddress) {
       super(localAddress);
     }
 
     @Override
-    public ClientMetrics<Handler, Void, HttpClientRequest, HttpClientResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
+    public ClientMetrics<Handler, Timers.EventTiming, HttpClientRequest, HttpClientResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
       String remote = remoteAddress.toString();
-      return new ClientMetrics<Handler, Void, HttpClientRequest, HttpClientResponse>() {
+      return new ClientMetrics<Handler, Timers.EventTiming, HttpClientRequest, HttpClientResponse>() {
+        @Override
+        public Timers.EventTiming enqueueRequest() {
+          queueSize.get(local, remote).increment();
+          return queueDelay.start();
+        }
+
+        @Override
+        public void dequeueRequest(Timers.EventTiming taskMetric) {
+          queueSize.get(local, remote).decrement();
+          taskMetric.end(local, remote);
+        }
+
         @Override
         public Handler requestBegin(String uri, HttpClientRequest request) {
-          Handler handler = new Handler(remote, request.path(),request.method().name());
+          Handler handler = new Handler(remote, request.path(), request.method().name());
           requests.get(local, remote, handler.path, handler.method).increment();
           requestCount.get(local, remote, handler.path, handler.method).increment();
           handler.timer = responseTime.start();
           return handler;
         }
+
         @Override
         public void requestReset(Handler handler) {
           requests.get(local, handler.address, handler.path, handler.method).decrement();
         }
+
         @Override
         public void responseEnd(Handler handler, HttpClientResponse response) {
           String code = String.valueOf(response.statusCode());
@@ -85,7 +103,6 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         }
       };
     }
-
 
     @Override
     public String connected(WebSocket webSocket) {

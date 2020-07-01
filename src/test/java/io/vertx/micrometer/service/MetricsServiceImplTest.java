@@ -77,7 +77,7 @@ public class MetricsServiceImplTest {
   }
 
   @Test
-  public void shouldGetCompleteSnapshot(TestContext ctx) throws InterruptedException {
+  public void shouldGetCompleteSnapshot(TestContext ctx) {
     HttpClient httpClient = vertx.createHttpClient();
     runClientRequests(ctx, httpClient, 10, "/r1");
     runClientRequests(ctx, httpClient, 5, "/r2");
@@ -88,6 +88,8 @@ public class MetricsServiceImplTest {
       "vertx.http.client.bytesReceived",
       "vertx.http.client.bytesSent",
       "vertx.http.client.connections",
+      "vertx.http.client.queue.delay",
+      "vertx.http.client.queue.size",
       "vertx.http.client.requestCount",
       "vertx.http.client.requests",
       "vertx.http.client.responseCount",
@@ -113,7 +115,7 @@ public class MetricsServiceImplTest {
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("timer"))
-      .hasSize(4)
+      .hasSize(5)
       .flatExtracting(JsonObject::fieldNames)
       .contains("totalTimeMs", "meanMs", "maxMs");
   }

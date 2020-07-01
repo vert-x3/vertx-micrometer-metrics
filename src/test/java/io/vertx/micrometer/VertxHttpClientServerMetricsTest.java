@@ -98,7 +98,9 @@ public class VertxHttpClientServerMetricsTest {
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.client."));
-    assertThat(datapoints).hasSize(11).contains(
+    assertThat(datapoints).hasSize(15).contains(
+        dp("vertx.http.client.queue.size[local=?,remote=127.0.0.1:9195]$VALUE", 0),
+        dp("vertx.http.client.queue.delay[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
         dp("vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
         dp("vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
         dp("vertx.http.client.bytesSent[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
