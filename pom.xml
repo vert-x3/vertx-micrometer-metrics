@@ -38,7 +38,7 @@
     <assertj.version>3.9.0</assertj.version>
     <junit.version>4.12</junit.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
-    <micrometer.version>1.1.0</micrometer.version>
+    <micrometer.version>1.5.2</micrometer.version>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
   </properties>
 
@@ -59,17 +59,6 @@
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-core</artifactId>
       <version>${micrometer.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hdrhistogram</groupId>
-          <artifactId>HdrHistogram</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.hdrhistogram</groupId>
-      <artifactId>HdrHistogram</artifactId>
-      <version>2.1.10</version>
     </dependency>
     <dependency>
       <groupId>io.micrometer</groupId>
