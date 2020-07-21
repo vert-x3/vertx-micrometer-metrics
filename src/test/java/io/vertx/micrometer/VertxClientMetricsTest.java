@@ -141,7 +141,7 @@ public class VertxClientMetricsTest {
       for (int i = 0; i < quantity; i++) {
         Object o = processing.pop();
         metrics.responseBegin(o, null);
-        metrics.responseEnd(o, null);
+        metrics.responseEnd(o);
       }
     }
 

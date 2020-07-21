@@ -17,12 +17,12 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.HttpClientMetrics;
+import io.vertx.core.spi.observability.HttpRequest;
+import io.vertx.core.spi.observability.HttpResponse;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
@@ -65,9 +65,9 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     }
 
     @Override
-    public ClientMetrics<Handler, Timers.EventTiming, HttpClientRequest, HttpClientResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
+    public ClientMetrics<Handler, Timers.EventTiming, HttpRequest, HttpResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
       String remote = remoteAddress.toString();
-      return new ClientMetrics<Handler, Timers.EventTiming, HttpClientRequest, HttpClientResponse>() {
+      return new ClientMetrics<Handler, Timers.EventTiming, HttpRequest, HttpResponse>() {
         @Override
         public Timers.EventTiming enqueueRequest() {
           queueSize.get(local, remote).increment();
@@ -81,12 +81,17 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         }
 
         @Override
-        public Handler requestBegin(String uri, HttpClientRequest request) {
-          Handler handler = new Handler(remote, request.path(), request.method().name());
+        public Handler requestBegin(String uri, HttpRequest request) {
+          Handler handler = new Handler(remote, request.uri(), request.method().name());
           requests.get(local, remote, handler.path, handler.method).increment();
           requestCount.get(local, remote, handler.path, handler.method).increment();
           handler.timer = responseTime.start();
           return handler;
+        }
+
+        @Override
+        public void responseBegin(Handler requestMetric, HttpResponse response) {
+          requestMetric.response = response;
         }
 
         @Override
@@ -95,8 +100,8 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         }
 
         @Override
-        public void responseEnd(Handler handler, HttpClientResponse response) {
-          String code = String.valueOf(response.statusCode());
+        public void responseEnd(Handler handler) {
+          String code = String.valueOf(handler.response.statusCode());
           requests.get(local, handler.address, handler.path, handler.method).decrement();
           responseCount.get(local, handler.address, handler.path, handler.method, code).increment();
           handler.timer.end(local, handler.address, handler.path, handler.method, code);
@@ -126,6 +131,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     private final String path;
     private final String method;
     private Timers.EventTiming timer;
+    HttpResponse response;
 
     Handler(String address, String path, String method) {
       this.address = address;

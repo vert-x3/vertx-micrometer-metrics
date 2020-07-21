@@ -95,7 +95,7 @@ class VertxClientMetrics extends AbstractMetrics {
     }
 
     @Override
-    public void responseEnd(Timers.EventTiming requestMetric, Object response) {
+    public void responseEnd(Timers.EventTiming requestMetric) {
       processingPending.get(remote, namespace).decrement();
       requestMetric.end(remote, namespace);
     }
