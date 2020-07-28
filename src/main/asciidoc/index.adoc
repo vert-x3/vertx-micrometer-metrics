@@ -720,22 +720,6 @@ NOTE: Vert.x creates two worker pools upfront, _worker-thread_ and _internal-blo
 
 |===
 
-== Verticle metrics
-
-[cols="35,20,10,35", options="header"]
-|===
-|Metric name
-|Labels
-|Type
-|Description
-
-|`vertx_verticle_deployed`
-|`name`
-|Gauge
-|Number of verticle instances deployed.
-
-|===
-
 === Other clients
 
 Vert.x clients, other than the core HTTP / Net clients, may implement a standard set of client metrics. This is the case, for instance, of the SQL client.
