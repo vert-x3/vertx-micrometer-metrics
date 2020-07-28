@@ -720,7 +720,7 @@ NOTE: Vert.x creates two worker pools upfront, _worker-thread_ and _internal-blo
 
 |===
 
-=== Other clients
+== Other clients
 
 Vert.x clients, other than the core HTTP / Net clients, may implement a standard set of client metrics. This is the case, for instance, of the SQL client.
 
