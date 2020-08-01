@@ -1,12 +1,12 @@
 package io.vertx.micrometer.service;
 
-import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -139,18 +139,15 @@ public class MetricsServiceImplTest {
   private void runClientRequests(TestContext ctx, HttpClient httpClient, int count, String path) {
     Async async = ctx.async(count);
     for (int i = 0; i < count; i++) {
-      httpClient.post(9195, "127.0.0.1", path, Buffer.buffer(CLIENT_REQUEST), ar -> {
-        if (ar.succeeded()) {
-          HttpClientResponse response = ar.result();
-          async.countDown();
-          if (response.statusCode() != 200) {
-            ctx.fail(response.statusMessage());
-          }
-        } else {
-          async.countDown();
-          ctx.fail(ar.cause());
-        }
-      });
+      httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", path)
+        .compose(req -> req.send(Buffer.buffer(CLIENT_REQUEST))
+          .compose(resp -> {
+            if (resp.statusCode() != 200) {
+              return Future.failedFuture(resp.statusMessage());
+            } else {
+              return resp.body();
+            }
+          })).onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
     }
     async.await();
   }

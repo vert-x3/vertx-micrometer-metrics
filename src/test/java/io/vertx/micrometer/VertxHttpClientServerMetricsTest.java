@@ -2,11 +2,13 @@ package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -209,12 +211,17 @@ public class VertxHttpClientServerMetricsTest {
   private void httpRequest(HttpClient httpClient, TestContext ctx) {
     Async async = ctx.async(HTTP_SENT_COUNT);
     for (int i = 0; i < HTTP_SENT_COUNT; i++) {
-      httpClient.post(9195, "127.0.0.1", "/resource", Buffer.buffer(CLIENT_REQUEST), ctx.asyncAssertSuccess(response -> {
-        async.countDown();
-        if (response.statusCode() != 200) {
-          ctx.fail(response.statusMessage());
-        }
-      }));
+      httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource")
+        .compose(req -> req
+          .send(CLIENT_REQUEST)
+          .compose(response -> {
+            if (response.statusCode() != 200) {
+              return Future.failedFuture(response.statusMessage());
+            } else {
+              return response.body();
+            }
+          }))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
     }
     async.await();
   }

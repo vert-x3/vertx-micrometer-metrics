@@ -16,10 +16,12 @@
  */
 package io.vertx.micrometer.backend;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -95,19 +97,19 @@ public final class PrometheusTestHelper {
                                  int maxAttempts,
                                  long sleepBeforeRetryMs,
                                  int attempt) {
-    vertx.createHttpClient()
-      .get(port, host, requestURI, ar -> {
-        if (ar.succeeded()) {
-          respHandler.handle(ar.result());
-        } else {
-          if (attempt < maxAttempts) {
-            vertx.setTimer(sleepBeforeRetryMs, l -> {
-              tryConnect(vertx, context, port, host, requestURI, respHandler, maxAttempts, sleepBeforeRetryMs, attempt + 1);
-            });
-          } else {
-            context.fail(ar.cause());
-          }
-        }
-      });
+    vertx.createHttpClient().request(HttpMethod.GET, port, host, requestURI).compose(req ->
+      req.send().compose(resp -> {
+        respHandler.handle(resp);
+        return Future.succeededFuture();
+      })
+    ).onFailure(cause -> {
+      if (attempt < maxAttempts) {
+        vertx.setTimer(sleepBeforeRetryMs, l -> {
+          tryConnect(vertx, context, port, host, requestURI, respHandler, maxAttempts, sleepBeforeRetryMs, attempt + 1);
+        });
+      } else {
+        context.fail(cause);
+      }
+    });
   }
 }
