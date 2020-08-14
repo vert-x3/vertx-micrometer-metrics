@@ -44,7 +44,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   /**
    * Default label match for public http server: exclude remote label
    */
-  public static final List<Label> DEFAULT_LABELS = Arrays.asList(Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_TYPE, Label.EB_SIDE);
+  public static final List<Label> DEFAULT_LABELS = Arrays.asList(Label.HTTP_ROUTE, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_TYPE, Label.EB_SIDE);
 
   /**
    * Whether JVM metrics should be collected by default = false.

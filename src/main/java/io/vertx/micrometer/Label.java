@@ -20,6 +20,7 @@ import io.vertx.codegen.annotations.VertxGen;
 
 /**
  * List of labels used in various Vert.x metrics. Labels that may not have bounded values are disabled by default.
+ *
  * @author Joel Takvorian
  */
 @VertxGen
@@ -37,6 +38,10 @@ public enum Label {
    */
   HTTP_PATH("path"),
   /**
+   * Route as provided by routing modules to the http requests
+   */
+  HTTP_ROUTE("route"),
+  /**
    * Method (GET, POST, PUT, etc.) of an HTTP requests (used in http domain)
    */
   HTTP_METHOD("method"),
@@ -45,8 +50,8 @@ public enum Label {
    */
   HTTP_CODE("code"),
   /**
-   * Class name. When used in error counters (in net, http, datagram and eventbus domains) it relates to an exception that occurred.
-   * When used in verticle domain, it relates to the verticle class name.
+   * Class name. When used in error counters (in net, http, datagram and eventbus domains) it relates to an exception
+   * that occurred. When used in verticle domain, it relates to the verticle class name.
    */
   CLASS_NAME("class"),
   /**

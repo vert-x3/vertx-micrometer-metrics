@@ -28,6 +28,8 @@ import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Timers;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
@@ -43,9 +45,9 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
   VertxHttpServerMetrics(MeterRegistry registry) {
     super(registry, MetricsDomain.HTTP_SERVER);
     requests = longGauges("requests", "Number of requests being processed", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    requestCount = counters("requestCount", "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    requestCount = counters("requestCount", "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.HTTP_ROUTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     requestResetCount = counters("requestResetCount", "Number of requests reset", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    processingTime = timers("responseTime", "Request processing time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    processingTime = timers("responseTime", "Request processing time", Label.LOCAL, Label.REMOTE, Label.HTTP_ROUTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
@@ -84,8 +86,9 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     @Override
     public void responseEnd(Handler handler, HttpServerResponse response) {
       String code = String.valueOf(response.getStatusCode());
-      handler.timer.end(local, handler.address, handler.path, handler.method, code);
-      requestCount.get(local, handler.address, handler.path, handler.method, code).increment();
+      String handlerRoute = handler.getRoute();
+      handler.timer.end(local, handler.address, handlerRoute, handler.path, handler.method, code);
+      requestCount.get(local, handler.address, handlerRoute, handler.path, handler.method, code).increment();
       requests.get(local, handler.address, handler.path, handler.method).decrement();
     }
 
@@ -101,6 +104,11 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     }
 
     @Override
+    public void requestRouted(Handler handler, String route) {
+      handler.addRoute(route);
+    }
+
+    @Override
     public void close() {
     }
   }
@@ -109,12 +117,23 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     private final String address;
     private final String path;
     private final String method;
+    private final List<String> routes = new LinkedList<>();
     private Timers.EventTiming timer;
 
     Handler(String address, String path, String method) {
       this.address = address;
       this.path = path;
       this.method = method;
+    }
+
+    private void addRoute(String route) {
+      if (route != null) {
+        routes.add(route);
+      }
+    }
+
+    private String getRoute() {
+      return String.join(">", routes);
     }
   }
 }

@@ -556,7 +556,7 @@ depending on the backend used.
 |Number of requests being processed.
 
 |`vertx_http_server_requestCount`
-|`local`, `remote`, `path`, `method`, `code`
+|`local`, `remote`, `path`, `method`, `code`, `route`
 |Counter
 |Number of processed requests.
 
@@ -565,8 +565,8 @@ depending on the backend used.
 |Counter
 |Number of requests reset.
 
-|`vertx_http_server_processingTime`
-|`local`, `remote`, `path`, `method`, `code`
+|`vertx_http_server_responseTime`
+|`local`, `remote`, `path`, `method`, `code`, `route`
 |Timer
 |Request processing time.
 
