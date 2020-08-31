@@ -1,12 +1,7 @@
 package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.config.MeterFilter;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
@@ -33,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class VertxHttpClientServerMetricsTest {
 
   private static final int HTTP_SENT_COUNT = 68;
-  private static final int SENT_COUNT = HTTP_SENT_COUNT + 1 ;
+  private static final int SENT_COUNT = HTTP_SENT_COUNT + 1;
   private static final String SERVER_RESPONSE = "some text";
   private static final String CLIENT_REQUEST = "pitchounette";
   private static final long REQ_DELAY = 30L;
@@ -93,7 +88,7 @@ public class VertxHttpClientServerMetricsTest {
   }
 
   @Test
-  public void shouldReportHttpClientMetrics(TestContext ctx) throws InterruptedException {
+  public void shouldReportHttpClientMetrics(TestContext ctx) {
     runClientRequests(ctx, false);
 
     waitForValue(vertx, ctx, registryName, "vertx.http.client.bytesReceived[local=?,remote=127.0.0.1:9195]$COUNT",
@@ -119,7 +114,7 @@ public class VertxHttpClientServerMetricsTest {
   }
 
   @Test
-  public void shouldReportHttpServerMetricsWithoutWS(TestContext ctx) throws InterruptedException {
+  public void shouldReportHttpServerMetricsWithoutWS(TestContext ctx) {
     runClientRequests(ctx, false);
 
     waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
@@ -147,12 +142,12 @@ public class VertxHttpClientServerMetricsTest {
   }
 
   @Test
-  public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
+  public void shouldReportHttpServerMetrics(TestContext ctx) {
     runClientRequests(ctx, true);
 
-    // Remark, with websockets, an extra "GET" request is performed so increase by one the expected value
+    // Remark, with websockets, two extra requests are performed so increase the expected value
     waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
-      value -> value.intValue() == concurrentClients * (SENT_COUNT + 1));
+      value -> value.intValue() == concurrentClients * (SENT_COUNT + 2));
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.server."));
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
@@ -175,25 +170,23 @@ public class VertxHttpClientServerMetricsTest {
       "vertx.http.server.responseTime[code=200,local=127.0.0.1:9195,method=GET,path=/,remote=_]$MAX");
 
     assertThat(datapoints).contains(
-      dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * (SENT_COUNT + 1)),
-      dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * SENT_COUNT),
-      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+      dp("vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * (SENT_COUNT + 2)),
+      dp("vertx.http.server.bytesSent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * (SENT_COUNT + 1)),
       dp("vertx.http.server.requestCount[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT));
   }
 
   @Test
-  public void shouldIgnoreInternalEventbusMetrics(TestContext ctx) throws InterruptedException {
+  public void shouldIgnoreInternalEventbusMetrics(TestContext ctx) {
     runClientRequests(ctx, true);
 
     waitForValue(vertx, ctx, registryName, "vertx.http.server.bytesReceived[local=127.0.0.1:9195,remote=_]$COUNT",
-      value -> value.intValue() == concurrentClients * (SENT_COUNT + 1));
+      value -> value.intValue() == concurrentClients * (SENT_COUNT + 2));
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.eventbus."));
     assertThat(datapoints).isEmpty();
   }
 
-  private void runClientRequests(TestContext ctx, boolean ws) throws InterruptedException {
+  private void runClientRequests(TestContext ctx, boolean ws) {
     Async clientsFinished = ctx.async(concurrentClients);
     for (int i = 0; i < concurrentClients; i++) {
       ForkJoinPool.commonPool().execute(() -> {
