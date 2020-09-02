@@ -53,8 +53,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
 
   @Override
   HttpServerMetrics forAddress(SocketAddress localAddress) {
-    String local = Labels.fromAddress(localAddress);
-    return new Instance(local);
+    return new Instance(Labels.address(localAddress));
   }
 
   class Instance extends VertxNetServerMetrics.Instance implements HttpServerMetrics<Handler, String, String> {
