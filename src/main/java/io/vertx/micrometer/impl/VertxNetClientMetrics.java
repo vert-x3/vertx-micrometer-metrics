@@ -18,7 +18,6 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.core.spi.metrics.TCPMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
@@ -62,7 +61,7 @@ class VertxNetClientMetrics extends AbstractMetrics {
 
     @Override
     public String connected(SocketAddress remoteAddress, String remoteName) {
-      String remote = Labels.fromAddress(new SocketAddressImpl(remoteAddress.port(), remoteName));
+      String remote = Labels.address(remoteAddress, remoteName);
       connections.get(local, remote).increment();
       return remote;
     }

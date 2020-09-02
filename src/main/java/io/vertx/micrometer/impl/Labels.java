@@ -31,11 +31,23 @@ public final class Labels {
   private Labels() {
   }
 
-  public static String fromAddress(SocketAddress address) {
-    return address == null ? "?" : (address.host() + ":" + address.port());
+  static String address(SocketAddress address) {
+    return address(address, null);
   }
 
-  public static String getSide(boolean local) {
+  static String address(SocketAddress address, String nameOverride) {
+    if (address == null) {
+      return "?";
+    }
+    if (nameOverride == null) {
+      return address.toString();
+    }
+    SocketAddress addrOverride = address.port() >= 0 ? SocketAddress.inetSocketAddress(address.port(), nameOverride)
+      : SocketAddress.domainSocketAddress(nameOverride);
+    return addrOverride.toString();
+  }
+
+  static String getSide(boolean local) {
     return local ? "local" : "remote";
   }
 

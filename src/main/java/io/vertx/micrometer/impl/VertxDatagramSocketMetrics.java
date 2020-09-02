@@ -18,7 +18,6 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.core.spi.metrics.DatagramSocketMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
@@ -44,7 +43,7 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
 
   @Override
   public void listening(String localName, SocketAddress localAddress) {
-    this.localAddress = Labels.fromAddress(new SocketAddressImpl(localAddress.port(), localName));
+    this.localAddress = Labels.address(localAddress, localName);
   }
 
   @Override
