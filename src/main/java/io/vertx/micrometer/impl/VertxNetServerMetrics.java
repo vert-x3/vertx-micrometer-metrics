@@ -35,15 +35,15 @@ class VertxNetServerMetrics extends AbstractMetrics {
   private final Counters bytesSent;
   private final Counters errorCount;
 
-  VertxNetServerMetrics(MeterRegistry registry) {
-    this(registry, MetricsDomain.NET_SERVER);
+  VertxNetServerMetrics(MeterRegistry registry, boolean compatMode) {
+    this(registry, MetricsDomain.NET_SERVER, compatMode);
   }
 
-  VertxNetServerMetrics(MeterRegistry registry, MetricsDomain domain) {
+  VertxNetServerMetrics(MeterRegistry registry, MetricsDomain domain, boolean compatMode) {
     super(registry, domain);
     connections = longGauges("connections", "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
-    bytesReceived = counters("bytesReceived", "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
-    bytesSent = counters("bytesSent", "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
+    bytesReceived = counters(compatMode ? "bytesReceived" : "bytes.received", "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
+    bytesSent = counters(compatMode ? "bytesSent" : "bytes.sent", "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
     errorCount = counters("errors", "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);
   }
 

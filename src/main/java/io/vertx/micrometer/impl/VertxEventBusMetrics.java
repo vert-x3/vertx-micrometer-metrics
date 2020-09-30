@@ -45,7 +45,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   private final Summaries bytesRead;
   private final Summaries bytesWritten;
 
-  VertxEventBusMetrics(MeterRegistry registry) {
+  VertxEventBusMetrics(MeterRegistry registry, boolean compatMode) {
     super(registry, MetricsDomain.EVENT_BUS);
     handlers = longGauges("handlers", "Number of event bus handlers in use", Label.EB_ADDRESS);
     pending = longGauges("pending", "Number of messages not processed yet", Label.EB_ADDRESS, Label.EB_SIDE);
@@ -55,9 +55,9 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     received = counters("received", "Number of messages received", Label.EB_ADDRESS, Label.EB_SIDE);
     delivered = counters("delivered", "Number of messages delivered to handlers", Label.EB_ADDRESS, Label.EB_SIDE);
     discarded = counters("discarded", "Number of discarded messages", Label.EB_ADDRESS, Label.EB_SIDE);
-    replyFailures = counters("replyFailures", "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
-    bytesRead = summaries("bytesRead", "Number of bytes received while reading messages from event bus cluster peers", Label.EB_ADDRESS);
-    bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
+    replyFailures = counters(compatMode ? "replyFailures" : "reply.failures", "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
+    bytesRead = summaries(compatMode ? "bytesRead" : "bytes.read", "Number of bytes received while reading messages from event bus cluster peers", Label.EB_ADDRESS);
+    bytesWritten = summaries(compatMode ? "bytesWritten" : "bytes.written", "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
   }
 
   private static boolean isInternal(String address) {

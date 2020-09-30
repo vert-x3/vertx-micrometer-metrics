@@ -33,7 +33,7 @@ public class VertxPoolMetricsTest {
   }
 
   @Test
-  public void shouldReportNamedPoolMetrics(TestContext context) throws InterruptedException {
+  public void shouldReportNamedPoolMetrics(TestContext context) {
     int maxPoolSize = 8;
     int taskCount = maxPoolSize * 3;
     int sleepMillis = 30;
@@ -69,7 +69,7 @@ public class VertxPoolMetricsTest {
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.pool"));
     assertThat(datapoints).hasSize(10).contains(
       dp("vertx.pool.queue.size[pool_name=test-worker,pool_type=worker]$VALUE", 0),
-      dp("vertx.pool.inUse[pool_name=test-worker,pool_type=worker]$VALUE", 0),
+      dp("vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.ratio[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.completed[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
       dp("vertx.pool.queue.delay[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),

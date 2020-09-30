@@ -29,7 +29,7 @@ public class VertxDatagramSocketMetricsTest {
   }
 
   @Test
-  public void shouldReportDatagramMetrics(TestContext context) throws InterruptedException {
+  public void shouldReportDatagramMetrics(TestContext context) {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .addLabels(Label.LOCAL)
@@ -57,12 +57,47 @@ public class VertxDatagramSocketMetricsTest {
     }
     receiveLatch.awaitSuccess(15000);
 
-    waitForValue(vertx, context, "vertx.datagram.bytesSent[]$COUNT", value -> value.intValue() == 5);
+    waitForValue(vertx, context, "vertx.datagram.bytes.sent[]$COUNT", value -> value.intValue() == 5);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.datagram."));
     assertThat(datapoints).containsOnly(
-      dp("vertx.datagram.bytesSent[]$COUNT", 5),
-      dp("vertx.datagram.bytesSent[]$TOTAL", 45),  // 45 = size("some text") * loops
-      dp("vertx.datagram.bytesReceived[local=localhost:9192]$COUNT", 5),
-      dp("vertx.datagram.bytesReceived[local=localhost:9192]$TOTAL", 45));
+      dp("vertx.datagram.bytes.sent[]$COUNT", 5),
+      dp("vertx.datagram.bytes.sent[]$TOTAL", 45),  // 45 = size("some text") * loops
+      dp("vertx.datagram.bytes.received[local=localhost:9192]$COUNT", 5),
+      dp("vertx.datagram.bytes.received[local=localhost:9192]$TOTAL", 45));
+  }
+
+  @Test
+  public void shouldReportInCompatibilityMode(TestContext context) {
+    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .setCompatibilityNames(true)
+      .setEnabled(true)))
+      .exceptionHandler(context.exceptionHandler());
+
+    String datagramContent = "some text";
+
+    // Setup server
+    int port = 9192;
+    String host = "localhost";
+    Async receiveLatch = context.async();
+    Async listenLatch = context.async();
+    vertx.createDatagramSocket().listen(port, host, context.asyncAssertSuccess(so -> {
+      so.handler(packet -> receiveLatch.countDown());
+      listenLatch.complete();
+    }));
+    listenLatch.awaitSuccess(15000);
+
+    // Send to server
+    DatagramSocket client = vertx.createDatagramSocket();
+    client.send(datagramContent, port, host, context.asyncAssertSuccess());
+    receiveLatch.awaitSuccess(15000);
+
+    waitForValue(vertx, context, "vertx.datagram.bytesSent[]$COUNT", value -> value.intValue() == 1);
+    List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.datagram."));
+    assertThat(datapoints).containsOnly(
+      dp("vertx.datagram.bytesSent[]$COUNT", 1),
+      dp("vertx.datagram.bytesSent[]$TOTAL", 9),
+      dp("vertx.datagram.bytesReceived[]$COUNT", 1),
+      dp("vertx.datagram.bytesReceived[]$TOTAL", 9));
   }
 }

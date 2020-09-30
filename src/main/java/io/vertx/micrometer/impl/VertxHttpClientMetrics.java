@@ -46,17 +46,17 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
   private final Summaries responseBytes;
   private final Gauges<LongAdder> wsConnections;
 
-  VertxHttpClientMetrics(MeterRegistry registry) {
-    super(registry, MetricsDomain.HTTP_CLIENT);
+  VertxHttpClientMetrics(MeterRegistry registry, boolean compatMode) {
+    super(registry, MetricsDomain.HTTP_CLIENT, compatMode);
     queueDelay = timers("queue.delay", "Time spent in queue before being processed", Label.LOCAL, Label.REMOTE);
     queueSize = longGauges("queue.size", "Number of pending elements in queue", Label.LOCAL, Label.REMOTE);
-    requests = longGauges("requests", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    requestCount = counters("requestCount", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    requests = longGauges(compatMode ? "requests" : "request.active", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    requestCount = counters(compatMode ? "requestCount" : "requests", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestBytes = summaries("request.bytes", "Size of requests in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    responseCount = counters("responseCount", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    responseTime = timers(compatMode ? "responseTime" : "response.time", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    responseCount = counters(compatMode ? "responseCount" : "responses", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     responseBytes = summaries("response.bytes", "Size of responses in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
+    wsConnections = longGauges(compatMode ? "wsConnections" : "ws.connections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
   @Override

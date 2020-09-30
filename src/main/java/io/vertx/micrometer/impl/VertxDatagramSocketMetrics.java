@@ -34,10 +34,10 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
 
   private volatile String localAddress;
 
-  VertxDatagramSocketMetrics(MeterRegistry registry) {
+  VertxDatagramSocketMetrics(MeterRegistry registry, boolean compatMode) {
     super(registry, MetricsDomain.DATAGRAM_SOCKET);
-    bytesReceived = summaries("bytesReceived", "Total number of datagram bytes received", Label.LOCAL);
-    bytesSent = summaries("bytesSent", "Total number of datagram bytes sent");
+    bytesReceived = summaries(compatMode ? "bytesReceived" : "bytes.received", "Total number of datagram bytes received", Label.LOCAL);
+    bytesSent = summaries(compatMode ? "bytesSent" : "bytes.sent", "Total number of datagram bytes sent");
     errorCount = counters("errors", "Total number of datagram errors", Label.CLASS_NAME);
   }
 

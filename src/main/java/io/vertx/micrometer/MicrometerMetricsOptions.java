@@ -51,6 +51,11 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public static final boolean DEFAULT_JVM_METRICS_ENABLED = false;
 
+  /**
+   * Compatiblity mode for metrics names (keeping name format from Vert.x 3.x), default is false
+   */
+  public static final boolean DEFAULT_COMPATIBILITY_NAMES = false;
+
   private Set<String> disabledMetricsCategories;
   private String registryName;
   private Set<Label> labels;
@@ -60,6 +65,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private VertxPrometheusOptions prometheusOptions;
   private VertxJmxMetricsOptions jmxMetricsOptions;
   private boolean jvmMetricsEnabled;
+  private boolean compatibilityNames;
 
   /**
    * Creates default options for Micrometer metrics.
@@ -70,6 +76,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     labels = EnumSet.copyOf(DEFAULT_LABELS);
     labelMatches = new ArrayList<>();
     jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
+    compatibilityNames = DEFAULT_COMPATIBILITY_NAMES;
   }
 
   /**
@@ -92,6 +99,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
       jmxMetricsOptions = new VertxJmxMetricsOptions(other.jmxMetricsOptions);
     }
     jvmMetricsEnabled = other.jvmMetricsEnabled;
+    compatibilityNames = other.compatibilityNames;
   }
 
   /**
@@ -385,6 +393,24 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions setJvmMetricsEnabled(boolean jvmMetricsEnabled) {
     this.jvmMetricsEnabled = jvmMetricsEnabled;
+    return this;
+  }
+
+  /**
+   * @return {@code true} if compatibility mode with Vert.x 3.x for metrics names is enabled.
+   */
+  public boolean isCompatibilityNames() {
+    return compatibilityNames;
+  }
+
+  /**
+   * Whether compatibility mode with Vert.x 3.x for metrics names should be used. Defaults to {@code false}.
+   *
+   * @param compatibilityNames true to enable compatibility mode.
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MicrometerMetricsOptions setCompatibilityNames(boolean compatibilityNames) {
+    this.compatibilityNames = compatibilityNames;
     return this;
   }
 }

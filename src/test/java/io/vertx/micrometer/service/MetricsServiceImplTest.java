@@ -85,25 +85,25 @@ public class MetricsServiceImplTest {
 
     JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot();
     assertThat(snapshot).extracting(Map.Entry::getKey).containsExactly(
-      "vertx.http.client.bytesReceived",
-      "vertx.http.client.bytesSent",
+      "vertx.http.client.bytes.received",
+      "vertx.http.client.bytes.sent",
       "vertx.http.client.connections",
       "vertx.http.client.queue.delay",
       "vertx.http.client.queue.size",
+      "vertx.http.client.request.active",
       "vertx.http.client.request.bytes",
-      "vertx.http.client.requestCount",
       "vertx.http.client.requests",
       "vertx.http.client.response.bytes",
-      "vertx.http.client.responseCount",
-      "vertx.http.client.responseTime",
-      "vertx.http.server.bytesReceived",
-      "vertx.http.server.bytesSent",
+      "vertx.http.client.response.time",
+      "vertx.http.client.responses",
+      "vertx.http.server.bytes.received",
+      "vertx.http.server.bytes.sent",
       "vertx.http.server.connections",
+      "vertx.http.server.request.active",
       "vertx.http.server.request.bytes",
-      "vertx.http.server.requestCount",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
-      "vertx.http.server.responseTime");
+      "vertx.http.server.response.time");
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("counter"))
@@ -126,14 +126,14 @@ public class MetricsServiceImplTest {
 
     JsonObject snapshot = MetricsService.create(httpServer).getMetricsSnapshot();
     assertThat(snapshot).extracting(Map.Entry::getKey).containsExactly(
-      "vertx.http.server.bytesReceived",
-      "vertx.http.server.bytesSent",
+      "vertx.http.server.bytes.received",
+      "vertx.http.server.bytes.sent",
       "vertx.http.server.connections",
+      "vertx.http.server.request.active",
       "vertx.http.server.request.bytes",
-      "vertx.http.server.requestCount",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
-      "vertx.http.server.responseTime");
+      "vertx.http.server.response.time");
   }
 
   private void runClientRequests(TestContext ctx, HttpClient httpClient, int count, String path) {

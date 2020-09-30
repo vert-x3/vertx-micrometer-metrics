@@ -65,21 +65,22 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (options.getDisabledMetricsCategories() != null) {
       disabledCaterogies.addAll(options.getDisabledMetricsCategories());
     }
+    boolean compatMode = options.isCompatibilityNames();
 
     eventBusMetrics = options.isMetricsCategoryDisabled(EVENT_BUS) ? null
-      : new VertxEventBusMetrics(registry);
+      : new VertxEventBusMetrics(registry, compatMode);
     datagramSocketMetrics = options.isMetricsCategoryDisabled(DATAGRAM_SOCKET) ? null
-      : new VertxDatagramSocketMetrics(registry);
+      : new VertxDatagramSocketMetrics(registry, compatMode);
     netClientMetrics = options.isMetricsCategoryDisabled(NET_CLIENT) ? null
-      : new VertxNetClientMetrics(registry);
+      : new VertxNetClientMetrics(registry, compatMode);
     netServerMetrics = options.isMetricsCategoryDisabled(NET_SERVER) ? null
-      : new VertxNetServerMetrics(registry);
+      : new VertxNetServerMetrics(registry, compatMode);
     httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? null
-      : new VertxHttpClientMetrics(registry);
+      : new VertxHttpClientMetrics(registry, compatMode);
     httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? null
-      : new VertxHttpServerMetrics(registry);
+      : new VertxHttpServerMetrics(registry, compatMode);
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
-      : new VertxPoolMetrics(registry);
+      : new VertxPoolMetrics(registry, compatMode);
   }
 
   void init() {

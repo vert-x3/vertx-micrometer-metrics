@@ -65,8 +65,8 @@ public class PrometheusMetricsITest {
         // Second connection, this time actually reading the metrics content
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
             context.verify(v2 -> assertThat(body.toString())
-              .contains("vertx_http_client_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
-              .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
+              .contains("vertx_http_client_request_active{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
+              .doesNotContain("vertx_http_client_response_time_seconds_bucket"));
             async.complete();
         }));
     });
@@ -167,7 +167,7 @@ public class PrometheusMetricsITest {
         // Second connection, this time actually reading the metrics content
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
           context.verify(v2 -> assertThat(body.toString())
-            .contains("vertx_http_client_responseTime_seconds_bucket{code=\"200\""));
+            .contains("vertx_http_client_response_time_seconds_bucket{code=\"200\""));
           async.complete();
         }));
     });
@@ -197,8 +197,8 @@ public class PrometheusMetricsITest {
         // Second connection, this time actually reading the metrics content
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
           context.verify(v2 -> assertThat(body.toString())
-            .contains("vertx_http_client_requests{method=\"GET\",path=\"/metrics\",}")
-            .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
+            .contains("vertx_http_client_request_active{method=\"GET\",path=\"/metrics\",}")
+            .doesNotContain("vertx_http_client_response_time_seconds_bucket"));
           async.complete();
         }));
     });

@@ -133,7 +133,7 @@ public class CustomMicrometerMetricsITest {
     PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", r1 -> {
       // Delay to make "sure" metrics are populated
       vertx.setTimer(500, l -> {
-        assertThat(registry.scrape()).contains("vertx_http_client_responseTime_seconds_bucket{code=\"200\"");
+        assertThat(registry.scrape()).contains("vertx_http_client_response_time_seconds_bucket{code=\"200\"");
         async.complete();
       });
     });

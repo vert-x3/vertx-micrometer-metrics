@@ -44,6 +44,9 @@ Set the matched value.
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[compatibilityNames]]`@compatibilityNames`|`Boolean`|+++
+Whether compatibility mode with Vert.x 3.x for metrics names should be used. Defaults to <code>false</code>.
++++
 |[[disabledMetricsCategories]]`@disabledMetricsCategories`|`Array of String`|+++
 Sets metrics types that are disabled.
 +++

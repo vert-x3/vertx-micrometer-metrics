@@ -16,6 +16,11 @@ public class MicrometerMetricsOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MicrometerMetricsOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "compatibilityNames":
+          if (member.getValue() instanceof Boolean) {
+            obj.setCompatibilityNames((Boolean)member.getValue());
+          }
+          break;
         case "disabledMetricsCategories":
           if (member.getValue() instanceof JsonArray) {
             java.util.LinkedHashSet<java.lang.String> list =  new java.util.LinkedHashSet<>();
@@ -93,6 +98,7 @@ public class MicrometerMetricsOptionsConverter {
   }
 
   public static void toJson(MicrometerMetricsOptions obj, java.util.Map<String, Object> json) {
+    json.put("compatibilityNames", obj.isCompatibilityNames());
     if (obj.getDisabledMetricsCategories() != null) {
       JsonArray array = new JsonArray();
       obj.getDisabledMetricsCategories().forEach(item -> array.add(item));

@@ -94,7 +94,7 @@ public class VertxEventBusMetricsTest {
       dp("vertx.eventbus.received[address=no handler,side=local]$COUNT", 2),
       dp("vertx.eventbus.received[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.delivered[address=testSubject,side=local]$COUNT", 8),
-      dp("vertx.eventbus.replyFailures[address=no handler,failure=NO_HANDLERS]$COUNT", 2),
+      dp("vertx.eventbus.reply.failures[address=no handler,failure=NO_HANDLERS]$COUNT", 2),
       dp("vertx.eventbus.processed[address=testSubject,side=local]$COUNT", 8d * instances));
   }
 
