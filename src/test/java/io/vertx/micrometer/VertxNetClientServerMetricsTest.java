@@ -82,35 +82,31 @@ public class VertxNetClientServerMetricsTest {
   }
 
   @Test
-  public void shouldReportNetClientMetrics(TestContext ctx) throws InterruptedException {
+  public void shouldReportNetClientMetrics(TestContext ctx) {
     runClientRequests(ctx);
 
     waitForValue(vertx, ctx, registryName, "vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$COUNT",
-      value -> value.intValue() == concurrentClients * SENT_COUNT);
+      value -> value.intValue() == concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length);
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.client."));
     assertThat(datapoints).containsOnly(
         dp("vertx.net.client.connections[local=?,remote=localhost:9194]$VALUE", 0),
-        dp("vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT),
-        dp("vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-        dp("vertx.net.client.bytesSent[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT),
-        dp("vertx.net.client.bytesSent[local=?,remote=localhost:9194]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length));
+        dp("vertx.net.client.bytesReceived[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+        dp("vertx.net.client.bytesSent[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length));
   }
 
   @Test
-  public void shouldReportHttpServerMetrics(TestContext ctx) throws InterruptedException {
+  public void shouldReportNetServerMetrics(TestContext ctx) {
     runClientRequests(ctx);
 
     waitForValue(vertx, ctx, registryName, "vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$COUNT",
-      value -> value.intValue() == concurrentClients * SENT_COUNT);
+      value -> value.intValue() == concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length);
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.server."));
     assertThat(datapoints).containsOnly(
       dp("vertx.net.server.connections[local=localhost:9194,remote=_]$VALUE", 0),
-      dp("vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT),
-      dp("vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$TOTAL", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.net.server.bytesSent[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT),
-      dp("vertx.net.server.bytesSent[local=localhost:9194,remote=_]$TOTAL", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length));
+      dp("vertx.net.server.bytesReceived[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+      dp("vertx.net.server.bytesSent[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length));
   }
 
   private void runClientRequests(TestContext ctx) {

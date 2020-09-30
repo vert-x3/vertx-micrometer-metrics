@@ -103,15 +103,9 @@ public class MetricsServiceImplTest {
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("counter"))
-      .hasSize(6)
+      .hasSize(10)
       .flatExtracting(JsonObject::fieldNames)
       .contains("count");
-
-    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
-      .filteredOn(obj -> obj.getString("type").equals("summary"))
-      .hasSize(4)
-      .flatExtracting(JsonObject::fieldNames)
-      .contains("mean", "max", "total");
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("timer"))

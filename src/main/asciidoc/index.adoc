@@ -409,12 +409,12 @@ depending on the backend used.
 
 |`vertx_net_client_bytesReceived`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes received from the remote host.
 
 |`vertx_net_client_bytesSent`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes sent to the remote host.
 
 |`vertx_net_client_errors`
@@ -506,12 +506,12 @@ depending on the backend used.
 
 |`vertx_net_server_bytesReceived`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes received by the Net Server.
 
 |`vertx_net_server_bytesSent`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes sent by the Net Server.
 
 |`vertx_net_server_errors`

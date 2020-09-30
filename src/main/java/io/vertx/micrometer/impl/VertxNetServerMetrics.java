@@ -31,8 +31,8 @@ import java.util.concurrent.atomic.LongAdder;
  */
 class VertxNetServerMetrics extends AbstractMetrics {
   private final Gauges<LongAdder> connections;
-  private final Summaries bytesReceived;
-  private final Summaries bytesSent;
+  private final Counters bytesReceived;
+  private final Counters bytesSent;
   private final Counters errorCount;
 
   VertxNetServerMetrics(MeterRegistry registry) {
@@ -42,8 +42,8 @@ class VertxNetServerMetrics extends AbstractMetrics {
   VertxNetServerMetrics(MeterRegistry registry, MetricsDomain domain) {
     super(registry, domain);
     connections = longGauges("connections", "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
-    bytesReceived = summaries("bytesReceived", "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
-    bytesSent = summaries("bytesSent", "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
+    bytesReceived = counters("bytesReceived", "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
+    bytesSent = counters("bytesSent", "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
     errorCount = counters("errors", "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);
   }
 
@@ -72,12 +72,12 @@ class VertxNetServerMetrics extends AbstractMetrics {
 
     @Override
     public void bytesRead(String remote, SocketAddress remoteAddress, long numberOfBytes) {
-      bytesReceived.get(local, remote).record(numberOfBytes);
+      bytesReceived.get(local, remote).increment(numberOfBytes);
     }
 
     @Override
     public void bytesWritten(String remote, SocketAddress remoteAddress, long numberOfBytes) {
-      bytesSent.get(local, remote).record(numberOfBytes);
+      bytesSent.get(local, remote).increment(numberOfBytes);
     }
 
     @Override
