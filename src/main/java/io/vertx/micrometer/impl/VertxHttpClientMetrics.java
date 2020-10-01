@@ -27,6 +27,7 @@ import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
+import io.vertx.micrometer.impl.meters.Summaries;
 import io.vertx.micrometer.impl.meters.Timers;
 
 import java.util.concurrent.atomic.LongAdder;
@@ -39,8 +40,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
   private final Gauges<LongAdder> queueSize;
   private final Gauges<LongAdder> requests;
   private final Counters requestCount;
+  private final Summaries requestBytes;
   private final Timers responseTime;
   private final Counters responseCount;
+  private final Summaries responseBytes;
   private final Gauges<LongAdder> wsConnections;
 
   VertxHttpClientMetrics(MeterRegistry registry) {
@@ -49,8 +52,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     queueSize = longGauges("queue.size", "Number of pending elements in queue", Label.LOCAL, Label.REMOTE);
     requests = longGauges("requests", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestCount = counters("requestCount", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    requestBytes = summaries("request.bytes", "Size of requests in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     responseTime = timers("responseTime", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     responseCount = counters("responseCount", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    responseBytes = summaries("response.bytes", "Size of responses in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     wsConnections = longGauges("wsConnections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
@@ -90,8 +95,8 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         }
 
         @Override
-        public void responseBegin(Handler requestMetric, HttpResponse response) {
-          requestMetric.response = response;
+        public void requestEnd(Handler handler, long bytesWritten) {
+          requestBytes.get(local, handler.address, handler.path, handler.method).record(bytesWritten);
         }
 
         @Override
@@ -100,11 +105,17 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         }
 
         @Override
-        public void responseEnd(Handler handler) {
+        public void responseBegin(Handler requestMetric, HttpResponse response) {
+          requestMetric.response = response;
+        }
+
+        @Override
+        public void responseEnd(Handler handler, long bytesRead) {
           String code = String.valueOf(handler.response.statusCode());
           requests.get(local, handler.address, handler.path, handler.method).decrement();
           responseCount.get(local, handler.address, handler.path, handler.method, code).increment();
           handler.timer.end(local, handler.address, handler.path, handler.method, code);
+          responseBytes.get(local, handler.address, handler.path, handler.method, code).record(bytesRead);
         }
       };
     }
