@@ -409,12 +409,12 @@ depending on the backend used.
 
 |`vertx_net_client_bytesReceived`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes received from the remote host.
 
 |`vertx_net_client_bytesSent`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes sent to the remote host.
 
 |`vertx_net_client_errors`
@@ -440,12 +440,12 @@ depending on the backend used.
 
 |`vertx_http_client_bytesReceived`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes received from the remote host.
 
 |`vertx_http_client_bytesSent`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes sent to the remote host.
 
 |`vertx_http_client_errors`
@@ -473,6 +473,11 @@ depending on the backend used.
 |Counter
 |Number of requests sent.
 
+|`vertx_http_client_request_bytes`
+|`local`, `remote`, `path`, `method`
+|Summary
+|Size in bytes of the requests.
+
 |`vertx_http_client_responseTime`
 |`local`, `remote`, `path`, `method`, `code`
 |Timer
@@ -482,6 +487,11 @@ depending on the backend used.
 |`local`, `remote`, `path`, `method`, `code`
 |Counter
 |Number of received responses.
+
+|`vertx_http_client_response_bytes`
+|`local`, `remote`, `path`, `method`, `code`
+|Summary
+|Size in bytes of the responses.
 
 |`vertx_http_client_wsConnections`
 |`local`, `remote`
@@ -506,12 +516,12 @@ depending on the backend used.
 
 |`vertx_net_server_bytesReceived`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes received by the Net Server.
 
 |`vertx_net_server_bytesSent`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes sent by the Net Server.
 
 |`vertx_net_server_errors`
@@ -537,12 +547,12 @@ depending on the backend used.
 
 |`vertx_http_server_bytesReceived`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes received by the HTTP Server.
 
 |`vertx_http_server_bytesSent`
 |`local`, `remote`
-|Summary
+|Counter
 |Number of bytes sent by the HTTP Server.
 
 |`vertx_http_server_errors`
@@ -565,10 +575,20 @@ depending on the backend used.
 |Counter
 |Number of requests reset.
 
+|`vertx_http_server_request_bytes`
+|`local`, `remote`, `path`, `method`
+|Summary
+|Size in bytes of the requests.
+
 |`vertx_http_server_responseTime`
 |`local`, `remote`, `path`, `method`, `code`, `route`
 |Timer
 |Request processing time.
+
+|`vertx_http_server_response_bytes`
+|`local`, `remote`, `path`, `method`, `code`, `route`
+|Summary
+|Size in bytes of the responses.
 
 |`vertx_http_client_wsConnections`
 |`local`, `remote`

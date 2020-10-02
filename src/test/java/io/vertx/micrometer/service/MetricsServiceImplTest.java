@@ -90,28 +90,26 @@ public class MetricsServiceImplTest {
       "vertx.http.client.connections",
       "vertx.http.client.queue.delay",
       "vertx.http.client.queue.size",
+      "vertx.http.client.request.bytes",
       "vertx.http.client.requestCount",
       "vertx.http.client.requests",
+      "vertx.http.client.response.bytes",
       "vertx.http.client.responseCount",
       "vertx.http.client.responseTime",
       "vertx.http.server.bytesReceived",
       "vertx.http.server.bytesSent",
       "vertx.http.server.connections",
+      "vertx.http.server.request.bytes",
       "vertx.http.server.requestCount",
       "vertx.http.server.requests",
+      "vertx.http.server.response.bytes",
       "vertx.http.server.responseTime");
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("counter"))
-      .hasSize(6)
+      .hasSize(10)
       .flatExtracting(JsonObject::fieldNames)
       .contains("count");
-
-    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
-      .filteredOn(obj -> obj.getString("type").equals("summary"))
-      .hasSize(4)
-      .flatExtracting(JsonObject::fieldNames)
-      .contains("mean", "max", "total");
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("timer"))
@@ -131,8 +129,10 @@ public class MetricsServiceImplTest {
       "vertx.http.server.bytesReceived",
       "vertx.http.server.bytesSent",
       "vertx.http.server.connections",
+      "vertx.http.server.request.bytes",
       "vertx.http.server.requestCount",
       "vertx.http.server.requests",
+      "vertx.http.server.response.bytes",
       "vertx.http.server.responseTime");
   }
 
