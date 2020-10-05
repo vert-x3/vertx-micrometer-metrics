@@ -25,6 +25,7 @@ import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Summaries;
@@ -46,17 +47,17 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
   private final Summaries responseBytes;
   private final Gauges<LongAdder> wsConnections;
 
-  VertxHttpClientMetrics(MeterRegistry registry, boolean compatMode) {
-    super(registry, MetricsDomain.HTTP_CLIENT, compatMode);
-    queueDelay = timers("queue.delay", "Time spent in queue before being processed", Label.LOCAL, Label.REMOTE);
-    queueSize = longGauges("queue.size", "Number of pending elements in queue", Label.LOCAL, Label.REMOTE);
-    requests = longGauges(compatMode ? "requests" : "request.active", "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    requestCount = counters(compatMode ? "requestCount" : "requests", "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    requestBytes = summaries("request.bytes", "Size of requests in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    responseTime = timers(compatMode ? "responseTime" : "response.time", "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    responseCount = counters(compatMode ? "responseCount" : "responses", "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    responseBytes = summaries("response.bytes", "Size of responses in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    wsConnections = longGauges(compatMode ? "wsConnections" : "ws.connections", "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
+  VertxHttpClientMetrics(MeterRegistry registry, MetricsNaming names) {
+    super(registry, MetricsDomain.HTTP_CLIENT, names);
+    queueDelay = timers(names.getHttpQueueTime(), "Time spent in queue before being processed", Label.LOCAL, Label.REMOTE);
+    queueSize = longGauges(names.getHttpQueuePending(), "Number of pending elements in queue", Label.LOCAL, Label.REMOTE);
+    requests = longGauges(names.getHttpRequestsActive(), "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    requestCount = counters(names.getHttpRequestCount(), "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    requestBytes = summaries(names.getHttpRequestBytes(), "Size of requests in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    responseTime = timers(names.getHttpResponseTime(), "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    responseCount = counters(names.getHttpResponseCount(), "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    responseBytes = summaries(names.getHttpResponseBytes(), "Size of responses in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    wsConnections = longGauges(names.getHttpWsConnections(), "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
   @Override

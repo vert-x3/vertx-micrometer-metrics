@@ -25,6 +25,7 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.*;
+import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
@@ -44,6 +45,7 @@ import static io.vertx.micrometer.MetricsDomain.*;
 public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final BackendRegistry backendRegistry;
   private final String registryName;
+  private final MetricsNaming names;
   private final EventBusMetrics eventBusMetrics;
   private final DatagramSocketMetrics datagramSocketMetrics;
   private final VertxNetClientMetrics netClientMetrics;
@@ -65,22 +67,22 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (options.getDisabledMetricsCategories() != null) {
       disabledCaterogies.addAll(options.getDisabledMetricsCategories());
     }
-    boolean compatMode = options.isCompatibilityNames();
+    names = options.getMetricsNaming();
 
     eventBusMetrics = options.isMetricsCategoryDisabled(EVENT_BUS) ? null
-      : new VertxEventBusMetrics(registry, compatMode);
+      : new VertxEventBusMetrics(registry, names);
     datagramSocketMetrics = options.isMetricsCategoryDisabled(DATAGRAM_SOCKET) ? null
-      : new VertxDatagramSocketMetrics(registry, compatMode);
+      : new VertxDatagramSocketMetrics(registry, names);
     netClientMetrics = options.isMetricsCategoryDisabled(NET_CLIENT) ? null
-      : new VertxNetClientMetrics(registry, compatMode);
+      : new VertxNetClientMetrics(registry, names);
     netServerMetrics = options.isMetricsCategoryDisabled(NET_SERVER) ? null
-      : new VertxNetServerMetrics(registry, compatMode);
+      : new VertxNetServerMetrics(registry, names);
     httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? null
-      : new VertxHttpClientMetrics(registry, compatMode);
+      : new VertxHttpClientMetrics(registry, names);
     httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? null
-      : new VertxHttpServerMetrics(registry, compatMode);
+      : new VertxHttpServerMetrics(registry, names);
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
-      : new VertxPoolMetrics(registry, compatMode);
+      : new VertxPoolMetrics(registry, names);
   }
 
   void init() {
@@ -148,7 +150,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (disabledCaterogies.contains(type)) {
       return DummyVertxMetrics.DummyClientMetrics.INSTANCE;
     }
-    VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type));
+    VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type, names));
     return clientMetrics.forInstance(remoteAddress, namespace);
   }
 

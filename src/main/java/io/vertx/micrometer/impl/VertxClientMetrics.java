@@ -20,6 +20,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Timers;
@@ -36,13 +37,13 @@ class VertxClientMetrics extends AbstractMetrics {
   private final Gauges<LongAdder> processingPending;
   private final Counters resetCount;
 
-  VertxClientMetrics(MeterRegistry registry, String type) {
+  VertxClientMetrics(MeterRegistry registry, String type, MetricsNaming names) {
     super(registry, type);
-    queueDelay = timers("queue.time", "Time spent in queue before being processed", Label.REMOTE, Label.NAMESPACE);
-    queueSize = longGauges("queue.pending", "Number of pending elements in queue", Label.REMOTE, Label.NAMESPACE);
-    processingTime = timers("processing.time", "Processing time, from request start to response end", Label.REMOTE, Label.NAMESPACE);
-    processingPending = longGauges("processing.pending", "Number of elements being processed", Label.REMOTE, Label.NAMESPACE);
-    resetCount = counters("reset", "Total number of requests reset", Label.REMOTE, Label.NAMESPACE);
+    queueDelay = timers(names.getClientQueueTime(), "Time spent in queue before being processed", Label.REMOTE, Label.NAMESPACE);
+    queueSize = longGauges(names.getClientQueuePending(), "Number of pending elements in queue", Label.REMOTE, Label.NAMESPACE);
+    processingTime = timers(names.getClientProcessingTime(), "Processing time, from request start to response end", Label.REMOTE, Label.NAMESPACE);
+    processingPending = longGauges(names.getClientProcessingPending(), "Number of elements being processed", Label.REMOTE, Label.NAMESPACE);
+    resetCount = counters(names.getClientResetCount(), "Total number of requests reset", Label.REMOTE, Label.NAMESPACE);
   }
 
   ClientMetrics forInstance(SocketAddress remoteAddress, String namespace) {

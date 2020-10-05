@@ -20,9 +20,9 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
-import io.vertx.micrometer.impl.meters.Summaries;
 
 import java.util.concurrent.atomic.LongAdder;
 
@@ -35,16 +35,16 @@ class VertxNetServerMetrics extends AbstractMetrics {
   private final Counters bytesSent;
   private final Counters errorCount;
 
-  VertxNetServerMetrics(MeterRegistry registry, boolean compatMode) {
-    this(registry, MetricsDomain.NET_SERVER, compatMode);
+  VertxNetServerMetrics(MeterRegistry registry, MetricsNaming names) {
+    this(registry, MetricsDomain.NET_SERVER, names);
   }
 
-  VertxNetServerMetrics(MeterRegistry registry, MetricsDomain domain, boolean compatMode) {
+  VertxNetServerMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names) {
     super(registry, domain);
-    connections = longGauges("connections", "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
-    bytesReceived = counters(compatMode ? "bytesReceived" : "bytes.received", "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
-    bytesSent = counters(compatMode ? "bytesSent" : "bytes.sent", "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
-    errorCount = counters("errors", "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);
+    connections = longGauges(names.getNetConnections(), "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
+    bytesReceived = counters(names.getNetBytesRead(), "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
+    bytesSent = counters(names.getNetBytesWritten(), "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
+    errorCount = counters(names.getNetErrorCount(), "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);
   }
 
   TCPMetrics forAddress(SocketAddress localAddress) {

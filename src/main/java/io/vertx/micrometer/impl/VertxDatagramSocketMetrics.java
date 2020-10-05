@@ -21,6 +21,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.DatagramSocketMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Summaries;
 
@@ -34,11 +35,11 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
 
   private volatile String localAddress;
 
-  VertxDatagramSocketMetrics(MeterRegistry registry, boolean compatMode) {
+  VertxDatagramSocketMetrics(MeterRegistry registry, MetricsNaming names) {
     super(registry, MetricsDomain.DATAGRAM_SOCKET);
-    bytesReceived = summaries(compatMode ? "bytesReceived" : "bytes.received", "Total number of datagram bytes received", Label.LOCAL);
-    bytesSent = summaries(compatMode ? "bytesSent" : "bytes.sent", "Total number of datagram bytes sent");
-    errorCount = counters("errors", "Total number of datagram errors", Label.CLASS_NAME);
+    bytesReceived = summaries(names.getDatagramBytesRead(), "Total number of datagram bytes received", Label.LOCAL);
+    bytesSent = summaries(names.getDatagramBytesWritten(), "Total number of datagram bytes sent");
+    errorCount = counters(names.getDatagramErrorCount(), "Total number of datagram errors", Label.CLASS_NAME);
   }
 
   @Override

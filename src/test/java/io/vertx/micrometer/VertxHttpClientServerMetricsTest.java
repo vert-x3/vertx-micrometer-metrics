@@ -90,15 +90,15 @@ public class VertxHttpClientServerMetricsTest {
   public void shouldReportHttpClientMetrics(TestContext ctx) {
     runClientRequests(ctx, false);
 
-    waitForValue(vertx, ctx, registryName, "vertx.http.client.bytes.received[local=?,remote=127.0.0.1:9195]$COUNT",
+    waitForValue(vertx, ctx, registryName, "vertx.http.client.read.bytes[local=?,remote=127.0.0.1:9195]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length);
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.client."));
     assertThat(datapoints).hasSize(17).contains(
-        dp("vertx.http.client.queue.size[local=?,remote=127.0.0.1:9195]$VALUE", 0),
-        dp("vertx.http.client.queue.delay[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-        dp("vertx.http.client.bytes.received[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-        dp("vertx.http.client.bytes.sent[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+        dp("vertx.http.client.queue.pending[local=?,remote=127.0.0.1:9195]$VALUE", 0),
+        dp("vertx.http.client.queue.time[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+        dp("vertx.http.client.read.bytes[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+        dp("vertx.http.client.written.bytes[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
         dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
         dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
         dp("vertx.http.client.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
@@ -118,7 +118,7 @@ public class VertxHttpClientServerMetricsTest {
   public void shouldReportHttpServerMetricsWithoutWS(TestContext ctx) {
     runClientRequests(ctx, false);
 
-    waitForValue(vertx, ctx, registryName, "vertx.http.server.bytes.received[local=127.0.0.1:9195,remote=_]$COUNT",
+    waitForValue(vertx, ctx, registryName, "vertx.http.server.read.bytes[local=127.0.0.1:9195,remote=_]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length);
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.server."));
@@ -126,8 +126,8 @@ public class VertxHttpClientServerMetricsTest {
       "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
       "vertx.http.server.request.active[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
       "vertx.http.server.connections[local=127.0.0.1:9195,remote=_]$VALUE",
-      "vertx.http.server.bytes.received[local=127.0.0.1:9195,remote=_]$COUNT",
-      "vertx.http.server.bytes.sent[local=127.0.0.1:9195,remote=_]$COUNT",
+      "vertx.http.server.read.bytes[local=127.0.0.1:9195,remote=_]$COUNT",
+      "vertx.http.server.written.bytes[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
       "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL",
       "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
@@ -137,8 +137,8 @@ public class VertxHttpClientServerMetricsTest {
       "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$MAX");
 
     assertThat(datapoints).contains(
-      dp("vertx.http.server.bytes.received[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.http.server.bytes.sent[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+      dp("vertx.http.server.read.bytes[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+      dp("vertx.http.server.written.bytes[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
       dp("vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT),
       dp("vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
       dp("vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT", concurrentClients * HTTP_SENT_COUNT),
@@ -160,8 +160,8 @@ public class VertxHttpClientServerMetricsTest {
       "vertx.http.server.request.active[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
       "vertx.http.server.connections[local=127.0.0.1:9195,remote=_]$VALUE",
       "vertx.http.server.ws.connections[local=127.0.0.1:9195,remote=_]$VALUE",
-      "vertx.http.server.bytes.received[local=127.0.0.1:9195,remote=_]$COUNT",
-      "vertx.http.server.bytes.sent[local=127.0.0.1:9195,remote=_]$COUNT",
+      "vertx.http.server.read.bytes[local=127.0.0.1:9195,remote=_]$COUNT",
+      "vertx.http.server.written.bytes[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
       "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL",
       "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",

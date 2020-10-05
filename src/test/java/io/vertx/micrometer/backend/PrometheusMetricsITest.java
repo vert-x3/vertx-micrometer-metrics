@@ -66,6 +66,7 @@ public class PrometheusMetricsITest {
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
             context.verify(v2 -> assertThat(body.toString())
               .contains("vertx_http_client_request_active{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
+              .contains("vertx_http_client_requests_total{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
               .doesNotContain("vertx_http_client_response_time_seconds_bucket"));
             async.complete();
         }));

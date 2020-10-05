@@ -57,20 +57,20 @@ public class VertxDatagramSocketMetricsTest {
     }
     receiveLatch.awaitSuccess(15000);
 
-    waitForValue(vertx, context, "vertx.datagram.bytes.sent[]$COUNT", value -> value.intValue() == 5);
+    waitForValue(vertx, context, "vertx.datagram.written.bytes[]$COUNT", value -> value.intValue() == 5);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.datagram."));
     assertThat(datapoints).containsOnly(
-      dp("vertx.datagram.bytes.sent[]$COUNT", 5),
-      dp("vertx.datagram.bytes.sent[]$TOTAL", 45),  // 45 = size("some text") * loops
-      dp("vertx.datagram.bytes.received[local=localhost:9192]$COUNT", 5),
-      dp("vertx.datagram.bytes.received[local=localhost:9192]$TOTAL", 45));
+      dp("vertx.datagram.written.bytes[]$COUNT", 5),
+      dp("vertx.datagram.written.bytes[]$TOTAL", 45),  // 45 = size("some text") * loops
+      dp("vertx.datagram.read.bytes[local=localhost:9192]$COUNT", 5),
+      dp("vertx.datagram.read.bytes[local=localhost:9192]$TOTAL", 45));
   }
 
   @Test
   public void shouldReportInCompatibilityMode(TestContext context) {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .setCompatibilityNames(true)
+      .setMetricsNaming(MetricsNaming.v3Names())
       .setEnabled(true)))
       .exceptionHandler(context.exceptionHandler());
 

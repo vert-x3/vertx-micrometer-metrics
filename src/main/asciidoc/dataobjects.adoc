@@ -29,6 +29,59 @@ Set the matched value.
 +++
 |===
 
+[[MetricsNaming]]
+== MetricsNaming
+
+++++
+ Options for naming all metrics
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[clientProcessingPending]]`@clientProcessingPending`|`String`|-
+|[[clientProcessingTime]]`@clientProcessingTime`|`String`|-
+|[[clientQueuePending]]`@clientQueuePending`|`String`|-
+|[[clientQueueTime]]`@clientQueueTime`|`String`|-
+|[[clientResetCount]]`@clientResetCount`|`String`|-
+|[[datagramBytesRead]]`@datagramBytesRead`|`String`|-
+|[[datagramBytesWritten]]`@datagramBytesWritten`|`String`|-
+|[[datagramErrorCount]]`@datagramErrorCount`|`String`|-
+|[[ebBytesRead]]`@ebBytesRead`|`String`|-
+|[[ebBytesWritten]]`@ebBytesWritten`|`String`|-
+|[[ebDelivered]]`@ebDelivered`|`String`|-
+|[[ebDiscarded]]`@ebDiscarded`|`String`|-
+|[[ebHandlers]]`@ebHandlers`|`String`|-
+|[[ebPending]]`@ebPending`|`String`|-
+|[[ebProcessed]]`@ebProcessed`|`String`|-
+|[[ebPublished]]`@ebPublished`|`String`|-
+|[[ebReceived]]`@ebReceived`|`String`|-
+|[[ebReplyFailures]]`@ebReplyFailures`|`String`|-
+|[[ebSent]]`@ebSent`|`String`|-
+|[[httpQueuePending]]`@httpQueuePending`|`String`|-
+|[[httpQueueTime]]`@httpQueueTime`|`String`|-
+|[[httpRequestBytes]]`@httpRequestBytes`|`String`|-
+|[[httpRequestCount]]`@httpRequestCount`|`String`|-
+|[[httpRequestResetCount]]`@httpRequestResetCount`|`String`|-
+|[[httpRequestsActive]]`@httpRequestsActive`|`String`|-
+|[[httpResponseBytes]]`@httpResponseBytes`|`String`|-
+|[[httpResponseCount]]`@httpResponseCount`|`String`|-
+|[[httpResponseTime]]`@httpResponseTime`|`String`|-
+|[[httpWsConnections]]`@httpWsConnections`|`String`|-
+|[[netBytesRead]]`@netBytesRead`|`String`|-
+|[[netBytesWritten]]`@netBytesWritten`|`String`|-
+|[[netConnections]]`@netConnections`|`String`|-
+|[[netErrorCount]]`@netErrorCount`|`String`|-
+|[[poolCompleted]]`@poolCompleted`|`String`|-
+|[[poolInUse]]`@poolInUse`|`String`|-
+|[[poolQueuePending]]`@poolQueuePending`|`String`|-
+|[[poolQueueTime]]`@poolQueueTime`|`String`|-
+|[[poolUsage]]`@poolUsage`|`String`|-
+|[[poolUsageRatio]]`@poolUsageRatio`|`String`|-
+|===
+
 [[MicrometerMetricsOptions]]
 == MicrometerMetricsOptions
 
@@ -44,9 +97,6 @@ Set the matched value.
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[compatibilityNames]]`@compatibilityNames`|`Boolean`|+++
-Whether compatibility mode with Vert.x 3.x for metrics names should be used. Defaults to <code>false</code>.
-+++
 |[[disabledMetricsCategories]]`@disabledMetricsCategories`|`Array of String`|+++
 Sets metrics types that are disabled.
 +++

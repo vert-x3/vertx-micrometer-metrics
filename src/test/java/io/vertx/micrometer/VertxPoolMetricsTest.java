@@ -68,11 +68,11 @@ public class VertxPoolMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.pool"));
     assertThat(datapoints).hasSize(10).contains(
-      dp("vertx.pool.queue.size[pool_name=test-worker,pool_type=worker]$VALUE", 0),
+      dp("vertx.pool.queue.pending[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.ratio[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.completed[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
-      dp("vertx.pool.queue.delay[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
+      dp("vertx.pool.queue.time[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
       dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$COUNT", taskCount));
 
     assertThat(datapoints)
