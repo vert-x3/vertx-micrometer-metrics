@@ -189,8 +189,8 @@ public class MetricsNaming {
     mn.clientProcessingTime = "processing.time";
     mn.clientProcessingPending = "processing.pending";
     mn.clientResetCount = "reset";
-    mn.datagramBytesRead = "read.bytes";
-    mn.datagramBytesWritten = "written.bytes";
+    mn.datagramBytesRead = "bytes.read";
+    mn.datagramBytesWritten = "bytes.written";
     mn.datagramErrorCount = "errors";
     mn.ebHandlers = "handlers";
     mn.ebPending = "pending";
@@ -201,11 +201,11 @@ public class MetricsNaming {
     mn.ebDelivered = "delivered";
     mn.ebDiscarded = "discarded";
     mn.ebReplyFailures = "reply.failures";
-    mn.ebBytesRead = "read.bytes";
-    mn.ebBytesWritten = "written.bytes";
+    mn.ebBytesRead = "bytes.read";
+    mn.ebBytesWritten = "bytes.written";
     mn.httpQueueTime = "queue.time";
     mn.httpQueuePending = "queue.pending";
-    mn.httpRequestsActive = "request.active";
+    mn.httpRequestsActive = "active.requests";
     mn.httpRequestCount = "requests";
     mn.httpRequestBytes = "request.bytes";
     mn.httpResponseTime = "response.time";
@@ -214,8 +214,8 @@ public class MetricsNaming {
     mn.httpWsConnections = "ws.connections";
     mn.httpRequestResetCount = "request.reset";
     mn.netConnections = "connections";
-    mn.netBytesRead = "read.bytes";
-    mn.netBytesWritten = "written.bytes";
+    mn.netBytesRead = "bytes.read";
+    mn.netBytesWritten = "bytes.written";
     mn.netErrorCount = "errors";
     mn.poolQueueTime = "queue.time";
     mn.poolQueuePending = "queue.pending";

@@ -87,11 +87,11 @@ class VertxPoolMetrics extends AbstractMetrics {
     }
 
     @Override
-    public void end(Timers.EventTiming begin, boolean succeeded) {
+    public void end(Timers.EventTiming timer, boolean succeeded) {
       LongAdder l = inUse.get(poolType, poolName);
       l.decrement();
       checkRatio(l.longValue());
-      begin.end(poolType, poolName);
+      timer.end(poolType, poolName);
       completed.get(poolType, poolName).increment();
     }
 

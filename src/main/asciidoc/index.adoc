@@ -414,20 +414,20 @@ The actual names may vary depending on the metrics backend.
 |Type
 |Description
 
-|`vertx_net_client_connections`
-|`local`, `remote`
-|Gauge
-|Number of connections to the remote host currently opened.
-
-|`vertx_net_client_read_bytes`
+|`vertx_net_client_bytes_read`
 |`local`, `remote`
 |Counter
 |Number of bytes received from the remote host.
 
-|`vertx_net_client_written_bytes`
+|`vertx_net_client_bytes_written`
 |`local`, `remote`
 |Counter
 |Number of bytes sent to the remote host.
+
+|`vertx_net_client_connections`
+|`local`, `remote`
+|Gauge
+|Number of connections to the remote host currently opened.
 
 |`vertx_net_client_errors`
 |`local`, `remote`, `class`
@@ -445,42 +445,42 @@ The actual names may vary depending on the metrics backend.
 |Type
 |Description
 
-|`vertx_http_client_connections`
-|`local`, `remote`
-|Gauge
-|Number of connections to the remote host currently opened.
-
-|`vertx_http_client_read_bytes`
+|`vertx_http_client_bytes_read`
 |`local`, `remote`
 |Counter
 |Number of bytes received from the remote host.
 
-|`vertx_http_client_written_bytes`
+|`vertx_http_client_bytes_written`
 |`local`, `remote`
 |Counter
 |Number of bytes sent to the remote host.
+
+|`vertx_http_client_connections`
+|`local`, `remote`
+|Gauge
+|Number of connections to the remote host currently opened.
 
 |`vertx_http_client_errors`
 |`local`, `remote`, `class`
 |Counter
 |Number of errors.
 
-|`vertx_http_client_queue_time`
+|`vertx_http_client_queue_time_seconds`
 |`local`, `remote`
 |Timer
-|Time spent in queue before being processed.
+|Time spent in queue before being processed, in seconds.
 
 |`vertx_http_client_queue_pending`
 |`local`, `remote`
 |Gauge
 |Number of pending elements in queue.
 
-|`vertx_http_client_request_active`
+|`vertx_http_client_ active_requests`
 |`local`, `remote`, `path`, `method`
 |Gauge
-|Number of requests waiting for a response.
+|Number of requests being processed, waiting for a response.
 
-|`vertx_http_client_requests`
+|`vertx_http_client_requests_total`
 |`local`, `remote`, `path`, `method`
 |Counter
 |Number of requests sent.
@@ -490,12 +490,12 @@ The actual names may vary depending on the metrics backend.
 |Summary
 |Size in bytes of the requests.
 
-|`vertx_http_client_response_time`
+|`vertx_http_client_response_time_seconds`
 |`local`, `remote`, `path`, `method`, `code`
 |Timer
-|Response time.
+|Response time in seconds.
 
-|`vertx_http_client_responses`
+|`vertx_http_client_responses_total`
 |`local`, `remote`, `path`, `method`, `code`
 |Counter
 |Number of received responses.
@@ -521,20 +521,20 @@ The actual names may vary depending on the metrics backend.
 |Type
 |Description
 
-|`vertx_net_server_connections`
-|`local`, `remote`
-|Gauge
-|Number of opened connections to the Net Server.
-
-|`vertx_net_server_read_bytes`
+|`vertx_net_server_bytes_read`
 |`local`, `remote`
 |Counter
 |Number of bytes received by the Net Server.
 
-|`vertx_net_server_written_bytes`
+|`vertx_net_server_bytes_written`
 |`local`, `remote`
 |Counter
 |Number of bytes sent by the Net Server.
+
+|`vertx_net_server_connections`
+|`local`, `remote`
+|Gauge
+|Number of opened connections to the Net Server.
 
 |`vertx_net_server_errors`
 |`local`, `remote`, `class`
@@ -552,37 +552,37 @@ The actual names may vary depending on the metrics backend.
 |Type
 |Description
 
-|`vertx_http_server_connections`
-|`local`, `remote`
-|Gauge
-|Number of opened connections to the HTTP Server.
-
-|`vertx_http_server_read_bytes`
+|`vertx_http_server_bytes_read`
 |`local`, `remote`
 |Counter
 |Number of bytes received by the HTTP Server.
 
-|`vertx_http_server_written_bytes`
+|`vertx_http_server_bytes_written`
 |`local`, `remote`
 |Counter
 |Number of bytes sent by the HTTP Server.
+
+|`vertx_http_server_connections`
+|`local`, `remote`
+|Gauge
+|Number of opened connections to the HTTP Server.
 
 |`vertx_http_server_errors`
 |`local`, `remote`, `class`
 |Counter
 |Number of errors.
 
-|`vertx_http_server_request_active`
+|`vertx_http_server_active_requests`
 |`local`, `remote`, `path`, `method`
 |Gauge
 |Number of requests being processed.
 
-|`vertx_http_server_requests`
+|`vertx_http_server_requests_total`
 |`local`, `remote`, `path`, `method`, `code`, `route`
 |Counter
 |Number of processed requests.
 
-|`vertx_http_server_request_reset`
+|`vertx_http_server_request_reset_total`
 |`local`, `remote`, `path`, `method`
 |Counter
 |Number of requests reset.
@@ -592,10 +592,10 @@ The actual names may vary depending on the metrics backend.
 |Summary
 |Size in bytes of the requests.
 
-|`vertx_http_server_response_time`
+|`vertx_http_server_response_time_seconds`
 |`local`, `remote`, `path`, `method`, `code`, `route`
 |Timer
-|Request processing time.
+|Request processing time in seconds.
 
 |`vertx_http_server_response_bytes`
 |`local`, `remote`, `path`, `method`, `code`, `route`
@@ -618,12 +618,12 @@ The actual names may vary depending on the metrics backend.
 |Type
 |Description
 
-|`vertx_datagram_read_bytes`
+|`vertx_datagram_bytes_read`
 |`local`
 |Summary
 |Total number of bytes received on the `<host>:<port>` listening address.
 
-|`vertx_datagram_written_bytes`
+|`vertx_datagram_bytes_written`
 |(none)
 |Summary
 |Total number of bytes sent to the remote host.
@@ -644,20 +644,20 @@ The actual names may vary depending on the metrics backend.
 |Type
 |Description
 
-|`vertx_eventbus_handlers`
+|`vertx_eventbus_bytes_read`
 |`address`
-|Gauge
-|Number of event bus handlers in use.
+|Summary
+|Total number of bytes received while reading messages from event bus cluster peers.
 
-|`vertx_eventbus_written_bytes`
+|`vertx_eventbus_bytes_written`
 |`address`
 |Summary
 |Total number of bytes sent while sending messages to event bus cluster peers.
 
-|`vertx_eventbus_read_bytes`
+|`vertx_eventbus_handlers`
 |`address`
-|Summary
-|Total number of bytes received while reading messages from event bus cluster peers.
+|Gauge
+|Number of event bus handlers in use.
 
 |`vertx_eventbus_pending`
 |`address`,`side` (local/remote)
@@ -720,10 +720,10 @@ NOTE: Vert.x creates two worker pools upfront, _worker-thread_ and _internal-blo
 |Type
 |Description
 
-|`vertx_pool_queue_time`
+|`vertx_pool_queue_time_seconds`
 |`pool_type`,`pool_name`
 |Timer
-|Time spent in queue before being processed.
+|Time spent in queue before being processed, in seconds.
 
 |`vertx_pool_queue_pending`
 |`pool_type`,`pool_name`
@@ -757,7 +757,7 @@ NOTE: Vert.x creates two worker pools upfront, _worker-thread_ and _internal-blo
 Vert.x clients, other than the core HTTP / Net clients, may implement a standard set of client metrics. This is the case, for instance, of the SQL client.
 
 Such client metrics are named after a "client type" identifier, displayed as `$TYPE` in the table below.
-For instance, `vertx_$TYPE_queue_size` is `vertx_sql_queue_size` for the SQL client.
+For instance, `vertx_$TYPE_queue_pending` is `vertx_sql_queue_pending` for the SQL client.
 
 The meaning of the `namespace` label is left to the discretion of the client implementation.
 
@@ -773,22 +773,22 @@ The meaning of the `namespace` label is left to the discretion of the client imp
 |Gauge
 |Number of pending elements in queue.
 
-|`vertx_$TYPE_queue_time`
+|`vertx_$TYPE_queue_time_seconds`
 |`remote`, `namespace`
 |Timer
-|Time spent in queue before being processed.
+|Time spent in queue before being processed, in seconds.
 
 |`vertx_$TYPE_processing_pending`
 |`remote`, `namespace`
 |Gauge
 |Number of elements being processed.
 
-|`vertx_$TYPE_processing_time`
+|`vertx_$TYPE_processing_time_seconds`
 |`remote`, `namespace`
 |Timer
-|Processing time, from request start to response end.
+|Processing time, from request start to response end, in seconds.
 
-|`vertx_$TYPE_reset`
+|`vertx_$TYPE_reset_total`
 |`remote`, `namespace`
 |Counter
 |Total number of requests reset.

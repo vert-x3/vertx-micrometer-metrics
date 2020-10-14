@@ -45,7 +45,7 @@ public class UnixSocketTest {
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.client."));
     assertThat(datapoints).contains(
       dp("vertx.net.client.connections[remote=/var/tmp/myservice.sock]$VALUE", 0),
-      dp("vertx.net.client.written.bytes[remote=/var/tmp/myservice.sock]$COUNT", 4));
+      dp("vertx.net.client.bytes.written[remote=/var/tmp/myservice.sock]$COUNT", 4));
   }
 
   public class DomainSocketServer extends AbstractVerticle {

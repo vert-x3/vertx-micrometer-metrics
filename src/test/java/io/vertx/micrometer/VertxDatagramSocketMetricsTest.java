@@ -57,13 +57,13 @@ public class VertxDatagramSocketMetricsTest {
     }
     receiveLatch.awaitSuccess(15000);
 
-    waitForValue(vertx, context, "vertx.datagram.written.bytes[]$COUNT", value -> value.intValue() == 5);
+    waitForValue(vertx, context, "vertx.datagram.bytes.written[]$COUNT", value -> value.intValue() == 5);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.datagram."));
     assertThat(datapoints).containsOnly(
-      dp("vertx.datagram.written.bytes[]$COUNT", 5),
-      dp("vertx.datagram.written.bytes[]$TOTAL", 45),  // 45 = size("some text") * loops
-      dp("vertx.datagram.read.bytes[local=localhost:9192]$COUNT", 5),
-      dp("vertx.datagram.read.bytes[local=localhost:9192]$TOTAL", 45));
+      dp("vertx.datagram.bytes.written[]$COUNT", 5),
+      dp("vertx.datagram.bytes.written[]$TOTAL", 45),  // 45 = size("some text") * loops
+      dp("vertx.datagram.bytes.read[local=localhost:9192]$COUNT", 5),
+      dp("vertx.datagram.bytes.read[local=localhost:9192]$TOTAL", 45));
   }
 
   @Test
