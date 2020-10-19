@@ -86,7 +86,7 @@ public class VertxNetClientServerMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.client."));
     assertThat(datapoints).containsOnly(
-        dp("vertx.net.client.connections[local=?,remote=localhost:9194]$VALUE", 0),
+        dp("vertx.net.client.active.connections[local=?,remote=localhost:9194]$VALUE", 0),
         dp("vertx.net.client.bytes.read[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
         dp("vertx.net.client.bytes.written[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length));
   }
@@ -100,7 +100,7 @@ public class VertxNetClientServerMetricsTest {
 
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.server."));
     assertThat(datapoints).containsOnly(
-      dp("vertx.net.server.connections[local=localhost:9194,remote=_]$VALUE", 0),
+      dp("vertx.net.server.active.connections[local=localhost:9194,remote=_]$VALUE", 0),
       dp("vertx.net.server.bytes.read[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),
       dp("vertx.net.server.bytes.written[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length));
   }

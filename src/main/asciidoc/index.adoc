@@ -424,7 +424,7 @@ The actual names may vary depending on the metrics backend.
 |Counter
 |Number of bytes sent to the remote host.
 
-|`vertx_net_client_connections`
+|`vertx_net_client_active_connections`
 |`local`, `remote`
 |Gauge
 |Number of connections to the remote host currently opened.
@@ -455,7 +455,7 @@ The actual names may vary depending on the metrics backend.
 |Counter
 |Number of bytes sent to the remote host.
 
-|`vertx_http_client_connections`
+|`vertx_http_client_active_connections`
 |`local`, `remote`
 |Gauge
 |Number of connections to the remote host currently opened.
@@ -505,7 +505,7 @@ The actual names may vary depending on the metrics backend.
 |Summary
 |Size in bytes of the responses.
 
-|`vertx_http_client_ws_connections`
+|`vertx_http_client_active_ws_connections`
 |`local`, `remote`
 |Gauge
 |Number of websockets currently opened.
@@ -531,7 +531,7 @@ The actual names may vary depending on the metrics backend.
 |Counter
 |Number of bytes sent by the Net Server.
 
-|`vertx_net_server_connections`
+|`vertx_net_server_active_connections`
 |`local`, `remote`
 |Gauge
 |Number of opened connections to the Net Server.
@@ -562,7 +562,7 @@ The actual names may vary depending on the metrics backend.
 |Counter
 |Number of bytes sent by the HTTP Server.
 
-|`vertx_http_server_connections`
+|`vertx_http_server_active_connections`
 |`local`, `remote`
 |Gauge
 |Number of opened connections to the HTTP Server.
@@ -582,10 +582,10 @@ The actual names may vary depending on the metrics backend.
 |Counter
 |Number of processed requests.
 
-|`vertx_http_server_request_reset_total`
+|`vertx_http_server_request_resets_total`
 |`local`, `remote`, `path`, `method`
 |Counter
-|Number of requests reset.
+|Number of request resets.
 
 |`vertx_http_server_request_bytes`
 |`local`, `remote`, `path`, `method`
@@ -602,7 +602,7 @@ The actual names may vary depending on the metrics backend.
 |Summary
 |Size in bytes of the responses.
 
-|`vertx_http_client_ws_connections`
+|`vertx_http_client_active_ws_connections`
 |`local`, `remote`
 |Gauge
 |Number of websockets currently opened.
@@ -788,9 +788,9 @@ The meaning of the `namespace` label is left to the discretion of the client imp
 |Timer
 |Processing time, from request start to response end, in seconds.
 
-|`vertx_$TYPE_reset_total`
+|`vertx_$TYPE_resets_total`
 |`remote`, `namespace`
 |Counter
-|Total number of requests reset.
+|Total number of resets.
 
 |===

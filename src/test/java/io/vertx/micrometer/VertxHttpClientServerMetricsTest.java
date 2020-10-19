@@ -111,7 +111,7 @@ public class VertxHttpClientServerMetricsTest {
       "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT",
       "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$MAX",
       "vertx.http.client.active.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$VALUE",
-      "vertx.http.client.connections[local=?,remote=127.0.0.1:9195]$VALUE");
+      "vertx.http.client.active.connections[local=?,remote=127.0.0.1:9195]$VALUE");
   }
 
   @Test
@@ -125,7 +125,7 @@ public class VertxHttpClientServerMetricsTest {
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
       "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
       "vertx.http.server.active.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
-      "vertx.http.server.connections[local=127.0.0.1:9195,remote=_]$VALUE",
+      "vertx.http.server.active.connections[local=127.0.0.1:9195,remote=_]$VALUE",
       "vertx.http.server.bytes.read[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.bytes.written[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
@@ -158,8 +158,8 @@ public class VertxHttpClientServerMetricsTest {
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
       "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
       "vertx.http.server.active.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
-      "vertx.http.server.connections[local=127.0.0.1:9195,remote=_]$VALUE",
-      "vertx.http.server.ws.connections[local=127.0.0.1:9195,remote=_]$VALUE",
+      "vertx.http.server.active.connections[local=127.0.0.1:9195,remote=_]$VALUE",
+      "vertx.http.server.active.ws.connections[local=127.0.0.1:9195,remote=_]$VALUE",
       "vertx.http.server.bytes.read[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.bytes.written[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",

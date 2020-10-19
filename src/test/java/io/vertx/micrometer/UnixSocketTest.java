@@ -41,10 +41,10 @@ public class UnixSocketTest {
       h -> vertx.deployVerticle(new DomainSocketClientTriggerVerticle(), ch -> allDeployed.complete()));
 
     allDeployed.await(2000);
-    waitForValue(vertx, ctx, registryName, "vertx.net.client.connections[remote=/var/tmp/myservice.sock]$VALUE", v -> v.intValue() == 0);
+    waitForValue(vertx, ctx, registryName, "vertx.net.client.active.connections[remote=/var/tmp/myservice.sock]$VALUE", v -> v.intValue() == 0);
     List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.client."));
     assertThat(datapoints).contains(
-      dp("vertx.net.client.connections[remote=/var/tmp/myservice.sock]$VALUE", 0),
+      dp("vertx.net.client.active.connections[remote=/var/tmp/myservice.sock]$VALUE", 0),
       dp("vertx.net.client.bytes.written[remote=/var/tmp/myservice.sock]$COUNT", 4));
   }
 

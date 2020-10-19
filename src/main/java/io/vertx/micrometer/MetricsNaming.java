@@ -30,7 +30,7 @@ public class MetricsNaming {
   private String clientQueuePending;
   private String clientProcessingTime;
   private String clientProcessingPending;
-  private String clientResetCount;
+  private String clientResetsCount;
   private String datagramBytesRead;
   private String datagramBytesWritten;
   private String datagramErrorCount;
@@ -47,15 +47,15 @@ public class MetricsNaming {
   private String ebBytesWritten;
   private String httpQueueTime;
   private String httpQueuePending;
-  private String httpRequestsActive;
-  private String httpRequestCount;
+  private String httpActiveRequests;
+  private String httpRequestsCount;
   private String httpRequestBytes;
   private String httpResponseTime;
-  private String httpResponseCount;
+  private String httpResponsesCount;
   private String httpResponseBytes;
-  private String httpWsConnections;
-  private String httpRequestResetCount;
-  private String netConnections;
+  private String httpActiveWsConnections;
+  private String httpRequestResetsCount;
+  private String netActiveConnections;
   private String netBytesRead;
   private String netBytesWritten;
   private String netErrorCount;
@@ -82,7 +82,7 @@ public class MetricsNaming {
     clientQueuePending = other.clientQueuePending;
     clientProcessingTime = other.clientProcessingTime;
     clientProcessingPending = other.clientProcessingPending;
-    clientResetCount = other.clientResetCount;
+    clientResetsCount = other.clientResetsCount;
     datagramBytesRead = other.datagramBytesRead;
     datagramBytesWritten = other.datagramBytesWritten;
     datagramErrorCount = other.datagramErrorCount;
@@ -99,15 +99,15 @@ public class MetricsNaming {
     ebBytesWritten = other.ebBytesWritten;
     httpQueueTime = other.httpQueueTime;
     httpQueuePending = other.httpQueuePending;
-    httpRequestsActive = other.httpRequestsActive;
-    httpRequestCount = other.httpRequestCount;
+    httpActiveRequests = other.httpActiveRequests;
+    httpRequestsCount = other.httpRequestsCount;
     httpRequestBytes = other.httpRequestBytes;
     httpResponseTime = other.httpResponseTime;
-    httpResponseCount = other.httpResponseCount;
+    httpResponsesCount = other.httpResponsesCount;
     httpResponseBytes = other.httpResponseBytes;
-    httpWsConnections = other.httpWsConnections;
-    httpRequestResetCount = other.httpRequestResetCount;
-    netConnections = other.netConnections;
+    httpActiveWsConnections = other.httpActiveWsConnections;
+    httpRequestResetsCount = other.httpRequestResetsCount;
+    netActiveConnections = other.netActiveConnections;
     netBytesRead = other.netBytesRead;
     netBytesWritten = other.netBytesWritten;
     netErrorCount = other.netErrorCount;
@@ -144,7 +144,7 @@ public class MetricsNaming {
     mn.clientQueuePending = "queue.pending";
     mn.clientProcessingTime = "processing.time";
     mn.clientProcessingPending = "processing.pending";
-    mn.clientResetCount = "reset";
+    mn.clientResetsCount = "reset";
     mn.datagramBytesRead = "bytesReceived";
     mn.datagramBytesWritten = "bytesSent";
     mn.datagramErrorCount = "errors";
@@ -161,15 +161,15 @@ public class MetricsNaming {
     mn.ebBytesWritten = "bytesWritten";
     mn.httpQueueTime = "queue.delay";
     mn.httpQueuePending = "queue.size";
-    mn.httpRequestsActive = "requests";
-    mn.httpRequestCount = "requestCount";
+    mn.httpActiveRequests = "requests";
+    mn.httpRequestsCount = "requestCount";
     mn.httpRequestBytes = "request.bytes";
     mn.httpResponseTime = "responseTime";
-    mn.httpResponseCount = "responseCount";
+    mn.httpResponsesCount = "responseCount";
     mn.httpResponseBytes = "response.bytes";
-    mn.httpWsConnections = "wsConnections";
-    mn.httpRequestResetCount = "requestResetCount";
-    mn.netConnections = "connections";
+    mn.httpActiveWsConnections = "wsConnections";
+    mn.httpRequestResetsCount = "requestResetCount";
+    mn.netActiveConnections = "connections";
     mn.netBytesRead = "bytesReceived";
     mn.netBytesWritten = "bytesSent";
     mn.netErrorCount = "errors";
@@ -188,7 +188,7 @@ public class MetricsNaming {
     mn.clientQueuePending = "queue.pending";
     mn.clientProcessingTime = "processing.time";
     mn.clientProcessingPending = "processing.pending";
-    mn.clientResetCount = "reset";
+    mn.clientResetsCount = "resets";
     mn.datagramBytesRead = "bytes.read";
     mn.datagramBytesWritten = "bytes.written";
     mn.datagramErrorCount = "errors";
@@ -205,15 +205,15 @@ public class MetricsNaming {
     mn.ebBytesWritten = "bytes.written";
     mn.httpQueueTime = "queue.time";
     mn.httpQueuePending = "queue.pending";
-    mn.httpRequestsActive = "active.requests";
-    mn.httpRequestCount = "requests";
+    mn.httpActiveRequests = "active.requests";
+    mn.httpRequestsCount = "requests";
     mn.httpRequestBytes = "request.bytes";
     mn.httpResponseTime = "response.time";
-    mn.httpResponseCount = "responses";
+    mn.httpResponsesCount = "responses";
     mn.httpResponseBytes = "response.bytes";
-    mn.httpWsConnections = "ws.connections";
-    mn.httpRequestResetCount = "request.reset";
-    mn.netConnections = "connections";
+    mn.httpActiveWsConnections = "active.ws.connections";
+    mn.httpRequestResetsCount = "request.resets";
+    mn.netActiveConnections = "active.connections";
     mn.netBytesRead = "bytes.read";
     mn.netBytesWritten = "bytes.written";
     mn.netErrorCount = "errors";
@@ -242,8 +242,8 @@ public class MetricsNaming {
     return clientProcessingPending;
   }
 
-  public String getClientResetCount() {
-    return clientResetCount;
+  public String getClientResetsCount() {
+    return clientResetsCount;
   }
 
   public String getDatagramBytesRead() {
@@ -310,12 +310,12 @@ public class MetricsNaming {
     return httpQueuePending;
   }
 
-  public String getHttpRequestsActive() {
-    return httpRequestsActive;
+  public String getHttpActiveRequests() {
+    return httpActiveRequests;
   }
 
-  public String getHttpRequestCount() {
-    return httpRequestCount;
+  public String getHttpRequestsCount() {
+    return httpRequestsCount;
   }
 
   public String getHttpRequestBytes() {
@@ -326,24 +326,24 @@ public class MetricsNaming {
     return httpResponseTime;
   }
 
-  public String getHttpResponseCount() {
-    return httpResponseCount;
+  public String getHttpResponsesCount() {
+    return httpResponsesCount;
   }
 
   public String getHttpResponseBytes() {
     return httpResponseBytes;
   }
 
-  public String getHttpWsConnections() {
-    return httpWsConnections;
+  public String getHttpActiveWsConnections() {
+    return httpActiveWsConnections;
   }
 
-  public String getHttpRequestResetCount() {
-    return httpRequestResetCount;
+  public String getHttpRequestResetsCount() {
+    return httpRequestResetsCount;
   }
 
-  public String getNetConnections() {
-    return netConnections;
+  public String getNetActiveConnections() {
+    return netActiveConnections;
   }
 
   public String getPoolUsage() {
@@ -382,8 +382,8 @@ public class MetricsNaming {
     return this;
   }
 
-  public MetricsNaming setClientResetCount(String clientResetCount) {
-    this.clientResetCount = clientResetCount;
+  public MetricsNaming setClientResetsCount(String clientResetsCount) {
+    this.clientResetsCount = clientResetsCount;
     return this;
   }
 
@@ -467,13 +467,13 @@ public class MetricsNaming {
     return this;
   }
 
-  public MetricsNaming setHttpRequestsActive(String httpRequestsActive) {
-    this.httpRequestsActive = httpRequestsActive;
+  public MetricsNaming setHttpActiveRequests(String httpActiveRequests) {
+    this.httpActiveRequests = httpActiveRequests;
     return this;
   }
 
-  public MetricsNaming setHttpRequestCount(String httpRequestCount) {
-    this.httpRequestCount = httpRequestCount;
+  public MetricsNaming setHttpRequestsCount(String httpRequestsCount) {
+    this.httpRequestsCount = httpRequestsCount;
     return this;
   }
 
@@ -487,8 +487,8 @@ public class MetricsNaming {
     return this;
   }
 
-  public MetricsNaming setHttpResponseCount(String httpResponseCount) {
-    this.httpResponseCount = httpResponseCount;
+  public MetricsNaming setHttpResponsesCount(String httpResponsesCount) {
+    this.httpResponsesCount = httpResponsesCount;
     return this;
   }
 
@@ -497,18 +497,18 @@ public class MetricsNaming {
     return this;
   }
 
-  public MetricsNaming setHttpWsConnections(String httpWsConnections) {
-    this.httpWsConnections = httpWsConnections;
+  public MetricsNaming setHttpActiveWsConnections(String httpActiveWsConnections) {
+    this.httpActiveWsConnections = httpActiveWsConnections;
     return this;
   }
 
-  public MetricsNaming setHttpRequestResetCount(String httpRequestResetCount) {
-    this.httpRequestResetCount = httpRequestResetCount;
+  public MetricsNaming setHttpRequestResetsCount(String httpRequestResetsCount) {
+    this.httpRequestResetsCount = httpRequestResetsCount;
     return this;
   }
 
-  public MetricsNaming setNetConnections(String netConnections) {
-    this.netConnections = netConnections;
+  public MetricsNaming setNetActiveConnections(String netActiveConnections) {
+    this.netActiveConnections = netActiveConnections;
     return this;
   }
 

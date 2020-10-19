@@ -36,9 +36,9 @@ public class MetricsNamingConverter {
             obj.setClientQueueTime((String)member.getValue());
           }
           break;
-        case "clientResetCount":
+        case "clientResetsCount":
           if (member.getValue() instanceof String) {
-            obj.setClientResetCount((String)member.getValue());
+            obj.setClientResetsCount((String)member.getValue());
           }
           break;
         case "datagramBytesRead":
@@ -111,6 +111,16 @@ public class MetricsNamingConverter {
             obj.setEbSent((String)member.getValue());
           }
           break;
+        case "httpActiveRequests":
+          if (member.getValue() instanceof String) {
+            obj.setHttpActiveRequests((String)member.getValue());
+          }
+          break;
+        case "httpActiveWsConnections":
+          if (member.getValue() instanceof String) {
+            obj.setHttpActiveWsConnections((String)member.getValue());
+          }
+          break;
         case "httpQueuePending":
           if (member.getValue() instanceof String) {
             obj.setHttpQueuePending((String)member.getValue());
@@ -126,19 +136,14 @@ public class MetricsNamingConverter {
             obj.setHttpRequestBytes((String)member.getValue());
           }
           break;
-        case "httpRequestCount":
+        case "httpRequestResetsCount":
           if (member.getValue() instanceof String) {
-            obj.setHttpRequestCount((String)member.getValue());
+            obj.setHttpRequestResetsCount((String)member.getValue());
           }
           break;
-        case "httpRequestResetCount":
+        case "httpRequestsCount":
           if (member.getValue() instanceof String) {
-            obj.setHttpRequestResetCount((String)member.getValue());
-          }
-          break;
-        case "httpRequestsActive":
-          if (member.getValue() instanceof String) {
-            obj.setHttpRequestsActive((String)member.getValue());
+            obj.setHttpRequestsCount((String)member.getValue());
           }
           break;
         case "httpResponseBytes":
@@ -146,19 +151,19 @@ public class MetricsNamingConverter {
             obj.setHttpResponseBytes((String)member.getValue());
           }
           break;
-        case "httpResponseCount":
-          if (member.getValue() instanceof String) {
-            obj.setHttpResponseCount((String)member.getValue());
-          }
-          break;
         case "httpResponseTime":
           if (member.getValue() instanceof String) {
             obj.setHttpResponseTime((String)member.getValue());
           }
           break;
-        case "httpWsConnections":
+        case "httpResponsesCount":
           if (member.getValue() instanceof String) {
-            obj.setHttpWsConnections((String)member.getValue());
+            obj.setHttpResponsesCount((String)member.getValue());
+          }
+          break;
+        case "netActiveConnections":
+          if (member.getValue() instanceof String) {
+            obj.setNetActiveConnections((String)member.getValue());
           }
           break;
         case "netBytesRead":
@@ -169,11 +174,6 @@ public class MetricsNamingConverter {
         case "netBytesWritten":
           if (member.getValue() instanceof String) {
             obj.setNetBytesWritten((String)member.getValue());
-          }
-          break;
-        case "netConnections":
-          if (member.getValue() instanceof String) {
-            obj.setNetConnections((String)member.getValue());
           }
           break;
         case "netErrorCount":
@@ -232,8 +232,8 @@ public class MetricsNamingConverter {
     if (obj.getClientQueueTime() != null) {
       json.put("clientQueueTime", obj.getClientQueueTime());
     }
-    if (obj.getClientResetCount() != null) {
-      json.put("clientResetCount", obj.getClientResetCount());
+    if (obj.getClientResetsCount() != null) {
+      json.put("clientResetsCount", obj.getClientResetsCount());
     }
     if (obj.getDatagramBytesRead() != null) {
       json.put("datagramBytesRead", obj.getDatagramBytesRead());
@@ -277,6 +277,12 @@ public class MetricsNamingConverter {
     if (obj.getEbSent() != null) {
       json.put("ebSent", obj.getEbSent());
     }
+    if (obj.getHttpActiveRequests() != null) {
+      json.put("httpActiveRequests", obj.getHttpActiveRequests());
+    }
+    if (obj.getHttpActiveWsConnections() != null) {
+      json.put("httpActiveWsConnections", obj.getHttpActiveWsConnections());
+    }
     if (obj.getHttpQueuePending() != null) {
       json.put("httpQueuePending", obj.getHttpQueuePending());
     }
@@ -286,35 +292,29 @@ public class MetricsNamingConverter {
     if (obj.getHttpRequestBytes() != null) {
       json.put("httpRequestBytes", obj.getHttpRequestBytes());
     }
-    if (obj.getHttpRequestCount() != null) {
-      json.put("httpRequestCount", obj.getHttpRequestCount());
+    if (obj.getHttpRequestResetsCount() != null) {
+      json.put("httpRequestResetsCount", obj.getHttpRequestResetsCount());
     }
-    if (obj.getHttpRequestResetCount() != null) {
-      json.put("httpRequestResetCount", obj.getHttpRequestResetCount());
-    }
-    if (obj.getHttpRequestsActive() != null) {
-      json.put("httpRequestsActive", obj.getHttpRequestsActive());
+    if (obj.getHttpRequestsCount() != null) {
+      json.put("httpRequestsCount", obj.getHttpRequestsCount());
     }
     if (obj.getHttpResponseBytes() != null) {
       json.put("httpResponseBytes", obj.getHttpResponseBytes());
     }
-    if (obj.getHttpResponseCount() != null) {
-      json.put("httpResponseCount", obj.getHttpResponseCount());
-    }
     if (obj.getHttpResponseTime() != null) {
       json.put("httpResponseTime", obj.getHttpResponseTime());
     }
-    if (obj.getHttpWsConnections() != null) {
-      json.put("httpWsConnections", obj.getHttpWsConnections());
+    if (obj.getHttpResponsesCount() != null) {
+      json.put("httpResponsesCount", obj.getHttpResponsesCount());
+    }
+    if (obj.getNetActiveConnections() != null) {
+      json.put("netActiveConnections", obj.getNetActiveConnections());
     }
     if (obj.getNetBytesRead() != null) {
       json.put("netBytesRead", obj.getNetBytesRead());
     }
     if (obj.getNetBytesWritten() != null) {
       json.put("netBytesWritten", obj.getNetBytesWritten());
-    }
-    if (obj.getNetConnections() != null) {
-      json.put("netConnections", obj.getNetConnections());
     }
     if (obj.getNetErrorCount() != null) {
       json.put("netErrorCount", obj.getNetErrorCount());

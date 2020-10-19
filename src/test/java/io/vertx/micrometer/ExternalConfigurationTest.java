@@ -67,7 +67,7 @@ public class ExternalConfigurationTest {
     startVertx(context, metricsOptions);
 
     Set<String> metrics = PrometheusTestHelper.getMetricNames(vertx, context, 9999, "localhost", "/metrics", 3000);
-    assertThat(metrics).contains("vertx_http_client_connections")
+    assertThat(metrics).contains("vertx_http_client_active_connections")
       .doesNotContain("jvm_classes_loaded");
   }
 

@@ -43,7 +43,7 @@ class VertxClientMetrics extends AbstractMetrics {
     queueSize = longGauges(names.getClientQueuePending(), "Number of pending elements in queue", Label.REMOTE, Label.NAMESPACE);
     processingTime = timers(names.getClientProcessingTime(), "Processing time, from request start to response end", Label.REMOTE, Label.NAMESPACE);
     processingPending = longGauges(names.getClientProcessingPending(), "Number of elements being processed", Label.REMOTE, Label.NAMESPACE);
-    resetCount = counters(names.getClientResetCount(), "Total number of requests reset", Label.REMOTE, Label.NAMESPACE);
+    resetCount = counters(names.getClientResetsCount(), "Total number of resets", Label.REMOTE, Label.NAMESPACE);
   }
 
   ClientMetrics forInstance(SocketAddress remoteAddress, String namespace) {

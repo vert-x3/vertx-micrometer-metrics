@@ -41,7 +41,7 @@ class VertxNetServerMetrics extends AbstractMetrics {
 
   VertxNetServerMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names) {
     super(registry, domain);
-    connections = longGauges(names.getNetConnections(), "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
+    connections = longGauges(names.getNetActiveConnections(), "Number of opened connections to the server", Label.LOCAL, Label.REMOTE);
     bytesReceived = counters(names.getNetBytesRead(), "Number of bytes received by the server", Label.LOCAL, Label.REMOTE);
     bytesSent = counters(names.getNetBytesWritten(), "Number of bytes sent by the server", Label.LOCAL, Label.REMOTE);
     errorCount = counters(names.getNetErrorCount(), "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);

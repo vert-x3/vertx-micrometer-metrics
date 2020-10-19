@@ -112,7 +112,7 @@ public class PrometheusMetricsITest {
     Async async = context.async();
     PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
       context.verify(v -> assertThat(body.toString())
-        .contains("vertx_http_client_connections{local=\"?\",remote=\"localhost:9090\",} 1.0")
+        .contains("vertx_http_client_active_connections{local=\"?\",remote=\"localhost:9090\",} 1.0")
         .doesNotContain("vertx_http_server_connections{local=\"0.0.0.0:9090\",remote=\"_\",} 1.0"));
       async.complete();
     });

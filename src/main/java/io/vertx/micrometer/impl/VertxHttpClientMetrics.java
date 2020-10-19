@@ -51,13 +51,13 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     super(registry, MetricsDomain.HTTP_CLIENT, names);
     queueDelay = timers(names.getHttpQueueTime(), "Time spent in queue before being processed", Label.LOCAL, Label.REMOTE);
     queueSize = longGauges(names.getHttpQueuePending(), "Number of pending elements in queue", Label.LOCAL, Label.REMOTE);
-    requests = longGauges(names.getHttpRequestsActive(), "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    requestCount = counters(names.getHttpRequestCount(), "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    requests = longGauges(names.getHttpActiveRequests(), "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
+    requestCount = counters(names.getHttpRequestsCount(), "Number of requests sent", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestBytes = summaries(names.getHttpRequestBytes(), "Size of requests in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     responseTime = timers(names.getHttpResponseTime(), "Response time", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    responseCount = counters(names.getHttpResponseCount(), "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
+    responseCount = counters(names.getHttpResponsesCount(), "Response count with codes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
     responseBytes = summaries(names.getHttpResponseBytes(), "Size of responses in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    wsConnections = longGauges(names.getHttpWsConnections(), "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
+    wsConnections = longGauges(names.getHttpActiveWsConnections(), "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
   @Override

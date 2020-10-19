@@ -87,10 +87,10 @@ public class MetricsServiceImplTest {
 
     JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot();
     assertThat(snapshot).extracting(Map.Entry::getKey).containsExactly(
+      "vertx.http.client.active.connections",
       "vertx.http.client.active.requests",
       "vertx.http.client.bytes.read",
       "vertx.http.client.bytes.written",
-      "vertx.http.client.connections",
       "vertx.http.client.queue.pending",
       "vertx.http.client.queue.time",
       "vertx.http.client.request.bytes",
@@ -98,10 +98,10 @@ public class MetricsServiceImplTest {
       "vertx.http.client.response.bytes",
       "vertx.http.client.response.time",
       "vertx.http.client.responses",
+      "vertx.http.server.active.connections",
       "vertx.http.server.active.requests",
       "vertx.http.server.bytes.read",
       "vertx.http.server.bytes.written",
-      "vertx.http.server.connections",
       "vertx.http.server.request.bytes",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
@@ -164,10 +164,10 @@ public class MetricsServiceImplTest {
 
     JsonObject snapshot = MetricsService.create(httpServer).getMetricsSnapshot();
     assertThat(snapshot).extracting(Map.Entry::getKey).containsExactly(
+      "vertx.http.server.active.connections",
       "vertx.http.server.active.requests",
       "vertx.http.server.bytes.read",
       "vertx.http.server.bytes.written",
-      "vertx.http.server.connections",
       "vertx.http.server.request.bytes",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
