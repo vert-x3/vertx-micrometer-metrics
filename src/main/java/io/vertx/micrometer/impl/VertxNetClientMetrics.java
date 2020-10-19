@@ -21,9 +21,9 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
-import io.vertx.micrometer.impl.meters.Summaries;
 
 import java.util.concurrent.atomic.LongAdder;
 
@@ -36,16 +36,16 @@ class VertxNetClientMetrics extends AbstractMetrics {
   private final Counters bytesSent;
   private final Counters errorCount;
 
-  VertxNetClientMetrics(MeterRegistry registry) {
-    this(registry, MetricsDomain.NET_CLIENT);
+  VertxNetClientMetrics(MeterRegistry registry, MetricsNaming names) {
+    this(registry, MetricsDomain.NET_CLIENT, names);
   }
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain) {
+  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names) {
     super(registry, domain);
-    connections = longGauges("connections", "Number of connections to the remote host currently opened", Label.LOCAL, Label.REMOTE);
-    bytesReceived = counters("bytesReceived", "Number of bytes received from the remote host", Label.LOCAL, Label.REMOTE);
-    bytesSent = counters("bytesSent", "Number of bytes sent to the remote host", Label.LOCAL, Label.REMOTE);
-    errorCount = counters("errors", "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);
+    connections = longGauges(names.getNetActiveConnections(), "Number of connections to the remote host currently opened", Label.LOCAL, Label.REMOTE);
+    bytesReceived = counters(names.getNetBytesRead(), "Number of bytes received from the remote host", Label.LOCAL, Label.REMOTE);
+    bytesSent = counters(names.getNetBytesWritten(), "Number of bytes sent to the remote host", Label.LOCAL, Label.REMOTE);
+    errorCount = counters(names.getNetErrorCount(), "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);
   }
 
   TCPMetrics forAddress(String localAddress) {

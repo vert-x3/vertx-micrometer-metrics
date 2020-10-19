@@ -29,6 +29,59 @@ Set the matched value.
 +++
 |===
 
+[[MetricsNaming]]
+== MetricsNaming
+
+++++
+ Options for naming all metrics
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[clientProcessingPending]]`@clientProcessingPending`|`String`|-
+|[[clientProcessingTime]]`@clientProcessingTime`|`String`|-
+|[[clientQueuePending]]`@clientQueuePending`|`String`|-
+|[[clientQueueTime]]`@clientQueueTime`|`String`|-
+|[[clientResetsCount]]`@clientResetsCount`|`String`|-
+|[[datagramBytesRead]]`@datagramBytesRead`|`String`|-
+|[[datagramBytesWritten]]`@datagramBytesWritten`|`String`|-
+|[[datagramErrorCount]]`@datagramErrorCount`|`String`|-
+|[[ebBytesRead]]`@ebBytesRead`|`String`|-
+|[[ebBytesWritten]]`@ebBytesWritten`|`String`|-
+|[[ebDelivered]]`@ebDelivered`|`String`|-
+|[[ebDiscarded]]`@ebDiscarded`|`String`|-
+|[[ebHandlers]]`@ebHandlers`|`String`|-
+|[[ebPending]]`@ebPending`|`String`|-
+|[[ebProcessed]]`@ebProcessed`|`String`|-
+|[[ebPublished]]`@ebPublished`|`String`|-
+|[[ebReceived]]`@ebReceived`|`String`|-
+|[[ebReplyFailures]]`@ebReplyFailures`|`String`|-
+|[[ebSent]]`@ebSent`|`String`|-
+|[[httpActiveRequests]]`@httpActiveRequests`|`String`|-
+|[[httpActiveWsConnections]]`@httpActiveWsConnections`|`String`|-
+|[[httpQueuePending]]`@httpQueuePending`|`String`|-
+|[[httpQueueTime]]`@httpQueueTime`|`String`|-
+|[[httpRequestBytes]]`@httpRequestBytes`|`String`|-
+|[[httpRequestResetsCount]]`@httpRequestResetsCount`|`String`|-
+|[[httpRequestsCount]]`@httpRequestsCount`|`String`|-
+|[[httpResponseBytes]]`@httpResponseBytes`|`String`|-
+|[[httpResponseTime]]`@httpResponseTime`|`String`|-
+|[[httpResponsesCount]]`@httpResponsesCount`|`String`|-
+|[[netActiveConnections]]`@netActiveConnections`|`String`|-
+|[[netBytesRead]]`@netBytesRead`|`String`|-
+|[[netBytesWritten]]`@netBytesWritten`|`String`|-
+|[[netErrorCount]]`@netErrorCount`|`String`|-
+|[[poolCompleted]]`@poolCompleted`|`String`|-
+|[[poolInUse]]`@poolInUse`|`String`|-
+|[[poolQueuePending]]`@poolQueuePending`|`String`|-
+|[[poolQueueTime]]`@poolQueueTime`|`String`|-
+|[[poolUsage]]`@poolUsage`|`String`|-
+|[[poolUsageRatio]]`@poolUsageRatio`|`String`|-
+|===
+
 [[MicrometerMetricsOptions]]
 == MicrometerMetricsOptions
 

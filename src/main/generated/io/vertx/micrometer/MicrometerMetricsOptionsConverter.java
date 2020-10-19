@@ -74,6 +74,11 @@ public class MicrometerMetricsOptionsConverter {
             obj.setLabels(list);
           }
           break;
+        case "metricsNaming":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setMetricsNaming(new io.vertx.micrometer.MetricsNaming((io.vertx.core.json.JsonObject)member.getValue()));
+          }
+          break;
         case "prometheusOptions":
           if (member.getValue() instanceof JsonObject) {
             obj.setPrometheusOptions(new io.vertx.micrometer.VertxPrometheusOptions((io.vertx.core.json.JsonObject)member.getValue()));
@@ -110,6 +115,9 @@ public class MicrometerMetricsOptionsConverter {
       JsonArray array = new JsonArray();
       obj.getLabels().forEach(item -> array.add(item.name()));
       json.put("labels", array);
+    }
+    if (obj.getMetricsNaming() != null) {
+      json.put("metricsNaming", obj.getMetricsNaming().toJson());
     }
     if (obj.getPrometheusOptions() != null) {
       json.put("prometheusOptions", obj.getPrometheusOptions().toJson());

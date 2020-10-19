@@ -14,10 +14,7 @@ import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsService;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,9 +42,14 @@ public class MetricsServiceImplTest {
 
   @Before
   public void setUp(TestContext ctx) {
+    this.setUpWithNames(ctx, MetricsNaming.v4Names());
+  }
+
+  private void setUpWithNames(TestContext ctx, MetricsNaming names) {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .setRegistryName(registryName)
+      .setMetricsNaming(names)
       .setLabels(EnumSet.complementOf(EnumSet.of(Label.LOCAL, Label.REMOTE)))
       .setEnabled(true)))
       .exceptionHandler(ctx.exceptionHandler());
@@ -85,6 +87,53 @@ public class MetricsServiceImplTest {
 
     JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot();
     assertThat(snapshot).extracting(Map.Entry::getKey).containsExactly(
+      "vertx.http.client.active.connections",
+      "vertx.http.client.active.requests",
+      "vertx.http.client.bytes.read",
+      "vertx.http.client.bytes.written",
+      "vertx.http.client.queue.pending",
+      "vertx.http.client.queue.time",
+      "vertx.http.client.request.bytes",
+      "vertx.http.client.requests",
+      "vertx.http.client.response.bytes",
+      "vertx.http.client.response.time",
+      "vertx.http.client.responses",
+      "vertx.http.server.active.connections",
+      "vertx.http.server.active.requests",
+      "vertx.http.server.bytes.read",
+      "vertx.http.server.bytes.written",
+      "vertx.http.server.request.bytes",
+      "vertx.http.server.requests",
+      "vertx.http.server.response.bytes",
+      "vertx.http.server.response.time"
+    );
+
+    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
+      .filteredOn(obj -> obj.getString("type").equals("counter"))
+      .hasSize(10)
+      .flatExtracting(JsonObject::fieldNames)
+      .contains("count");
+
+    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
+      .filteredOn(obj -> obj.getString("type").equals("timer"))
+      .hasSize(5)
+      .flatExtracting(JsonObject::fieldNames)
+      .contains("totalTimeMs", "meanMs", "maxMs");
+  }
+
+  @Test
+  public void shouldGetSnapshotWithV3Names(TestContext ctx) {
+    // Re-setup with names
+    this.tearDown(ctx);
+    setUpWithNames(ctx, MetricsNaming.v3Names());
+
+    HttpClient httpClient = vertx.createHttpClient();
+    runClientRequests(ctx, httpClient, 10, "/r1");
+    runClientRequests(ctx, httpClient, 5, "/r2");
+    httpClient.close();
+
+    JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot();
+    assertThat(snapshot).extracting(Map.Entry::getKey).filteredOn(k -> k.startsWith("vertx.http")).containsExactly(
       "vertx.http.client.bytesReceived",
       "vertx.http.client.bytesSent",
       "vertx.http.client.connections",
@@ -103,37 +152,27 @@ public class MetricsServiceImplTest {
       "vertx.http.server.requestCount",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
-      "vertx.http.server.responseTime");
-
-    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
-      .filteredOn(obj -> obj.getString("type").equals("counter"))
-      .hasSize(10)
-      .flatExtracting(JsonObject::fieldNames)
-      .contains("count");
-
-    assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
-      .filteredOn(obj -> obj.getString("type").equals("timer"))
-      .hasSize(5)
-      .flatExtracting(JsonObject::fieldNames)
-      .contains("totalTimeMs", "meanMs", "maxMs");
+      "vertx.http.server.responseTime"
+    );
   }
 
   @Test
-  public void shouldGetHttpServerSnapshot(TestContext ctx) throws InterruptedException {
+  public void shouldGetHttpServerSnapshot(TestContext ctx) {
     HttpClient httpClient = vertx.createHttpClient();
     runClientRequests(ctx, httpClient, 5, "/r2");
     httpClient.close();
 
     JsonObject snapshot = MetricsService.create(httpServer).getMetricsSnapshot();
     assertThat(snapshot).extracting(Map.Entry::getKey).containsExactly(
-      "vertx.http.server.bytesReceived",
-      "vertx.http.server.bytesSent",
-      "vertx.http.server.connections",
+      "vertx.http.server.active.connections",
+      "vertx.http.server.active.requests",
+      "vertx.http.server.bytes.read",
+      "vertx.http.server.bytes.written",
       "vertx.http.server.request.bytes",
-      "vertx.http.server.requestCount",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
-      "vertx.http.server.responseTime");
+      "vertx.http.server.response.time"
+      );
   }
 
   private void runClientRequests(TestContext ctx, HttpClient httpClient, int count, String path) {

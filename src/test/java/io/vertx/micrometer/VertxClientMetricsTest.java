@@ -84,7 +84,7 @@ public class VertxClientMetricsTest {
     assertThat(datapoints).contains(
       dp("vertx.fake.processing.pending[client_namespace=my namespace,remote=somewhere]$VALUE", 2),
       dp("vertx.fake.processing.time[client_namespace=my namespace,remote=somewhere]$COUNT", 4),
-      dp("vertx.fake.reset[client_namespace=my namespace,remote=somewhere]$COUNT", 2));
+      dp("vertx.fake.resets[client_namespace=my namespace,remote=somewhere]$COUNT", 2));
   }
 
   @Test

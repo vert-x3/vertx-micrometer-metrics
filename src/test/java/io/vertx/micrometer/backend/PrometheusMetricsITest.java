@@ -65,8 +65,9 @@ public class PrometheusMetricsITest {
         // Second connection, this time actually reading the metrics content
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
             context.verify(v2 -> assertThat(body.toString())
-              .contains("vertx_http_client_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
-              .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
+              .contains("vertx_http_client_active_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
+              .contains("vertx_http_client_requests_total{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
+              .doesNotContain("vertx_http_client_response_time_seconds_bucket"));
             async.complete();
         }));
     });
@@ -111,7 +112,7 @@ public class PrometheusMetricsITest {
     Async async = context.async();
     PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
       context.verify(v -> assertThat(body.toString())
-        .contains("vertx_http_client_connections{local=\"?\",remote=\"localhost:9090\",} 1.0")
+        .contains("vertx_http_client_active_connections{local=\"?\",remote=\"localhost:9090\",} 1.0")
         .doesNotContain("vertx_http_server_connections{local=\"0.0.0.0:9090\",remote=\"_\",} 1.0"));
       async.complete();
     });
@@ -167,7 +168,7 @@ public class PrometheusMetricsITest {
         // Second connection, this time actually reading the metrics content
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
           context.verify(v2 -> assertThat(body.toString())
-            .contains("vertx_http_client_responseTime_seconds_bucket{code=\"200\""));
+            .contains("vertx_http_client_response_time_seconds_bucket{code=\"200\""));
           async.complete();
         }));
     });
@@ -197,8 +198,8 @@ public class PrometheusMetricsITest {
         // Second connection, this time actually reading the metrics content
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
           context.verify(v2 -> assertThat(body.toString())
-            .contains("vertx_http_client_requests{method=\"GET\",path=\"/metrics\",}")
-            .doesNotContain("vertx_http_client_responseTime_seconds_bucket"));
+            .contains("vertx_http_client_active_requests{method=\"GET\",path=\"/metrics\",}")
+            .doesNotContain("vertx_http_client_response_time_seconds_bucket"));
           async.complete();
         }));
     });

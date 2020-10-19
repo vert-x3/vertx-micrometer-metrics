@@ -51,6 +51,11 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public static final boolean DEFAULT_JVM_METRICS_ENABLED = false;
 
+  /**
+   * Default metrics naming = Vert.x 4 naming
+   */
+  public static final MetricsNaming DEFAULT_METRICS_NAMING = MetricsNaming.v4Names();
+
   private Set<String> disabledMetricsCategories;
   private String registryName;
   private Set<Label> labels;
@@ -60,6 +65,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private VertxPrometheusOptions prometheusOptions;
   private VertxJmxMetricsOptions jmxMetricsOptions;
   private boolean jvmMetricsEnabled;
+  private MetricsNaming metricsNaming;
 
   /**
    * Creates default options for Micrometer metrics.
@@ -70,6 +76,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     labels = EnumSet.copyOf(DEFAULT_LABELS);
     labelMatches = new ArrayList<>();
     jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
+    metricsNaming = DEFAULT_METRICS_NAMING;
   }
 
   /**
@@ -92,6 +99,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
       jmxMetricsOptions = new VertxJmxMetricsOptions(other.jmxMetricsOptions);
     }
     jvmMetricsEnabled = other.jvmMetricsEnabled;
+    metricsNaming = other.metricsNaming;
   }
 
   /**
@@ -385,6 +393,26 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions setJvmMetricsEnabled(boolean jvmMetricsEnabled) {
     this.jvmMetricsEnabled = jvmMetricsEnabled;
+    return this;
+  }
+
+  /**
+   * {@code MetricsNaming} is a structure that holds names of all metrics, each one can be changed individually.
+   * @return the configured {@code MetricsNaming} object (defaults to Vert.x names).
+   */
+  public MetricsNaming getMetricsNaming() {
+    return metricsNaming;
+  }
+
+  /**
+   * {@code MetricsNaming} is a structure that holds names of all metrics, each one can be changed individually.
+   * For instance, to retrieve compatibility with the names used in Vert.x 3.x, use {@code setMetricsNaming(MetricsNaming.v3Names())}
+   *
+   * @param metricsNaming a {@code MetricsNaming} object.
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MicrometerMetricsOptions setMetricsNaming(MetricsNaming metricsNaming) {
+    this.metricsNaming = metricsNaming;
     return this;
   }
 }

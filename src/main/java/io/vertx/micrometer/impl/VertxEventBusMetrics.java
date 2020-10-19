@@ -21,6 +21,7 @@ import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Summaries;
@@ -45,19 +46,19 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   private final Summaries bytesRead;
   private final Summaries bytesWritten;
 
-  VertxEventBusMetrics(MeterRegistry registry) {
+  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names) {
     super(registry, MetricsDomain.EVENT_BUS);
-    handlers = longGauges("handlers", "Number of event bus handlers in use", Label.EB_ADDRESS);
-    pending = longGauges("pending", "Number of messages not processed yet", Label.EB_ADDRESS, Label.EB_SIDE);
-    processed = counters("processed", "Number of processed messages", Label.EB_ADDRESS, Label.EB_SIDE);
-    published = counters("published", "Number of messages published (publish / subscribe)", Label.EB_ADDRESS, Label.EB_SIDE);
-    sent = counters("sent", "Number of messages sent (point-to-point)", Label.EB_ADDRESS, Label.EB_SIDE);
-    received = counters("received", "Number of messages received", Label.EB_ADDRESS, Label.EB_SIDE);
-    delivered = counters("delivered", "Number of messages delivered to handlers", Label.EB_ADDRESS, Label.EB_SIDE);
-    discarded = counters("discarded", "Number of discarded messages", Label.EB_ADDRESS, Label.EB_SIDE);
-    replyFailures = counters("replyFailures", "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
-    bytesRead = summaries("bytesRead", "Number of bytes received while reading messages from event bus cluster peers", Label.EB_ADDRESS);
-    bytesWritten = summaries("bytesWritten", "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
+    handlers = longGauges(names.getEbHandlers(), "Number of event bus handlers in use", Label.EB_ADDRESS);
+    pending = longGauges(names.getEbPending(), "Number of messages not processed yet", Label.EB_ADDRESS, Label.EB_SIDE);
+    processed = counters(names.getEbProcessed(), "Number of processed messages", Label.EB_ADDRESS, Label.EB_SIDE);
+    published = counters(names.getEbPublished(), "Number of messages published (publish / subscribe)", Label.EB_ADDRESS, Label.EB_SIDE);
+    sent = counters(names.getEbSent(), "Number of messages sent (point-to-point)", Label.EB_ADDRESS, Label.EB_SIDE);
+    received = counters(names.getEbReceived(), "Number of messages received", Label.EB_ADDRESS, Label.EB_SIDE);
+    delivered = counters(names.getEbDelivered(), "Number of messages delivered to handlers", Label.EB_ADDRESS, Label.EB_SIDE);
+    discarded = counters(names.getEbDiscarded(), "Number of discarded messages", Label.EB_ADDRESS, Label.EB_SIDE);
+    replyFailures = counters(names.getEbReplyFailures(), "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
+    bytesRead = summaries(names.getEbBytesRead(), "Number of bytes received while reading messages from event bus cluster peers", Label.EB_ADDRESS);
+    bytesWritten = summaries(names.getEbBytesWritten(), "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
   }
 
   private static boolean isInternal(String address) {
