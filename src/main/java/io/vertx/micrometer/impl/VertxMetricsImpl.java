@@ -24,18 +24,31 @@ import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.spi.metrics.*;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.DatagramSocketMetrics;
+import io.vertx.core.spi.metrics.EventBusMetrics;
+import io.vertx.core.spi.metrics.HttpClientMetrics;
+import io.vertx.core.spi.metrics.HttpServerMetrics;
+import io.vertx.core.spi.metrics.PoolMetrics;
+import io.vertx.core.spi.metrics.TCPMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static io.vertx.micrometer.MetricsDomain.*;
+import static io.vertx.micrometer.MetricsDomain.DATAGRAM_SOCKET;
+import static io.vertx.micrometer.MetricsDomain.EVENT_BUS;
+import static io.vertx.micrometer.MetricsDomain.HTTP_CLIENT;
+import static io.vertx.micrometer.MetricsDomain.HTTP_SERVER;
+import static io.vertx.micrometer.MetricsDomain.NAMED_POOLS;
+import static io.vertx.micrometer.MetricsDomain.NET_CLIENT;
+import static io.vertx.micrometer.MetricsDomain.NET_SERVER;
 
 /**
  * Metrics SPI implementation for Micrometer.
@@ -53,7 +66,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final VertxHttpClientMetrics httpClientMetrics;
   private final VertxHttpServerMetrics httpServerMetrics;
   private final VertxPoolMetrics poolMetrics;
-  private final Map<String, VertxClientMetrics> mapClientMetrics = new HashMap<>();
+  private final Map<String, VertxClientMetrics> mapClientMetrics = new ConcurrentHashMap<>();
   private final Set<String> disabledCaterogies = new HashSet<>();
 
   /**
