@@ -33,7 +33,6 @@ import io.vertx.micrometer.impl.meters.Timers;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.IntSupplier;
 
 /**
  * @author Joel Takvorian
@@ -83,26 +82,24 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     }
 
     @Override
-    public void requestEnd(Handler handler, long bytesRead) {
+    public void requestEnd(Handler handler, HttpRequest request, long bytesRead) {
       requestBytes.get(local, handler.address, handler.path, handler.method).record(bytesRead);
     }
 
     @Override
     public Handler responsePushed(String remote, HttpMethod method, String uri, HttpResponse response) {
       Handler handler = new Handler(remote, uri, method.name());
-      handler.code = response::statusCode;
       requests.get(local, remote, handler.path, handler.method).increment();
       return handler;
     }
 
     @Override
     public void responseBegin(Handler handler, HttpResponse response) {
-      handler.code = response::statusCode;
     }
 
     @Override
-    public void responseEnd(Handler handler, long bytesWritten) {
-      String code = String.valueOf(handler.code.getAsInt());
+    public void responseEnd(Handler handler, HttpResponse response, long bytesWritten) {
+      String code = String.valueOf(response.statusCode());
       String handlerRoute = handler.getRoute();
       handler.timer.end(local, handler.address, handlerRoute, handler.path, handler.method, code);
       requestCount.get(local, handler.address, handlerRoute, handler.path, handler.method, code).increment();
@@ -137,7 +134,6 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     private final String method;
     private final List<String> routes = new LinkedList<>();
     private Timers.EventTiming timer;
-    private IntSupplier code = () -> 0;
 
     Handler(String address, String path, String method) {
       this.address = address;
