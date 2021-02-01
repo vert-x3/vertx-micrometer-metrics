@@ -30,6 +30,7 @@ import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Summaries;
 import io.vertx.micrometer.impl.meters.Timers;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
@@ -132,7 +133,10 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     private final String address;
     private final String path;
     private final String method;
-    private final List<String> routes = new LinkedList<>();
+    // a string for a single route, a list of string for multiple
+    private Object routes;
+    // tracks length of resulting routes string
+    private int routesLength;
     private Timers.EventTiming timer;
 
     Handler(String address, String path, String method) {
@@ -141,14 +145,43 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
       this.method = method;
     }
 
+    // we try to minimize allocations as far as possible. see https://github.com/vert-x3/vertx-dropwizard-metrics/pull/101
     private void addRoute(String route) {
-      if (route != null) {
-        routes.add(route);
+      if (route == null) {
+        return;
       }
+      routesLength += route.length();
+      if (routes == null) {
+        routes = route;
+        return;
+      }
+      ++routesLength;
+      if (routes instanceof List) {
+        //noinspection unchecked
+        ((List<String>) routes).add(route);
+        return;
+      }
+      List<String> multipleRoutes = new LinkedList<>();
+      multipleRoutes.add((String) routes);
+      multipleRoutes.add(route);
+      routes = multipleRoutes;
     }
 
     private String getRoute() {
-      return String.join(">", routes);
+      if (routes == null) {
+        return "";
+      }
+      if (routes instanceof String) {
+        return (String) routes;
+      }
+      StringBuilder concatenation = new StringBuilder(routesLength);
+      @SuppressWarnings("unchecked") Iterator<String> iterator = ((List<String>) routes).iterator();
+      concatenation.append(iterator.next());
+      while (iterator.hasNext()) {
+        concatenation.append('>').append(iterator.next());
+      }
+      routes = concatenation.toString();
+      return (String) routes;
     }
   }
 }
