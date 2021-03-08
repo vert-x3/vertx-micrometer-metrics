@@ -59,8 +59,17 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
   }
 
   @Override
+  public MetricsOptions newOptions(MetricsOptions options) {
+    if (options instanceof MicrometerMetricsOptions) {
+      return new MicrometerMetricsOptions((MicrometerMetricsOptions) options);
+    } else {
+      return VertxMetricsFactory.super.newOptions(options);
+    }
+  }
+
+  @Override
   public MetricsOptions newOptions() {
-    return newOptions(null);
+    return newOptions((JsonObject) null);
   }
 
   @Override
