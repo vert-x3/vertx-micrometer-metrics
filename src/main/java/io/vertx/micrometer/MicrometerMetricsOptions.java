@@ -16,14 +16,17 @@
 package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.VertxMetricsFactory;
+import io.vertx.core.spi.observability.HttpRequest;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Vert.x micrometer configuration.
@@ -66,6 +69,8 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private VertxJmxMetricsOptions jmxMetricsOptions;
   private boolean jvmMetricsEnabled;
   private MetricsNaming metricsNaming;
+  @GenIgnore
+  private Function<HttpRequest, Iterable<Tag>> requestsTagsProvider;
 
   /**
    * Creates default options for Micrometer metrics.
@@ -77,6 +82,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     labelMatches = new ArrayList<>();
     jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
     metricsNaming = DEFAULT_METRICS_NAMING;
+    requestsTagsProvider = null;
   }
 
   /**
@@ -100,6 +106,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     }
     jvmMetricsEnabled = other.jvmMetricsEnabled;
     metricsNaming = other.metricsNaming;
+    requestsTagsProvider = other.requestsTagsProvider;
   }
 
   /**
@@ -413,6 +420,24 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions setMetricsNaming(MetricsNaming metricsNaming) {
     this.metricsNaming = metricsNaming;
+    return this;
+  }
+
+  /**
+   * @return an optional custom tags provider for HTTP requests
+   */
+  public Function<HttpRequest, Iterable<Tag>> getRequestsTagsProvider() {
+    return requestsTagsProvider;
+  }
+
+  /**
+   * Sets a custom tags provider for HTTP requests. Allows to generate custom tags for every {@code HttpRequest} object processed through the metrics SPI.
+   *
+   * @param requestsTagsProvider an object implementing the {@code CustomTagsProvider} interface for {@code HttpRequest}.
+   * @return a reference to this, so that the API can be used fluently
+   */
+  public MicrometerMetricsOptions setRequestsTagsProvider(Function<HttpRequest, Iterable<Tag>> requestsTagsProvider) {
+    this.requestsTagsProvider = requestsTagsProvider;
     return this;
   }
 }

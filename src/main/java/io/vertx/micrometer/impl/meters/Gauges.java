@@ -19,13 +19,18 @@ package io.vertx.micrometer.impl.meters;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Joel Takvorian
@@ -53,7 +58,14 @@ public class Gauges<T> {
     this.keys = keys;
   }
 
-  public synchronized T get(String... values) {
+  public T get(String... values) {
+    return get(null, values);
+  }
+
+  public synchronized T get(Iterable<Tag> customTags, String... values) {
+    List<Tag> tags = customTags != null
+      ? Stream.concat(Labels.toTags(keys, values).stream(), StreamSupport.stream(customTags.spliterator(), false)).collect(Collectors.toList())
+      : Labels.toTags(keys, values);
     // This method is synchronized to make sure the "T" built via supplier will match the one passed to Gauge
     //  since it is stored as WeakReference in Micrometer DefaultGauge, it must not be lost.
     T t = tSupplier.get();
@@ -63,7 +75,7 @@ public class Gauges<T> {
     //  Micrometer will not register the gauge twice if it was already created.
     Gauge g = Gauge.builder(name, t, dGetter)
       .description(description)
-      .tags(Labels.toTags(keys, values))
+      .tags(tags)
       .register(registry);
     return gauges.computeIfAbsent(g.getId(), v -> t);
   }
