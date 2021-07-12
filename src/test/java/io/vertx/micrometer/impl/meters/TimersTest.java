@@ -1,6 +1,7 @@
 package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.micrometer.Label;
@@ -9,8 +10,10 @@ import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,5 +68,16 @@ public class TimersTest {
     assertThat(t).isNull();
     t = registry.find("my_timer").tags("address", "addr2").timer();
     assertThat(t).isNull();
+  }
+
+  @Test
+  public void shouldAddCustomTags() {
+    List<Tag> customTags = Arrays.asList(Tag.of("k1", "v1"), Tag.of("k2", "v2"));
+    MeterRegistry registry = new SimpleMeterRegistry();
+    Timers timers = new Timers("my_timer", "", registry, Label.EB_ADDRESS);
+    timers.get(customTags, "addr1").record(5, TimeUnit.MILLISECONDS);
+
+    Timer t = registry.find("my_timer").tags("address", "addr1", "k1", "v1", "k2", "v2").timer();
+    assertThat(t).isNotNull();
   }
 }
