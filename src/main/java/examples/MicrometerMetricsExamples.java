@@ -18,6 +18,7 @@ package examples;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
@@ -42,6 +43,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -272,6 +274,17 @@ public class MicrometerMetricsExamples {
       new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
         .setMetricsNaming(MetricsNaming.v3Names())
+        .setEnabled(true)));
+  }
+
+  public void useCustomTagsProvider() {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+        .setRequestsTagsProvider(req -> {
+          String user = req.headers().get("x-user");
+          return Collections.singletonList(Tag.of("user", user));
+        })
         .setEnabled(true)));
   }
 }

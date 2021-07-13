@@ -2,6 +2,7 @@ package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
@@ -9,8 +10,10 @@ import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,5 +64,16 @@ public class CountersTest {
     assertThat(c).isNull();
     c = registry.find("my_counter").tags("address", "addr2").counter();
     assertThat(c).isNull();
+  }
+
+  @Test
+  public void shouldAddCustomTags() {
+    List<Tag> customTags = Arrays.asList(Tag.of("k1", "v1"), Tag.of("k2", "v2"));
+    MeterRegistry registry = new SimpleMeterRegistry();
+    Counters counters = new Counters("my_counter", "", registry, Label.EB_ADDRESS);
+    counters.get(customTags, "addr1").increment();
+
+    Counter c = registry.find("my_counter").tags("address", "addr1", "k1", "v1", "k2", "v2").counter();
+    assertThat(c.count()).isEqualTo(1d);
   }
 }

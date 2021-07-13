@@ -93,7 +93,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? null
       : new VertxHttpClientMetrics(registry, names);
     httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? null
-      : new VertxHttpServerMetrics(registry, names);
+      : new VertxHttpServerMetrics(registry, names, options.getRequestsTagsProvider());
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
       : new VertxPoolMetrics(registry, names);
   }

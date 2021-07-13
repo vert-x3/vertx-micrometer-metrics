@@ -369,6 +369,19 @@ Here is an example to replace the actual `path` label of HTTP requests with a ge
 
 NOTE: Matchers use MeterFilters under the hood.
 
+=== Custom tags provider
+
+It is possible to define a function that generates additional tags (or labels) for HTTP server metrics.
+This function takes an {@link io.vertx.core.spi.observability.HttpRequest} object as a parameter, and returns
+an Iterable of {@link io.micrometer.core.instrument.Tag}.
+
+As an example, here is how to map the _x-user_ header to a custom label _user_:
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#useCustomTagsProvider()}
+----
+
 === Snapshots
 
 A {@link io.vertx.micrometer.MetricsService} can be created out of a {@link io.vertx.core.metrics.Measured} object

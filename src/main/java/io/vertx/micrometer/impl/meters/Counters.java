@@ -18,8 +18,14 @@ package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Joel Takvorian
@@ -41,10 +47,17 @@ public class Counters {
   }
 
   public Counter get(String... values) {
+    return get(null, values);
+  }
+
+  public Counter get(Iterable<Tag> customTags, String... values) {
+    List<Tag> tags = customTags != null
+      ? Stream.concat(Labels.toTags(keys, values).stream(), StreamSupport.stream(customTags.spliterator(), false)).collect(Collectors.toList())
+      : Labels.toTags(keys, values);
     // Get or create the Counter
     return Counter.builder(name)
       .description(description)
-      .tags(Labels.toTags(keys, values))
+      .tags(tags)
       .register(registry);
   }
 }
