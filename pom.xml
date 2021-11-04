@@ -29,7 +29,7 @@
       
     <artifactId>vertx-micrometer-metrics</artifactId>
       
-    <version>4.1.6</version>
+    <version>4.1.7-SNAPSHOT</version>
       
     <name>Vert.x metrics implementation for Micrometer.io</name>
       
@@ -45,7 +45,7 @@
       
     <properties>
             
-        <stack.version>4.1.6</stack.version>
+        <stack.version>4.1.7-SNAPSHOT</stack.version>
             
         <assertj.version>3.9.0</assertj.version>
             
