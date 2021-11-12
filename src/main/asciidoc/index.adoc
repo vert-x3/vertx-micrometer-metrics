@@ -488,7 +488,7 @@ The actual names may vary depending on the metrics backend.
 |Gauge
 |Number of pending elements in queue.
 
-|`vertx_http_client_ active_requests`
+|`vertx_http_client_active_requests`
 |`local`, `remote`, `path`, `method`
 |Gauge
 |Number of requests being processed, waiting for a response.
