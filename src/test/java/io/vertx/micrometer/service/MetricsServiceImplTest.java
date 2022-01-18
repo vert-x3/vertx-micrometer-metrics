@@ -105,8 +105,7 @@ public class MetricsServiceImplTest {
       "vertx.http.server.request.bytes",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
-      "vertx.http.server.response.time",
-      "vertx.net.client.active.connections"
+      "vertx.http.server.response.time"
     );
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
