@@ -70,6 +70,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private boolean jvmMetricsEnabled;
   private MetricsNaming metricsNaming;
   private Function<HttpRequest, Iterable<Tag>> requestsTagsProvider;
+  private Function<HttpRequest, Iterable<Tag>> httpClientRequestsTagsProvider;
 
   /**
    * Creates default options for Micrometer metrics.
@@ -82,6 +83,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
     metricsNaming = DEFAULT_METRICS_NAMING;
     requestsTagsProvider = null;
+    httpClientRequestsTagsProvider = null;
   }
 
   /**
@@ -106,6 +108,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     jvmMetricsEnabled = other.jvmMetricsEnabled;
     metricsNaming = other.metricsNaming;
     requestsTagsProvider = other.requestsTagsProvider;
+    httpClientRequestsTagsProvider = other.httpClientRequestsTagsProvider;
   }
 
   /**
@@ -441,4 +444,25 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     this.requestsTagsProvider = requestsTagsProvider;
     return this;
   }
+
+  /**
+   * @return an optional custom tags provider for HTTP Client requests
+   */
+  @GenIgnore
+  public Function<HttpRequest, Iterable<Tag>> getHttpClientRequestsTagsProvider() {
+    return httpClientRequestsTagsProvider;
+  }
+
+  /**
+   * Sets a custom tags provider for HTTP Client requests. Allows to generate custom tags for every {@code HttpRequest} object processed through the metrics SPI.
+   *
+   * @param httpClientRequestsTagsProvider an object that returns an iterable of {@code Tag} for a {@code HttpRequest}.
+   * @return a reference to this, so that the API can be used fluently
+   */
+  @GenIgnore
+  public MicrometerMetricsOptions setHttpClientRequestsTagsProvider(Function<HttpRequest, Iterable<Tag>> httpClientRequestsTagsProvider) {
+    this.httpClientRequestsTagsProvider = httpClientRequestsTagsProvider;
+    return this;
+  }
+
 }
