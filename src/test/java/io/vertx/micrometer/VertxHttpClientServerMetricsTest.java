@@ -1,5 +1,6 @@
 package io.vertx.micrometer;
 
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpClient;
@@ -14,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ForkJoinPool;
@@ -40,11 +42,15 @@ public class VertxHttpClientServerMetricsTest {
   @Before
   public void setUp(TestContext ctx) {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
+        .setHttpClientRequestsTagsProvider(req -> {
+          String user = req.headers().get("user");
+          return user != null ? Collections.singletonList(Tag.of("user", user)) : Collections.emptyList();
+        })
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .setRegistryName(registryName)
-      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS)
-      .setEnabled(true)))
-      .exceptionHandler(ctx.exceptionHandler());
+        .setRegistryName(registryName)
+        .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS)
+        .setEnabled(true)))
+        .exceptionHandler(ctx.exceptionHandler());
 
     // Filter out remote labels
     BackendRegistries.getNow(registryName).config().meterFilter(
@@ -88,7 +94,7 @@ public class VertxHttpClientServerMetricsTest {
 
   @Test
   public void shouldReportHttpClientMetrics(TestContext ctx) {
-    runClientRequests(ctx, false);
+    runClientRequests(ctx, false, "jordi");
 
     waitForValue(vertx, ctx, registryName, "vertx.http.client.bytes.read[local=?,remote=127.0.0.1:9195]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length);
@@ -99,24 +105,24 @@ public class VertxHttpClientServerMetricsTest {
         dp("vertx.http.client.queue.time[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
         dp("vertx.http.client.bytes.read[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
         dp("vertx.http.client.bytes.written[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-        dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-        dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-        dp("vertx.http.client.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-        dp("vertx.http.client.response.bytes[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-        dp("vertx.http.client.response.bytes[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-        dp("vertx.http.client.responses[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT));
+        dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+        dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+        dp("vertx.http.client.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+        dp("vertx.http.client.response.bytes[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+        dp("vertx.http.client.response.bytes[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+        dp("vertx.http.client.responses[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT));
 
     assertThat(datapoints).extracting(Datapoint::id).contains(
-      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$TOTAL_TIME",
-      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$COUNT",
-      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$MAX",
-      "vertx.http.client.active.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195]$VALUE",
+      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL_TIME",
+      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT",
+      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$MAX",
+      "vertx.http.client.active.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$VALUE",
       "vertx.http.client.active.connections[local=?,remote=127.0.0.1:9195]$VALUE");
   }
 
   @Test
   public void shouldReportHttpServerMetricsWithoutWS(TestContext ctx) {
-    runClientRequests(ctx, false);
+    runClientRequests(ctx, false, null);
 
     waitForValue(vertx, ctx, registryName, "vertx.http.server.bytes.read[local=127.0.0.1:9195,remote=_]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length);
@@ -148,7 +154,7 @@ public class VertxHttpClientServerMetricsTest {
 
   @Test
   public void shouldReportHttpServerMetrics(TestContext ctx) {
-    runClientRequests(ctx, true);
+    runClientRequests(ctx, true, null);
 
     // Remark, with websockets, two extra requests are performed so increase the expected value
     waitForValue(vertx, ctx, registryName, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
@@ -183,7 +189,7 @@ public class VertxHttpClientServerMetricsTest {
 
   @Test
   public void shouldIgnoreInternalEventbusMetrics(TestContext ctx) {
-    runClientRequests(ctx, true);
+    runClientRequests(ctx, true, null);
 
     waitForValue(vertx, ctx, registryName, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
@@ -192,12 +198,12 @@ public class VertxHttpClientServerMetricsTest {
     assertThat(datapoints).isEmpty();
   }
 
-  private void runClientRequests(TestContext ctx, boolean ws) {
+  private void runClientRequests(TestContext ctx, boolean ws, String user) {
     Async clientsFinished = ctx.async(concurrentClients);
     for (int i = 0; i < concurrentClients; i++) {
       ForkJoinPool.commonPool().execute(() -> {
         HttpClient httpClient = vertx.createHttpClient();
-        httpRequest(httpClient, ctx);
+        httpRequest(httpClient, ctx, user);
         if (ws) {
           wsRequest(httpClient, ctx);
         }
@@ -207,19 +213,21 @@ public class VertxHttpClientServerMetricsTest {
     clientsFinished.awaitSuccess();
   }
 
-  private void httpRequest(HttpClient httpClient, TestContext ctx) {
+  private void httpRequest(HttpClient httpClient, TestContext ctx, String user) {
     Async async = ctx.async(HTTP_SENT_COUNT);
     for (int i = 0; i < HTTP_SENT_COUNT; i++) {
       httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource")
-        .compose(req -> req
-          .send(CLIENT_REQUEST)
-          .compose(response -> {
-            if (response.statusCode() != 200) {
-              return Future.failedFuture(response.statusMessage());
-            } else {
-              return response.body();
-            }
-          }))
+        .compose(req -> {
+          req = user != null ? req.putHeader("user", user) : req;
+          return req.send(CLIENT_REQUEST)
+            .compose(response -> {
+              if (response.statusCode() != 200) {
+                return Future.failedFuture(response.statusMessage());
+              } else {
+                return response.body();
+              }
+            });
+          })
         .onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
     }
     async.await();
