@@ -17,6 +17,7 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -32,6 +33,7 @@ import io.vertx.micrometer.impl.meters.Summaries;
 import io.vertx.micrometer.impl.meters.Timers;
 
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Function;
 
 /**
  * @author Joel Takvorian
@@ -46,9 +48,11 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
   private final Counters responseCount;
   private final Summaries responseBytes;
   private final Gauges<LongAdder> wsConnections;
+  private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
 
-  VertxHttpClientMetrics(MeterRegistry registry, MetricsNaming names) {
+  VertxHttpClientMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider) {
     super(registry, MetricsDomain.HTTP_CLIENT, names);
+    this.customTagsProvider = customTagsProvider;
     queueDelay = timers(names.getHttpQueueTime(), "Time spent in queue before being processed", Label.LOCAL, Label.REMOTE);
     queueSize = longGauges(names.getHttpQueuePending(), "Number of pending elements in queue", Label.LOCAL, Label.REMOTE);
     requests = longGauges(names.getHttpActiveRequests(), "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
@@ -89,20 +93,23 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         @Override
         public Handler requestBegin(String uri, HttpRequest request) {
           Handler handler = new Handler(remote, request.uri(), request.method().name());
-          requests.get(local, remote, handler.path, handler.method).increment();
-          requestCount.get(local, remote, handler.path, handler.method).increment();
+          if (customTagsProvider != null) {
+            handler.customTags = customTagsProvider.apply(request);
+          }
+          requests.get(handler.customTags, local, remote, handler.path, handler.method).increment();
+          requestCount.get(handler.customTags, local, remote, handler.path, handler.method).increment();
           handler.timer = responseTime.start();
           return handler;
         }
 
         @Override
         public void requestEnd(Handler handler, long bytesWritten) {
-          requestBytes.get(local, handler.address, handler.path, handler.method).record(bytesWritten);
+          requestBytes.get(handler.customTags, local, handler.address, handler.path, handler.method).record(bytesWritten);
         }
 
         @Override
         public void requestReset(Handler handler) {
-          requests.get(local, handler.address, handler.path, handler.method).decrement();
+          requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
         }
 
         @Override
@@ -113,10 +120,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         @Override
         public void responseEnd(Handler handler, long bytesRead) {
           String code = String.valueOf(handler.response.statusCode());
-          requests.get(local, handler.address, handler.path, handler.method).decrement();
-          responseCount.get(local, handler.address, handler.path, handler.method, code).increment();
-          handler.timer.end(local, handler.address, handler.path, handler.method, code);
-          responseBytes.get(local, handler.address, handler.path, handler.method, code).record(bytesRead);
+          requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+          responseCount.get(handler.customTags, local, handler.address, handler.path, handler.method, code).increment();
+          handler.timer.end(handler.customTags, local, handler.address, handler.path, handler.method, code);
+          responseBytes.get(handler.customTags, local, handler.address, handler.path, handler.method, code).record(bytesRead);
         }
       };
     }
@@ -144,6 +151,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     private final String method;
     private Timers.EventTiming timer;
     HttpResponse response;
+    private Iterable<Tag> customTags;
 
     Handler(String address, String path, String method) {
       this.address = address;
