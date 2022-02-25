@@ -281,7 +281,11 @@ public class MicrometerMetricsExamples {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new MicrometerMetricsOptions()
         .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-        .setRequestsTagsProvider(req -> {
+        .setServerRequestTagsProvider(req -> {
+          String user = req.headers().get("x-user");
+          return Collections.singletonList(Tag.of("user", user));
+        })
+        .setClientRequestTagsProvider(req -> {
           String user = req.headers().get("x-user");
           return Collections.singletonList(Tag.of("user", user));
         })

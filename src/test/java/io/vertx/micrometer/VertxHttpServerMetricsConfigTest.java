@@ -43,7 +43,7 @@ public class VertxHttpServerMetricsConfigTest {
   @Test
   public void shouldReportHttpServerMetricsWithCustomTags(TestContext ctx) {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
-      .setRequestsTagsProvider(req -> {
+      .setServerRequestTagsProvider(req -> {
         String user = req.headers().get("user");
         return Collections.singletonList(Tag.of("user", user));
       })
