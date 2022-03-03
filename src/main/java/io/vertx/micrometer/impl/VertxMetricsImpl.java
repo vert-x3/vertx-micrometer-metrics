@@ -67,7 +67,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final VertxHttpServerMetrics httpServerMetrics;
   private final VertxPoolMetrics poolMetrics;
   private final Map<String, VertxClientMetrics> mapClientMetrics = new ConcurrentHashMap<>();
-  private final Set<String> disabledCaterogies = new HashSet<>();
+  private final Set<String> disabledCategories = new HashSet<>();
 
   /**
    * @param options Vertx Prometheus options
@@ -78,7 +78,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     registryName = options.getRegistryName();
     MeterRegistry registry = backendRegistry.getMeterRegistry();
     if (options.getDisabledMetricsCategories() != null) {
-      disabledCaterogies.addAll(options.getDisabledMetricsCategories());
+      disabledCategories.addAll(options.getDisabledMetricsCategories());
     }
     names = options.getMetricsNaming();
 
@@ -91,9 +91,9 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     netServerMetrics = options.isMetricsCategoryDisabled(NET_SERVER) ? null
       : new VertxNetServerMetrics(registry, names);
     httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? null
-      : new VertxHttpClientMetrics(registry, names, options.getHttpClientRequestsTagsProvider());
+      : new VertxHttpClientMetrics(registry, names, options.getClientRequestTagsProvider());
     httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? null
-      : new VertxHttpServerMetrics(registry, names, options.getRequestsTagsProvider());
+      : new VertxHttpServerMetrics(registry, names, options.getServerRequestTagsProvider());
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
       : new VertxPoolMetrics(registry, names);
   }
@@ -160,7 +160,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
 
   @Override
   public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
-    if (disabledCaterogies.contains(type)) {
+    if (disabledCategories.contains(type)) {
       return DummyVertxMetrics.DummyClientMetrics.INSTANCE;
     }
     VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type, names));

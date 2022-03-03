@@ -371,11 +371,11 @@ NOTE: Matchers use MeterFilters under the hood.
 
 === Custom tags provider
 
-You can define a function that generates additional tags (or labels) for HTTP server metrics.
+You can define a function that generates additional tags (or labels) for HTTP server or client metrics.
 Such function takes an {@link io.vertx.core.spi.observability.HttpRequest} object as a parameter, and returns
 an Iterable of {@link io.micrometer.core.instrument.Tag}.
 
-As an example, here is how to map the _x-user_ header to a custom label _user_:
+As an example, here is how to map the _x-user_ header to a custom label _user_ in both server and client metrics:
 
 [source,$lang]
 ----
