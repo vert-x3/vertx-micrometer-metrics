@@ -23,7 +23,7 @@
   </parent>
 
   <artifactId>vertx-micrometer-metrics</artifactId>
-  <version>4.2.7</version>
+  <version>4.2.8-SNAPSHOT</version>
 
   <name>Vert.x metrics implementation for Micrometer.io</name>
 
@@ -34,7 +34,7 @@
   </scm>
 
   <properties>
-    <stack.version>4.2.7</stack.version>
+    <stack.version>4.2.8-SNAPSHOT</stack.version>
     <assertj.version>3.9.0</assertj.version>
     <junit.version>4.13.1</junit.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
