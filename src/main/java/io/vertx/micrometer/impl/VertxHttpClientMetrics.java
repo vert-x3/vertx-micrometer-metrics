@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
@@ -31,6 +32,7 @@ import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Summaries;
 import io.vertx.micrometer.impl.meters.Timers;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
@@ -47,8 +49,8 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
   private final Summaries responseBytes;
   private final Gauges<LongAdder> wsConnections;
 
-  VertxHttpClientMetrics(MeterRegistry registry, MetricsNaming names) {
-    super(registry, MetricsDomain.HTTP_CLIENT, names);
+  VertxHttpClientMetrics(MeterRegistry registry, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(registry, MetricsDomain.HTTP_CLIENT, names, gaugesTable);
     queueDelay = timers(names.getHttpQueueTime(), "Time spent in queue before being processed", Label.LOCAL, Label.REMOTE);
     queueSize = longGauges(names.getHttpQueuePending(), "Number of pending elements in queue", Label.LOCAL, Label.REMOTE);
     requests = longGauges(names.getHttpActiveRequests(), "Number of requests waiting for a response", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
