@@ -2,28 +2,22 @@ package io.vertx.micrometer.service;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.*;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -32,27 +26,18 @@ import static org.junit.Assert.assertFalse;
  * @author Joel Takvorian
  */
 @RunWith(VertxUnitRunner.class)
-public class MetricsServiceImplTest {
+public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
   private static final String SERVER_RESPONSE = "some text";
   private static final String CLIENT_REQUEST = "pitchounette";
 
-  private final String registryName = UUID.randomUUID().toString();
   private HttpServer httpServer;
-  private Vertx vertx;
-
-  @Before
-  public void setUp(TestContext ctx) {
-    this.setUpWithNames(ctx, MetricsNaming.v4Names());
-  }
 
   private void setUpWithNames(TestContext ctx, MetricsNaming names) {
-    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
-      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .setRegistryName(registryName)
-      .setMetricsNaming(names)
+    metricsOptions
       .setLabels(EnumSet.complementOf(EnumSet.of(Label.LOCAL, Label.REMOTE)))
-      .setEnabled(true)))
-      .exceptionHandler(ctx.exceptionHandler());
+      .setMetricsNaming(names);
+
+    vertx = vertx(ctx);
 
     // Setup server
     Async serverReady = ctx.async();
@@ -73,13 +58,10 @@ public class MetricsServiceImplTest {
     serverReady.awaitSuccess();
   }
 
-  @After
-  public void tearDown(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
-  }
-
   @Test
   public void shouldGetCompleteSnapshot(TestContext ctx) {
+    setUpWithNames(ctx, MetricsNaming.v4Names());
+
     HttpClient httpClient = vertx.createHttpClient();
     runClientRequests(ctx, httpClient, 10, "/r1");
     runClientRequests(ctx, httpClient, 5, "/r2");
@@ -123,8 +105,6 @@ public class MetricsServiceImplTest {
 
   @Test
   public void shouldGetSnapshotWithV3Names(TestContext ctx) {
-    // Re-setup with names
-    this.tearDown(ctx);
     setUpWithNames(ctx, MetricsNaming.v3Names());
 
     HttpClient httpClient = vertx.createHttpClient();
@@ -158,6 +138,8 @@ public class MetricsServiceImplTest {
 
   @Test
   public void shouldGetHttpServerSnapshot(TestContext ctx) {
+    setUpWithNames(ctx, MetricsNaming.v4Names());
+
     HttpClient httpClient = vertx.createHttpClient();
     runClientRequests(ctx, httpClient, 5, "/r2");
     httpClient.close();
@@ -193,19 +175,16 @@ public class MetricsServiceImplTest {
 
   @Test
   public void shouldGetJvmMetricsInSnapshot(TestContext ctx) {
-    MetricsOptions metricsOptions = new MicrometerMetricsOptions()
+    metricsOptions = new MicrometerMetricsOptions()
       .setJvmMetricsEnabled(true)
       .setMicrometerRegistry(new SimpleMeterRegistry())
       .setRegistryName(registryName)
       .setEnabled(true);
-    VertxOptions vertxOptions = new VertxOptions().setMetricsOptions(metricsOptions);
-    Vertx vertx = Vertx.vertx(vertxOptions)
-      .exceptionHandler(ctx.exceptionHandler());
+
+    vertx = vertx(ctx);
 
     JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot("jvm");
 
     assertFalse(snapshot.isEmpty());
-
-    vertx.close(ctx.asyncAssertSuccess());
   }
 }

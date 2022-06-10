@@ -1,48 +1,37 @@
 package io.vertx.micrometer;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.assertj.core.util.DoubleComparator;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Comparator;
 import java.util.List;
 
-import static io.vertx.micrometer.RegistryInspector.dp;
-import static io.vertx.micrometer.RegistryInspector.listDatapoints;
-import static io.vertx.micrometer.RegistryInspector.startsWith;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Joel Takvorian
  */
 @RunWith(VertxUnitRunner.class)
-public class VertxPoolMetricsTest {
+public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
 
-  private Vertx vertx;
-
-  @After
-  public void tearDown(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
+  @Override
+  protected MicrometerMetricsOptions metricOptions() {
+    return super.metricOptions()
+      .addLabels(Label.POOL_NAME);
   }
 
   @Test
   public void shouldReportNamedPoolMetrics(TestContext context) {
+    vertx = vertx(context);
+
     int maxPoolSize = 8;
     int taskCount = maxPoolSize * 3;
     int sleepMillis = 30;
-
-    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
-      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .addLabels(Label.POOL_NAME)
-      .setEnabled(true)))
-      .exceptionHandler(context.exceptionHandler());
 
     // Setup executor
     WorkerExecutor workerExecutor = vertx.createSharedWorkerExecutor("test-worker", maxPoolSize);
@@ -60,13 +49,12 @@ public class VertxPoolMetricsTest {
       }));
     }
     ready.awaitSuccess();
-    RegistryInspector.waitForValue(
-      vertx,
+    waitForValue(
       context,
       "vertx.pool.completed[pool_name=test-worker,pool_type=worker]$COUNT",
       value -> value.intValue() == taskCount);
 
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.pool"));
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.pool"));
     assertThat(datapoints).hasSize(10).contains(
       dp("vertx.pool.queue.pending[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$VALUE", 0),

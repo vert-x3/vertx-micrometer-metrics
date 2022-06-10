@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates
+ * Copyright 2022 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,52 +14,93 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.vertx.micrometer;
+
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.micrometer.backends.BackendRegistries;
+import org.junit.After;
+import org.junit.Before;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
-/**
- * @author Joel Takvorian
- */
-public final class RegistryInspector {
+public class MicrometerMetricsTestBase {
+
   public static Predicate<Meter> ALL = a -> true;
 
-  private RegistryInspector() {
+  protected String registryName;
+  protected MicrometerMetricsOptions metricsOptions;
+  protected Vertx vertx;
+
+  @Before
+  public void before(TestContext context) {
+    setUp(context);
   }
 
-  public static void dump(Predicate<Meter> predicate) {
-    dump(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME, predicate);
+  protected void setUp(TestContext context) {
+    registryName = UUID.randomUUID().toString();
+    metricsOptions = metricOptions();
   }
 
-  public static void dump(String regName, Predicate<Meter> predicate) {
-    listDatapoints(regName, predicate).forEach(System.out::println);
+  protected MicrometerMetricsOptions metricOptions() {
+    return new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .setRegistryName(registryName)
+      .setEnabled(true);
   }
 
-  public static Predicate<Meter> startsWith(String start) {
-    return m -> m.getId().getName().startsWith(start);
+  protected Vertx vertx(TestContext context) {
+    return Vertx.vertx(new VertxOptions().setMetricsOptions(metricsOptions))
+      .exceptionHandler(context.exceptionHandler());
   }
 
-  public static List<Datapoint> listDatapoints(Predicate<Meter> predicate) {
-    return listDatapoints(MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME, predicate);
+  @After
+  public void after(TestContext context) {
+    tearDown(context);
   }
 
-  public static List<Datapoint> listDatapoints(String regName, Predicate<Meter> predicate) {
+  protected void tearDown(TestContext context) {
+    if (vertx != null) {
+      vertx.close(context.asyncAssertSuccess());
+    }
+  }
+
+  public void waitForValue(TestContext context, String fullName, Predicate<Double> p) {
+    Async ready = context.async();
+    vertx.setPeriodic(200, id -> {
+      try {
+        listDatapoints(m -> true).stream()
+          .filter(dp -> fullName.equals(dp.id()))
+          .filter(dp -> p.test(dp.value()))
+          .findAny()
+          .ifPresent(dp -> {
+            vertx.cancelTimer(id);
+            ready.complete();
+          });
+      } catch (NoRegistryException e) {
+        context.fail(e);
+        vertx.cancelTimer(id);
+      }
+    });
+    ready.awaitSuccess(10000);
+  }
+
+  public List<Datapoint> listDatapoints(Predicate<Meter> predicate) {
     List<Datapoint> result = new ArrayList<>();
-    MeterRegistry registry = BackendRegistries.getNow(regName);
+    MeterRegistry registry = BackendRegistries.getNow(registryName);
     if (registry == null) {
-      throw new NoRegistryException(regName);
+      throw new NoRegistryException(registryName);
     }
     registry.forEachMeter(m -> {
       if (predicate.test(m)) {
@@ -74,42 +115,22 @@ public final class RegistryInspector {
 
   private static String id(Meter m) {
     return m.getId().getName() + "["
-      + StreamSupport.stream(m.getId().getTags().spliterator(), false)
-          .map(t -> t.getKey() + '=' + t.getValue())
-          .collect(Collectors.joining(","))
+      + m.getId().getTags().stream()
+      .map(t -> t.getKey() + '=' + t.getValue())
+      .collect(Collectors.joining(","))
       + "]";
   }
 
-  public static RegistryInspector.Datapoint dp(String id, double value) {
+  public static Predicate<Meter> startsWith(String start) {
+    return m -> m.getId().getName().startsWith(start);
+  }
+
+  public static Datapoint dp(String id, double value) {
     return new Datapoint(id, value);
   }
 
-  public static RegistryInspector.Datapoint dp(String id, int value) {
+  public static Datapoint dp(String id, int value) {
     return new Datapoint(id, (double) value);
-  }
-
-  public static void waitForValue(Vertx vertx, TestContext context, String fullName, Predicate<Double> p) {
-    waitForValue(vertx, context, MicrometerMetricsOptions.DEFAULT_REGISTRY_NAME, fullName, p);
-  }
-
-  public static void waitForValue(Vertx vertx, TestContext context, String regName, String fullName, Predicate<Double> p) {
-    Async ready = context.async();
-    vertx.setPeriodic(200, id -> {
-      try {
-        RegistryInspector.listDatapoints(regName, m -> true).stream()
-          .filter(dp -> fullName.equals(dp.id()))
-          .filter(dp -> p.test(dp.value()))
-          .findAny()
-          .ifPresent(dp -> {
-            vertx.cancelTimer(id);
-            ready.complete();
-          });
-      } catch (NoRegistryException e) {
-        context.fail(e);
-        vertx.cancelTimer(id);
-      }
-    });
-    ready.awaitSuccess(10000);
   }
 
   public static class Datapoint {

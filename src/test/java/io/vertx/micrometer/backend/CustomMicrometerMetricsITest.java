@@ -24,16 +24,11 @@ import io.micrometer.jmx.JmxMeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
-import org.junit.After;
+import io.vertx.micrometer.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,15 +40,13 @@ import java.time.Duration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(VertxUnitRunner.class)
-public class CustomMicrometerMetricsITest {
+public class CustomMicrometerMetricsITest extends MicrometerMetricsTestBase {
 
-  private static final String REGITRY_NAME = "CustomMicrometerMetricsITest";
-  private Vertx vertx;
   private Vertx vertxForSimulatedServer = Vertx.vertx();
 
-  @After
-  public void after(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
+  @Override
+  protected void tearDown(TestContext context) {
+    super.tearDown(context);
     vertxForSimulatedServer.close(context.asyncAssertSuccess());
   }
 
@@ -81,24 +74,28 @@ public class CustomMicrometerMetricsITest {
       public Duration step() {
         return Duration.ofSeconds(1);
       }
+
       @Override
       public String uri() {
         return "http://localhost:8087";
       }
+
       @Override
       public boolean autoCreateDb() {
         return false;
       }
     }, Clock.SYSTEM));
 
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setMicrometerRegistry(myRegistry)
-        .setRegistryName(REGITRY_NAME)
-        .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
-        .addDisabledMetricsCategory(MetricsDomain.NAMED_POOLS)
-        .addLabels(Label.EB_ADDRESS)
-        .setEnabled(true)));
+
+    metricsOptions = new MicrometerMetricsOptions()
+      .setMicrometerRegistry(myRegistry)
+      .setRegistryName(registryName)
+      .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
+      .addDisabledMetricsCategory(MetricsDomain.NAMED_POOLS)
+      .addLabels(Label.EB_ADDRESS)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     // Send something on the eventbus and wait til it's received
     Async asyncEB = context.async();
@@ -119,14 +116,16 @@ public class CustomMicrometerMetricsITest {
   @Test
   public void shouldPublishQuantilesWithProvidedRegistry(TestContext context) throws Exception {
     PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setPublishQuantiles(true)
-          .setStartEmbeddedServer(true)
-          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-        .setMicrometerRegistry(registry)
-        .setEnabled(true)));
+
+    metricsOptions = new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+        .setPublishQuantiles(true)
+        .setStartEmbeddedServer(true)
+        .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+      .setMicrometerRegistry(registry)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     Async async = context.async();
     // Dummy connection to trigger some metrics
