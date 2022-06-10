@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates
+ * Copyright 2022 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  */
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.DatagramSocketMetrics;
@@ -23,6 +24,8 @@ import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Summaries;
+
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Joel Takvorian
@@ -34,8 +37,8 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
 
   private volatile String localAddress;
 
-  VertxDatagramSocketMetrics(MeterRegistry registry) {
-    super(registry, MetricsDomain.DATAGRAM_SOCKET);
+  VertxDatagramSocketMetrics(MeterRegistry registry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(registry, MetricsDomain.DATAGRAM_SOCKET, gaugesTable);
     bytesReceived = summaries("bytesReceived", "Total number of datagram bytes received", Label.LOCAL);
     bytesSent = summaries("bytesSent", "Total number of datagram bytes sent");
     errorCount = counters("errors", "Total number of datagram errors", Label.CLASS_NAME);

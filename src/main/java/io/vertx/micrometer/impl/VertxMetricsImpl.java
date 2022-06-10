@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Verticle;
 import io.vertx.core.datagram.DatagramSocketOptions;
@@ -25,16 +26,12 @@ import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.spi.metrics.DatagramSocketMetrics;
-import io.vertx.core.spi.metrics.EventBusMetrics;
-import io.vertx.core.spi.metrics.HttpClientMetrics;
-import io.vertx.core.spi.metrics.HttpServerMetrics;
-import io.vertx.core.spi.metrics.PoolMetrics;
-import io.vertx.core.spi.metrics.TCPMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
+import io.vertx.core.spi.metrics.*;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
+
+import java.util.concurrent.ConcurrentMap;
 
 import static io.vertx.micrometer.MetricsDomain.*;
 
@@ -58,28 +55,28 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   /**
    * @param options Vertx Prometheus options
    */
-  public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry) {
-    super(backendRegistry.getMeterRegistry(), null);
+  public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(backendRegistry.getMeterRegistry(), null, gaugesTable);
     this.backendRegistry = backendRegistry;
     registryName = options.getRegistryName();
     MeterRegistry registry = backendRegistry.getMeterRegistry();
 
     eventBusMetrics = options.isMetricsCategoryDisabled(EVENT_BUS) ? null
-      : new VertxEventBusMetrics(registry);
+      : new VertxEventBusMetrics(registry, gaugesTable);
     datagramSocketMetrics = options.isMetricsCategoryDisabled(DATAGRAM_SOCKET) ? null
-      : new VertxDatagramSocketMetrics(registry);
+      : new VertxDatagramSocketMetrics(registry, gaugesTable);
     netClientMetrics = options.isMetricsCategoryDisabled(NET_CLIENT) ? null
-      : new VertxNetClientMetrics(registry);
+      : new VertxNetClientMetrics(registry, gaugesTable);
     netServerMetrics = options.isMetricsCategoryDisabled(NET_SERVER) ? null
-      : new VertxNetServerMetrics(registry);
+      : new VertxNetServerMetrics(registry, gaugesTable);
     httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? null
-      : new VertxHttpClientMetrics(registry);
+      : new VertxHttpClientMetrics(registry, gaugesTable);
     httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? null
-      : new VertxHttpServerMetrics(registry);
+      : new VertxHttpServerMetrics(registry, gaugesTable);
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
-      : new VertxPoolMetrics(registry);
+      : new VertxPoolMetrics(registry, gaugesTable);
     verticleMetrics = options.isMetricsCategoryDisabled(VERTICLES) ? null
-      : new VertxVerticleMetrics(registry);
+      : new VertxVerticleMetrics(registry, gaugesTable);
   }
 
   void init() {

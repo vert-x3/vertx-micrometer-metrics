@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
@@ -25,6 +26,7 @@ import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Summaries;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
@@ -36,12 +38,12 @@ class VertxNetClientMetrics extends AbstractMetrics {
   private final Summaries bytesSent;
   private final Counters errorCount;
 
-  VertxNetClientMetrics(MeterRegistry registry) {
-    this(registry, MetricsDomain.NET_CLIENT);
+  VertxNetClientMetrics(MeterRegistry registry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    this(registry, MetricsDomain.NET_CLIENT, gaugesTable);
   }
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain) {
-    super(registry, domain);
+  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(registry, domain, gaugesTable);
     connections = longGauges("connections", "Number of connections to the remote host currently opened", Label.LOCAL, Label.REMOTE);
     bytesReceived = summaries("bytesReceived", "Number of bytes received from the remote host", Label.LOCAL, Label.REMOTE);
     bytesSent = summaries("bytesSent", "Number of bytes sent to the remote host", Label.LOCAL, Label.REMOTE);

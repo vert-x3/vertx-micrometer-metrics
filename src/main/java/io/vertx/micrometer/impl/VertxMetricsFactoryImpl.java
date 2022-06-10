@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,8 @@
  */
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -29,10 +31,16 @@ import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * @author Joel Takvorian
  */
 public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
+
+  private static final Map<MeterRegistry, ConcurrentHashMap<Meter.Id, Object>> tables = new WeakHashMap<>(1);
 
   @Override
   public VertxMetrics metrics(VertxOptions vertxOptions) {
@@ -44,7 +52,11 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
       options = new MicrometerMetricsOptions(metricsOptions.toJson());
     }
     BackendRegistry backendRegistry = BackendRegistries.setupBackend(options);
-    VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry);
+    ConcurrentHashMap<Meter.Id, Object> gaugesTable;
+    synchronized (tables) {
+      gaugesTable = tables.computeIfAbsent(backendRegistry.getMeterRegistry(), meterRegistry -> new ConcurrentHashMap<>());
+    }
+    VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry, gaugesTable);
     metrics.init();
 
     if (options.isJvmMetricsEnabled()) {
