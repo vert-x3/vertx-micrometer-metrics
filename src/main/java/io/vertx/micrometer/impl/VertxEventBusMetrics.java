@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@
  */
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
@@ -26,6 +27,7 @@ import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Summaries;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
@@ -46,8 +48,8 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   private final Summaries bytesRead;
   private final Summaries bytesWritten;
 
-  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names) {
-    super(registry, MetricsDomain.EVENT_BUS);
+  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(registry, MetricsDomain.EVENT_BUS, gaugesTable);
     handlers = longGauges(names.getEbHandlers(), "Number of event bus handlers in use", Label.EB_ADDRESS);
     pending = longGauges(names.getEbPending(), "Number of messages not processed yet", Label.EB_ADDRESS, Label.EB_SIDE);
     processed = counters(names.getEbProcessed(), "Number of processed messages", Label.EB_ADDRESS, Label.EB_SIDE);

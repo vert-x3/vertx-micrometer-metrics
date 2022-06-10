@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -25,6 +26,7 @@ import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Timers;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
@@ -37,8 +39,8 @@ class VertxClientMetrics extends AbstractMetrics {
   private final Gauges<LongAdder> processingPending;
   private final Counters resetCount;
 
-  VertxClientMetrics(MeterRegistry registry, String type, MetricsNaming names) {
-    super(registry, type);
+  VertxClientMetrics(MeterRegistry registry, String type, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(registry, type, gaugesTable);
     queueDelay = timers(names.getClientQueueTime(), "Time spent in queue before being processed", Label.REMOTE, Label.NAMESPACE);
     queueSize = longGauges(names.getClientQueuePending(), "Number of pending elements in queue", Label.REMOTE, Label.NAMESPACE);
     processingTime = timers(names.getClientProcessingTime(), "Processing time, from request start to response end", Label.REMOTE, Label.NAMESPACE);
