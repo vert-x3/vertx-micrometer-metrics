@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@
  */
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.vertx.core.http.HttpMethod;
@@ -34,6 +35,7 @@ import io.vertx.micrometer.impl.meters.Timers;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
@@ -50,8 +52,8 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
   private final Gauges<LongAdder> wsConnections;
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
 
-  VertxHttpServerMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider) {
-    super(registry, MetricsDomain.HTTP_SERVER, names);
+  VertxHttpServerMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(registry, MetricsDomain.HTTP_SERVER, names, gaugesTable);
     this.customTagsProvider = customTagsProvider;
     requests = longGauges(names.getHttpActiveRequests(), "Number of requests being processed", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
     requestCount = counters(names.getHttpRequestsCount(), "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.HTTP_ROUTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);

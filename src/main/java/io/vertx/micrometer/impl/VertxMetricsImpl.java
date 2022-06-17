@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.datagram.DatagramSocketOptions;
 import io.vertx.core.http.HttpClientOptions;
@@ -24,14 +25,7 @@ import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.core.spi.metrics.DatagramSocketMetrics;
-import io.vertx.core.spi.metrics.EventBusMetrics;
-import io.vertx.core.spi.metrics.HttpClientMetrics;
-import io.vertx.core.spi.metrics.HttpServerMetrics;
-import io.vertx.core.spi.metrics.PoolMetrics;
-import io.vertx.core.spi.metrics.TCPMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
+import io.vertx.core.spi.metrics.*;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
@@ -41,14 +35,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import static io.vertx.micrometer.MetricsDomain.DATAGRAM_SOCKET;
-import static io.vertx.micrometer.MetricsDomain.EVENT_BUS;
-import static io.vertx.micrometer.MetricsDomain.HTTP_CLIENT;
-import static io.vertx.micrometer.MetricsDomain.HTTP_SERVER;
-import static io.vertx.micrometer.MetricsDomain.NAMED_POOLS;
-import static io.vertx.micrometer.MetricsDomain.NET_CLIENT;
-import static io.vertx.micrometer.MetricsDomain.NET_SERVER;
+import static io.vertx.micrometer.MetricsDomain.*;
 
 /**
  * Metrics SPI implementation for Micrometer.
@@ -69,11 +58,8 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final Map<String, VertxClientMetrics> mapClientMetrics = new ConcurrentHashMap<>();
   private final Set<String> disabledCaterogies = new HashSet<>();
 
-  /**
-   * @param options Vertx Prometheus options
-   */
-  public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry) {
-    super(backendRegistry.getMeterRegistry());
+  public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(backendRegistry.getMeterRegistry(), gaugesTable);
     this.backendRegistry = backendRegistry;
     registryName = options.getRegistryName();
     MeterRegistry registry = backendRegistry.getMeterRegistry();
@@ -83,19 +69,19 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     names = options.getMetricsNaming();
 
     eventBusMetrics = options.isMetricsCategoryDisabled(EVENT_BUS) ? null
-      : new VertxEventBusMetrics(registry, names);
+      : new VertxEventBusMetrics(registry, names, gaugesTable);
     datagramSocketMetrics = options.isMetricsCategoryDisabled(DATAGRAM_SOCKET) ? null
-      : new VertxDatagramSocketMetrics(registry, names);
+      : new VertxDatagramSocketMetrics(registry, names, gaugesTable);
     netClientMetrics = options.isMetricsCategoryDisabled(NET_CLIENT) ? null
-      : new VertxNetClientMetrics(registry, names);
+      : new VertxNetClientMetrics(registry, names, gaugesTable);
     netServerMetrics = options.isMetricsCategoryDisabled(NET_SERVER) ? null
-      : new VertxNetServerMetrics(registry, names);
+      : new VertxNetServerMetrics(registry, names, gaugesTable);
     httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? null
-      : new VertxHttpClientMetrics(registry, names);
+      : new VertxHttpClientMetrics(registry, names, gaugesTable);
     httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? null
-      : new VertxHttpServerMetrics(registry, names, options.getRequestsTagsProvider());
+      : new VertxHttpServerMetrics(registry, names, options.getRequestsTagsProvider(), gaugesTable);
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
-      : new VertxPoolMetrics(registry, names);
+      : new VertxPoolMetrics(registry, names, gaugesTable);
   }
 
   void init() {
@@ -163,7 +149,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (disabledCaterogies.contains(type)) {
       return DummyVertxMetrics.DummyClientMetrics.INSTANCE;
     }
-    VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type, names));
+    VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type, names, gaugesTable));
     return clientMetrics.forInstance(remoteAddress, namespace);
   }
 
