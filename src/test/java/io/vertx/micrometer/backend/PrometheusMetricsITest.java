@@ -17,45 +17,32 @@
 package io.vertx.micrometer.backend;
 
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.Match;
-import io.vertx.micrometer.MatchType;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(VertxUnitRunner.class)
-public class PrometheusMetricsITest {
-
-  private Vertx vertx;
-
-  @After
-  public void tearDown(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
-  }
+public class PrometheusMetricsITest extends MicrometerMetricsTestBase {
 
   @Test
   public void shouldStartEmbeddedServer(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setStartEmbeddedServer(true)
-          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-        .addLabels(Label.LOCAL, Label.HTTP_PATH, Label.REMOTE)
-        .setEnabled(true)));
+    metricsOptions = new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+        .setStartEmbeddedServer(true)
+        .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+      .addLabels(Label.LOCAL, Label.HTTP_PATH, Label.REMOTE)
+      .setRegistryName(registryName)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     Async async = context.async();
     // First "blank" connection to trigger some metrics
@@ -64,11 +51,11 @@ public class PrometheusMetricsITest {
       vertx.setTimer(500, l ->
         // Second connection, this time actually reading the metrics content
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
-            context.verify(v2 -> assertThat(body.toString())
-              .contains("vertx_http_client_active_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
-              .contains("vertx_http_client_requests_total{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
-              .doesNotContain("vertx_http_client_response_time_seconds_bucket"));
-            async.complete();
+          context.verify(v2 -> assertThat(body.toString())
+            .contains("vertx_http_client_active_requests{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
+            .contains("vertx_http_client_requests_total{local=\"?\",method=\"GET\",path=\"/metrics\",remote=\"localhost:9090\"")
+            .doesNotContain("vertx_http_client_response_time_seconds_bucket"));
+          async.complete();
         }));
     });
     async.awaitSuccess(10000);
@@ -76,14 +63,16 @@ public class PrometheusMetricsITest {
 
   @Test
   public void shouldBindExistingServer(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-        .setEnabled(true)));
+    metricsOptions = new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+      .setRegistryName(registryName)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     Router router = Router.router(vertx);
     router.route("/custom").handler(routingContext -> {
-      PrometheusMeterRegistry prometheusRegistry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
+      PrometheusMeterRegistry prometheusRegistry = (PrometheusMeterRegistry) BackendRegistries.getNow(registryName);
       String response = prometheusRegistry.scrape();
       routingContext.response().end(response);
     });
@@ -100,14 +89,16 @@ public class PrometheusMetricsITest {
 
   @Test
   public void shouldExcludeCategory(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setStartEmbeddedServer(true)
-          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-        .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
-        .addLabels(Label.LOCAL, Label.REMOTE)
-        .setEnabled(true)));
+    metricsOptions = new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+        .setStartEmbeddedServer(true)
+        .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+      .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
+      .addLabels(Label.LOCAL, Label.REMOTE)
+      .setRegistryName(registryName)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     Async async = context.async();
     PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
@@ -121,13 +112,15 @@ public class PrometheusMetricsITest {
 
   @Test
   public void shouldExposeEventBusMetrics(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setStartEmbeddedServer(true)
-          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-        .addLabels(Label.EB_ADDRESS)
-        .setEnabled(true)));
+    metricsOptions = new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+        .setStartEmbeddedServer(true)
+        .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+      .addLabels(Label.EB_ADDRESS)
+      .setRegistryName(registryName)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     // Send something on the eventbus and wait til it's received
     Async asyncEB = context.async();
@@ -151,14 +144,16 @@ public class PrometheusMetricsITest {
 
   @Test
   public void shouldPublishPercentileStats(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setPublishQuantiles(true)
-          .setStartEmbeddedServer(true)
-          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-        .addLabels(Label.LOCAL, Label.HTTP_PATH, Label.REMOTE, Label.HTTP_CODE)
-        .setEnabled(true)));
+    metricsOptions = new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+        .setPublishQuantiles(true)
+        .setStartEmbeddedServer(true)
+        .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+      .addLabels(Label.LOCAL, Label.HTTP_PATH, Label.REMOTE, Label.HTTP_CODE)
+      .setRegistryName(registryName)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     Async async = context.async();
     // First "blank" connection to trigger some metrics
@@ -177,18 +172,20 @@ public class PrometheusMetricsITest {
 
   @Test
   public void canMatchLabels(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setStartEmbeddedServer(true)
-          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-        .addLabels(Label.HTTP_PATH)
-        .addLabelMatch(new Match()
-          .setDomain(MetricsDomain.HTTP_CLIENT)
-          .setValue(".*")
-          .setLabel(Label.HTTP_PATH.toString())
-          .setType(MatchType.REGEX))
-        .setEnabled(true)));
+    metricsOptions = new MicrometerMetricsOptions()
+      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+        .setStartEmbeddedServer(true)
+        .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+      .addLabels(Label.HTTP_PATH)
+      .addLabelMatch(new Match()
+        .setDomain(MetricsDomain.HTTP_CLIENT)
+        .setValue(".*")
+        .setLabel(Label.HTTP_PATH.toString())
+        .setType(MatchType.REGEX))
+      .setRegistryName(registryName)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     Async async = context.async();
     // First "blank" connection to trigger some metrics

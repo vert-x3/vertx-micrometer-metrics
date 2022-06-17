@@ -3,8 +3,6 @@ package io.vertx.micrometer;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
@@ -12,41 +10,38 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.backends.BackendRegistries;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ForkJoinPool;
 
-import static io.vertx.micrometer.RegistryInspector.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Joel Takvorian
  */
 @RunWith(VertxUnitRunner.class)
-public class VertxNetClientServerMetricsTest {
+public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
   private static final int SENT_COUNT = 68;
   private static final String SERVER_RESPONSE = "some text";
   private static final String CLIENT_REQUEST = "pitchounette";
 
   private final int concurrentClients = ForkJoinPool.commonPool().getParallelism();
-  private final String registryName = UUID.randomUUID().toString();
   private NetServer netServer;
-  private Vertx vertx;
 
-  @Before
-  public void setUp(TestContext ctx) {
-    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+  @Override
+  protected MicrometerMetricsOptions metricOptions() {
+    return super.metricOptions()
       .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
-      .addLabels(Label.LOCAL, Label.REMOTE)
-      .setRegistryName(registryName)
-      .setEnabled(true)))
-      .exceptionHandler(ctx.exceptionHandler());
+      .addLabels(Label.LOCAL, Label.REMOTE);
+  }
+
+  @Override
+  protected void setUp(TestContext ctx) {
+    super.setUp(ctx);
+
+    vertx = vertx(ctx);
 
     // Filter out remote labels
     BackendRegistries.getNow(registryName).config().meterFilter(
@@ -72,19 +67,14 @@ public class VertxNetClientServerMetricsTest {
     serverReady.awaitSuccess();
   }
 
-  @After
-  public void tearDown(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
-  }
-
   @Test
   public void shouldReportNetClientMetrics(TestContext ctx) {
     runClientRequests(ctx);
 
-    waitForValue(vertx, ctx, registryName, "vertx.net.client.bytes.read[local=?,remote=localhost:9194]$COUNT",
+    waitForValue(ctx, "vertx.net.client.bytes.read[local=?,remote=localhost:9194]$COUNT",
       value -> value.intValue() == concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length);
 
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.client."));
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.net.client."));
     assertThat(datapoints).containsOnly(
         dp("vertx.net.client.active.connections[local=?,remote=localhost:9194]$VALUE", 0),
         dp("vertx.net.client.bytes.read[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
@@ -95,10 +85,10 @@ public class VertxNetClientServerMetricsTest {
   public void shouldReportNetServerMetrics(TestContext ctx) {
     runClientRequests(ctx);
 
-    waitForValue(vertx, ctx, registryName, "vertx.net.server.bytes.read[local=localhost:9194,remote=_]$COUNT",
+    waitForValue(ctx, "vertx.net.server.bytes.read[local=localhost:9194,remote=_]$COUNT",
       value -> value.intValue() == concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length);
 
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.server."));
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.net.server."));
     assertThat(datapoints).containsOnly(
       dp("vertx.net.server.active.connections[local=localhost:9194,remote=_]$VALUE", 0),
       dp("vertx.net.server.bytes.read[local=localhost:9194,remote=_]$COUNT", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length),

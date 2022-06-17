@@ -1,19 +1,19 @@
 package io.vertx.micrometer;
 
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
 
-import static io.vertx.micrometer.RegistryInspector.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 
@@ -21,26 +21,17 @@ import static org.assertj.core.api.Fail.fail;
  * @author Joel Takvorian
  */
 @RunWith(VertxUnitRunner.class)
-public class VertxEventBusMetricsTest {
-
-  private Vertx vertx;
-
-  @After
-  public void tearDown(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
-  }
+public class VertxEventBusMetricsTest extends MicrometerMetricsTestBase {
 
   @Test
   public void shouldReportEventbusMetrics(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .addLabels(Label.EB_ADDRESS, Label.EB_FAILURE, Label.CLASS_NAME)
-      .setEnabled(true)))
-      .exceptionHandler(t -> {
-        if (t.getMessage() == null || !t.getMessage().contains("expected failure")) {
-          context.exceptionHandler().handle(t);
-        }
-      });
+    metricsOptions.addLabels(Label.EB_ADDRESS, Label.EB_FAILURE, Label.CLASS_NAME);
+
+    vertx = vertx(context).exceptionHandler(t -> {
+      if (t.getMessage() == null || !t.getMessage().contains("expected failure")) {
+        context.exceptionHandler().handle(t);
+      }
+    });
 
     int instances = 2;
 
@@ -82,9 +73,9 @@ public class VertxEventBusMetricsTest {
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30, \"last\": true}"));
     allReceived.awaitSuccess();
 
-    waitForValue(vertx, context, "vertx.eventbus.processed[address=testSubject,side=local]$COUNT",
+    waitForValue(context, "vertx.eventbus.processed[address=testSubject,side=local]$COUNT",
       value -> value.intValue() == 8 * instances);
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
     assertThat(datapoints).hasSize(10).contains(
       dp("vertx.eventbus.handlers[address=testSubject]$VALUE", instances),
       dp("vertx.eventbus.pending[address=no handler,side=local]$VALUE", 0),
@@ -100,10 +91,7 @@ public class VertxEventBusMetricsTest {
 
   @Test
   public void shouldDiscardMessages(TestContext context) {
-    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
-      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .setEnabled(true)))
-      .exceptionHandler(t -> context.exceptionHandler().handle(t));
+    vertx = vertx(context);
 
     int num = 10;
     EventBus eb = vertx.eventBus();
@@ -116,13 +104,13 @@ public class VertxEventBusMetricsTest {
     }
     eb.send("foo", "last");
 
-    waitForValue(vertx, context, "vertx.eventbus.discarded[side=local]$COUNT", value -> value.intValue() == 1);
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
+    waitForValue(context, "vertx.eventbus.discarded[side=local]$COUNT", value -> value.intValue() == 1);
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
     assertThat(datapoints).contains(dp("vertx.eventbus.pending[side=local]$VALUE", 10));
 
     // Unregister => discard all remaining
     consumer.unregister();
-    waitForValue(vertx, context, "vertx.eventbus.discarded[side=local]$COUNT", value -> value.intValue() == 11);
+    waitForValue(context, "vertx.eventbus.discarded[side=local]$COUNT", value -> value.intValue() == 11);
     datapoints = listDatapoints(startsWith("vertx.eventbus"));
     assertThat(datapoints).contains(dp("vertx.eventbus.pending[side=local]$VALUE", 0));
   }

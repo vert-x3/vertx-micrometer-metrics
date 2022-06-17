@@ -14,26 +14,28 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
-import java.util.UUID;
 
-import static io.vertx.micrometer.RegistryInspector.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(VertxUnitRunner.class)
-public class UnixSocketTest {
+public class UnixSocketTest extends MicrometerMetricsTestBase {
 
-  private final String registryName = UUID.randomUUID().toString();
+  @Override
+  protected MicrometerMetricsOptions metricOptions() {
+    return super.metricOptions()
+      .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
+      .addLabels(Label.REMOTE);
+  }
+
+  @Override
+  protected Vertx vertx(TestContext context) {
+    return Vertx.vertx(new VertxOptions().setPreferNativeTransport(true).setMetricsOptions(metricsOptions))
+      .exceptionHandler(context.exceptionHandler());
+  }
 
   @Test
   public void shouldWriteOnUnixSocket(TestContext ctx) {
-    Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true)
-      .setMetricsOptions(new MicrometerMetricsOptions()
-      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
-      .addLabels(Label.REMOTE)
-      .setRegistryName(registryName)
-      .setEnabled(true)))
-      .exceptionHandler(ctx.exceptionHandler());
+    vertx = vertx(ctx);
 
     Async allDeployed = ctx.async();
     vertx.deployVerticle(
@@ -41,17 +43,18 @@ public class UnixSocketTest {
       h -> vertx.deployVerticle(new DomainSocketClientTriggerVerticle(), ch -> allDeployed.complete()));
 
     allDeployed.await(2000);
-    waitForValue(vertx, ctx, registryName, "vertx.net.client.active.connections[remote=/var/tmp/myservice.sock]$VALUE", v -> v.intValue() == 0);
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.net.client."));
+    waitForValue(ctx, "vertx.net.client.active.connections[remote=/var/tmp/myservice.sock]$VALUE", v -> v.intValue() == 0);
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.net.client."));
     assertThat(datapoints).contains(
       dp("vertx.net.client.active.connections[remote=/var/tmp/myservice.sock]$VALUE", 0),
       dp("vertx.net.client.bytes.written[remote=/var/tmp/myservice.sock]$COUNT", 4));
   }
 
-  public class DomainSocketServer extends AbstractVerticle {
+  public static class DomainSocketServer extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) {
-      vertx.createHttpServer().requestHandler(req -> {})
+      vertx.createHttpServer().requestHandler(req -> {
+        })
         .listen(SocketAddress.domainSocketAddress("/var/tmp/myservice.sock"), ar -> {
           if (ar.succeeded()) {
             startPromise.complete();
@@ -67,7 +70,7 @@ public class UnixSocketTest {
     }
   }
 
-  public class DomainSocketClientTriggerVerticle extends AbstractVerticle {
+  public static class DomainSocketClientTriggerVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) {
       NetClient netClient = vertx.createNetClient();
