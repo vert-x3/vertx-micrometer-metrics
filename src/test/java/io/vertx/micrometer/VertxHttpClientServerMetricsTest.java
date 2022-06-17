@@ -1,7 +1,9 @@
 package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.config.MeterFilter;
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
@@ -9,23 +11,19 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.backends.BackendRegistries;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ForkJoinPool;
 
-import static io.vertx.micrometer.RegistryInspector.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Joel Takvorian
  */
 @RunWith(VertxUnitRunner.class)
-public class VertxHttpClientServerMetricsTest {
+public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase {
 
   private static final int HTTP_SENT_COUNT = 68;
   private static final String SERVER_RESPONSE = "some text";
@@ -33,18 +31,18 @@ public class VertxHttpClientServerMetricsTest {
   private static final long REQ_DELAY = 30L;
 
   private final int concurrentClients = ForkJoinPool.commonPool().getParallelism();
-  private final String registryName = UUID.randomUUID().toString();
   private HttpServer httpServer;
-  private Vertx vertx;
 
-  @Before
-  public void setUp(TestContext ctx) {
-    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .setRegistryName(registryName)
-      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS)
-      .setEnabled(true)))
-      .exceptionHandler(ctx.exceptionHandler());
+  @Override
+  protected MicrometerMetricsOptions metricOptions() {
+    return super.metricOptions()
+      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS);
+  }
+
+  @Override
+  protected void setUp(TestContext ctx) {
+    super.setUp(ctx);
+    vertx = vertx(ctx);
 
     // Filter out remote labels
     BackendRegistries.getNow(registryName).config().meterFilter(
@@ -81,19 +79,14 @@ public class VertxHttpClientServerMetricsTest {
     serverReady.awaitSuccess();
   }
 
-  @After
-  public void tearDown(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
-  }
-
   @Test
   public void shouldReportHttpClientMetrics(TestContext ctx) {
     runClientRequests(ctx, false);
 
-    waitForValue(vertx, ctx, registryName, "vertx.http.client.bytes.read[local=?,remote=127.0.0.1:9195]$COUNT",
+    waitForValue(ctx, "vertx.http.client.bytes.read[local=?,remote=127.0.0.1:9195]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length);
 
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.client."));
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.client."));
     assertThat(datapoints).hasSize(17).contains(
         dp("vertx.http.client.queue.pending[local=?,remote=127.0.0.1:9195]$VALUE", 0),
         dp("vertx.http.client.queue.time[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
@@ -118,10 +111,10 @@ public class VertxHttpClientServerMetricsTest {
   public void shouldReportHttpServerMetricsWithoutWS(TestContext ctx) {
     runClientRequests(ctx, false);
 
-    waitForValue(vertx, ctx, registryName, "vertx.http.server.bytes.read[local=127.0.0.1:9195,remote=_]$COUNT",
+    waitForValue(ctx, "vertx.http.server.bytes.read[local=127.0.0.1:9195,remote=_]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length);
 
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.server."));
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server."));
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
       "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
       "vertx.http.server.active.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
@@ -151,10 +144,10 @@ public class VertxHttpClientServerMetricsTest {
     runClientRequests(ctx, true);
 
     // Remark, with websockets, two extra requests are performed so increase the expected value
-    waitForValue(vertx, ctx, registryName, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
+    waitForValue(ctx, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
 
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.http.server."));
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server."));
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
       "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
       "vertx.http.server.active.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
@@ -185,10 +178,10 @@ public class VertxHttpClientServerMetricsTest {
   public void shouldIgnoreInternalEventbusMetrics(TestContext ctx) {
     runClientRequests(ctx, true);
 
-    waitForValue(vertx, ctx, registryName, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
+    waitForValue(ctx, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,route=MyRoute]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
 
-    List<RegistryInspector.Datapoint> datapoints = listDatapoints(registryName, startsWith("vertx.eventbus."));
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus."));
     assertThat(datapoints).isEmpty();
   }
 

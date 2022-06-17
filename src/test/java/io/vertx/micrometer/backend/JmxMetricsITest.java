@@ -16,15 +16,13 @@
 
 package io.vertx.micrometer.backend;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.MicrometerMetricsTestBase;
 import io.vertx.micrometer.VertxJmxMetricsOptions;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,26 +33,19 @@ import java.lang.management.ManagementFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(VertxUnitRunner.class)
-public class JmxMetricsITest {
-
-  private static final String REGISTRY_NAME = "jmx-test";
-  private Vertx vertx;
-
-  @After
-  public void tearDown(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
-  }
+public class JmxMetricsITest extends MicrometerMetricsTestBase {
 
   @Test
   public void shouldReportJmx(TestContext context) throws Exception {
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setRegistryName(REGISTRY_NAME)
-        .addLabels(Label.EB_ADDRESS)
-        .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)
-          .setDomain("my-metrics")
-          .setStep(1))
-        .setEnabled(true)));
+    metricsOptions = new MicrometerMetricsOptions()
+      .setRegistryName(registryName)
+      .addLabels(Label.EB_ADDRESS)
+      .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)
+        .setDomain("my-metrics")
+        .setStep(1))
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     // Send something on the eventbus and wait til it's received
     Async asyncEB = context.async();

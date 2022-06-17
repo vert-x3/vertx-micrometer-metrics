@@ -18,29 +18,24 @@ package io.vertx.micrometer.backend;
 
 
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.MicrometerMetricsTestBase;
 import io.vertx.micrometer.VertxInfluxDbOptions;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @RunWith(VertxUnitRunner.class)
-public class InfluxDbReporterITest {
+public class InfluxDbReporterITest extends MicrometerMetricsTestBase {
 
-  private static final String REGITRY_NAME = "InfluxDbReporterITest";
-  private Vertx vertx;
   private Vertx vertxForSimulatedServer = Vertx.vertx();
 
-  @After
-  public void after(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
+  @Override
+  protected void tearDown(TestContext context) {
+    super.tearDown(context);
     vertxForSimulatedServer.close(context.asyncAssertSuccess());
   }
 
@@ -54,15 +49,16 @@ public class InfluxDbReporterITest {
       }
     });
 
-    vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setInfluxDbOptions(new VertxInfluxDbOptions()
-          .setStep(1)
-          .setDb("mydb")
-          .setEnabled(true))
-        .setRegistryName(REGITRY_NAME)
-        .addLabels(Label.EB_ADDRESS)
-        .setEnabled(true)));
+    metricsOptions = new MicrometerMetricsOptions()
+      .setInfluxDbOptions(new VertxInfluxDbOptions()
+        .setStep(1)
+        .setDb("mydb")
+        .setEnabled(true))
+      .setRegistryName(registryName)
+      .addLabels(Label.EB_ADDRESS)
+      .setEnabled(true);
+
+    vertx = vertx(context);
 
     // Send something on the eventbus and wait til it's received
     Async asyncEB = context.async();
