@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Hat, Inc.
+ * Copyright 2022 Red Hat, Inc.
  *
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
@@ -24,6 +25,7 @@ import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Summaries;
 import io.vertx.micrometer.impl.meters.Timers;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -35,10 +37,12 @@ import java.util.concurrent.atomic.LongAdder;
 public abstract class AbstractMetrics implements MicrometerMetrics {
   protected final MeterRegistry registry;
   protected final MetricsDomain domain;
+  protected final ConcurrentMap<Meter.Id, Object> gaugesTable;
 
-  AbstractMetrics(MeterRegistry registry, MetricsDomain domain) {
+  AbstractMetrics(MeterRegistry registry, MetricsDomain domain, ConcurrentMap<Meter.Id, Object> gaugesTable) {
     this.registry = registry;
     this.domain = domain;
+    this.gaugesTable = gaugesTable;
   }
 
   /**
@@ -59,11 +63,11 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
   }
 
   Gauges<LongAdder> longGauges(String name, String description, Label... keys) {
-    return new Gauges<>(domain.getPrefix() + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
+    return new Gauges<>(gaugesTable, domain.getPrefix() + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
   }
 
   Gauges<AtomicReference<Double>> doubleGauges(String name, String description, Label... keys) {
-    return new Gauges<>(domain.getPrefix() + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
+    return new Gauges<>(gaugesTable, domain.getPrefix() + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
   }
 
   Summaries summaries(String name, String description, Label... keys) {

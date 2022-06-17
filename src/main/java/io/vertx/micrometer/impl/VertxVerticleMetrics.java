@@ -16,12 +16,14 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Verticle;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.meters.Gauges;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
@@ -30,8 +32,8 @@ import java.util.concurrent.atomic.LongAdder;
 class VertxVerticleMetrics extends AbstractMetrics {
   private final Gauges<LongAdder> deployed;
 
-  VertxVerticleMetrics(MeterRegistry registry) {
-    super(registry, MetricsDomain.VERTICLES);
+  VertxVerticleMetrics(MeterRegistry registry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(registry, MetricsDomain.VERTICLES, gaugesTable);
     deployed = longGauges("deployed", "Number of verticle instances deployed", Label.CLASS_NAME);
   }
 

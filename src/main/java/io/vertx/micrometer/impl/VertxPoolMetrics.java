@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2022 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.micrometer.Label;
@@ -24,6 +25,7 @@ import io.vertx.micrometer.impl.meters.Counters;
 import io.vertx.micrometer.impl.meters.Gauges;
 import io.vertx.micrometer.impl.meters.Timers;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -38,8 +40,8 @@ class VertxPoolMetrics extends AbstractMetrics {
   private final Gauges<AtomicReference<Double>> usageRatio;
   private final Counters completed;
 
-  VertxPoolMetrics(MeterRegistry registry) {
-    super(registry, MetricsDomain.NAMED_POOLS);
+  VertxPoolMetrics(MeterRegistry registry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+    super(registry, MetricsDomain.NAMED_POOLS, gaugesTable);
     queueDelay = timers("queue.delay", "Queue time for a resource", Label.POOL_TYPE, Label.POOL_NAME);
     queueSize = longGauges("queue.size", "Number of elements waiting for a resource", Label.POOL_TYPE, Label.POOL_NAME);
     usage = timers("usage", "Time using a resource", Label.POOL_TYPE, Label.POOL_NAME);
