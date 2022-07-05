@@ -18,6 +18,8 @@
 package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
@@ -66,6 +68,16 @@ public class Gauges<T> {
       .description(description)
       .tags(tags)
       .register(registry);
+    SimpleMeterRegistry smr = null;
+    if (registry instanceof CompositeMeterRegistry) {
+      CompositeMeterRegistry cmr = (CompositeMeterRegistry) registry;
+      if (cmr.getRegistries().isEmpty()) {
+        // If the composite meter registry has no children, the ToDoubleFunc will not be invoked
+        // So we temporarily add this SimpleMeterRegistry to deceive Micrometer
+        smr = new SimpleMeterRegistry();
+        cmr.add(smr);
+      }
+    }
     Meter.Id gaugeId = gauge.getId();
     Object res;
     for (; ; ) {
@@ -79,6 +91,10 @@ public class Gauges<T> {
         res = candidate;
         break;
       }
+    }
+    if (smr != null) {
+      CompositeMeterRegistry cmr = (CompositeMeterRegistry) registry;
+      cmr.remove(smr);
     }
     return (T) res;
   }
