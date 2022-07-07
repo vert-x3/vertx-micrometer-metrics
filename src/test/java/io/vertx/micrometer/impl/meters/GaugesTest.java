@@ -21,6 +21,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
@@ -37,6 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Joel Takvorian
@@ -98,5 +100,25 @@ public class GaugesTest {
 
     Gauge g = registry.get("my_gauge").tags("address", "addr1", "k1", "v1", "k2", "v2").gauge();
     assertThat(g.value()).isEqualTo(1d);
+  }
+
+  @Test
+  public void shouldAllowFilteringGauges() {
+    MeterRegistry registry = new SimpleMeterRegistry();
+    Gauges<LongAdder> gauges = new Gauges<>(gaugesTable, "my_gauge", "", LongAdder::new, LongAdder::doubleValue, registry, Label.EB_ADDRESS);
+    gauges.get("counterObject").increment();
+    gauges.get("filteredCounterObject").increment();
+
+    assertThat(registry.get("my_gauge").tags("address", "counterObject").gauge().value()).isEqualTo(1d);
+    assertThat(registry.get("my_gauge").tags("address", "filteredCounterObject").gauge().value()).isEqualTo(1d);
+
+    registry.config().meterFilter(MeterFilter.deny(id -> "my_gauge".equals(id.getName()) && "filteredCounterObject".equals(id.getTag("address"))));
+    registry.remove(registry.get("my_gauge").tags("address", "filteredCounterObject").gauge());
+
+    gauges.get("counterObject").increment();
+    gauges.get("filteredCounterObject").increment();
+
+    assertThat(registry.get("my_gauge").tags("address", "counterObject").gauge().value()).isEqualTo(2d);
+    assertThatThrownBy(() -> registry.get("my_gauge").tags("address", "filteredCounterObject").gauge()).isInstanceOf(io.micrometer.core.instrument.search.MeterNotFoundException.class);
   }
 }

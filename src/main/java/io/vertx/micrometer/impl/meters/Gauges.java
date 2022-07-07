@@ -18,8 +18,6 @@
 package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.*;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
@@ -37,7 +35,7 @@ public class Gauges<T> {
   private final Supplier<T> tSupplier;
   private final ToDoubleFunction<T> dGetter;
   private final MeterRegistry registry;
-  private final ConcurrentMap<Meter.Id, Object> gauges;
+  private final ConcurrentMap<Meter.Id, Object> candidatesByMeterId;
 
   public Gauges(ConcurrentMap<Meter.Id, Object> gauges,
                 String name,
@@ -46,7 +44,7 @@ public class Gauges<T> {
                 ToDoubleFunction<T> dGetter,
                 MeterRegistry registry,
                 Label... keys) {
-    this.gauges = gauges;
+    this.candidatesByMeterId = gauges;
     this.name = name;
     this.description = description;
     this.tSupplier = tSupplier;
@@ -61,62 +59,14 @@ public class Gauges<T> {
 
   @SuppressWarnings("unchecked")
   public T get(Iterable<Tag> customTags, String... values) {
-    Tags tags = Tags.of(Labels.toTags(keys, values)).and(customTags);
     T candidate = tSupplier.get();
-    ToDoubleFunc<T> candidateFunc = new ToDoubleFunc<>(dGetter);
-    Gauge gauge = Gauge.builder(name, candidate, candidateFunc)
+
+    Gauge gauge = Gauge.builder(name, candidate, dGetter)
       .description(description)
-      .tags(tags)
+      .tags(Tags.of(Labels.toTags(keys, values)).and(customTags))
       .register(registry);
-    SimpleMeterRegistry smr = null;
-    if (registry instanceof CompositeMeterRegistry) {
-      CompositeMeterRegistry cmr = (CompositeMeterRegistry) registry;
-      if (cmr.getRegistries().isEmpty()) {
-        // If the composite meter registry has no children, the ToDoubleFunc will not be invoked
-        // So we temporarily add this SimpleMeterRegistry to deceive Micrometer
-        smr = new SimpleMeterRegistry();
-        cmr.add(smr);
-      }
-    }
     Meter.Id gaugeId = gauge.getId();
-    Object res;
-    for (; ; ) {
-      res = gauges.get(gaugeId);
-      if (res != null) {
-        break;
-      }
-      ensureGetterInvoked(gauge);
-      if (candidateFunc.invoked) {
-        gauges.put(gaugeId, candidate);
-        res = candidate;
-        break;
-      }
-    }
-    if (smr != null) {
-      CompositeMeterRegistry cmr = (CompositeMeterRegistry) registry;
-      cmr.remove(smr);
-    }
-    return (T) res;
-  }
 
-  private void ensureGetterInvoked(Gauge gauge) {
-    gauge.value();
-  }
-
-  private static class ToDoubleFunc<R> implements ToDoubleFunction<R> {
-    final ToDoubleFunction<R> delegate;
-    volatile boolean invoked;
-
-    ToDoubleFunc(ToDoubleFunction<R> delegate) {
-      this.delegate = delegate;
-    }
-
-    @Override
-    public double applyAsDouble(R value) {
-      if (!invoked) {
-        invoked = true;
-      }
-      return delegate.applyAsDouble(value);
-    }
+    return (T) candidatesByMeterId.computeIfAbsent(gaugeId, id -> candidate);
   }
 }
