@@ -18,15 +18,12 @@ package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * @author Joel Takvorian
@@ -52,10 +49,7 @@ public class Timers {
   }
 
   public Timer get(Iterable<Tag> customTags, String... values) {
-    List<Tag> tags = customTags != null
-      ? Stream.concat(Labels.toTags(keys, values).stream(), StreamSupport.stream(customTags.spliterator(), false)).collect(Collectors.toList())
-      : Labels.toTags(keys, values);
-    // Get or create the Timer
+    Tags tags = Tags.of(Labels.toTags(keys, values)).and(customTags);
     return Timer.builder(name)
       .description(description)
       .tags(tags)
