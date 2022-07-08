@@ -22,6 +22,7 @@ import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 
@@ -32,7 +33,7 @@ public class Gauges<T> {
   private final String name;
   private final String description;
   private final Label[] keys;
-  private final Supplier<T> tSupplier;
+  private final Function<Meter.Id, T> tSupplier;
   private final ToDoubleFunction<T> dGetter;
   private final MeterRegistry registry;
   private final ConcurrentMap<Meter.Id, Object> gauges;
@@ -47,7 +48,7 @@ public class Gauges<T> {
     this.gauges = gauges;
     this.name = name;
     this.description = description;
-    this.tSupplier = tSupplier;
+    this.tSupplier = id -> tSupplier.get();
     this.dGetter = dGetter;
     this.registry = registry;
     this.keys = keys;
@@ -68,7 +69,7 @@ public class Gauges<T> {
       .register(registry);
     Meter.Id meterId = gauge.getId();
     supplier.id = meterId;
-    return (T) gauges.computeIfAbsent(meterId, id -> tSupplier.get());
+    return (T) gauges.computeIfAbsent(meterId, tSupplier);
   }
 
   private static class ValueSupplier<G> implements Supplier<Number> {
