@@ -21,6 +21,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
@@ -98,5 +99,15 @@ public class GaugesTest {
 
     Gauge g = registry.get("my_gauge").tags("address", "addr1", "k1", "v1", "k2", "v2").gauge();
     assertThat(g.value()).isEqualTo(1d);
+  }
+
+  @Test
+  public void shouldSupportNoopGauges() {
+    MeterRegistry registry = new SimpleMeterRegistry();
+    registry.config().meterFilter(MeterFilter.deny(id -> "my_gauge".equals(id.getName())));
+    Gauges<LongAdder> gauges = new Gauges<>(gaugesTable, "my_gauge", "", LongAdder::new, LongAdder::doubleValue, registry);
+    gauges.get().increment();
+
+    assertThat(registry.find("my_gauge").gauges()).isEmpty();
   }
 }
