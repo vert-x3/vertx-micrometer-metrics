@@ -36,6 +36,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
+import java.util.Hashtable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -106,7 +107,10 @@ public class CustomMicrometerMetricsITest extends MicrometerMetricsTestBase {
     // Read MBean
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
     assertThat(mbs.getDomains()).contains("metrics");
-    Number result = (Number) mbs.getAttribute(new ObjectName("metrics", "name", "vertxEventbusHandlers.address.test-eb"), "Value");
+    Hashtable<String, String> table = new Hashtable<>();
+    table.put("type", "gauges");
+    table.put("name", "vertxEventbusHandlers.address.test-eb");
+    Number result = (Number) mbs.getAttribute(new ObjectName("metrics", table), "Value");
     assertThat(result).isEqualTo(1d);
 
     // Await influx
