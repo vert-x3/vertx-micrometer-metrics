@@ -6,8 +6,14 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpVersion;
+import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetServer;
+import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -39,7 +45,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
   protected MicrometerMetricsOptions metricOptions() {
     return super.metricOptions()
       .setClientRequestTagsProvider(req -> {
-        String user = req.headers().get("user");
+        String user = req.headers() != null ? req.headers().get("user") : null;
         return user != null ? Collections.singletonList(Tag.of("user", user)) : Collections.emptyList();
       })
       .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS);
@@ -83,6 +89,27 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
       }
     });
     serverReady.awaitSuccess();
+  }
+
+  @Test
+  public void shouldDecrementActiveRequestsWhenRequestEndedAfterResponseEnded(TestContext ctx) {
+    HttpClient httpClient = vertx.createHttpClient(new HttpClientOptions().setProtocolVersion(HttpVersion.HTTP_2).setHttp2ClearTextUpgrade(false));
+    httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource")
+      .compose(req -> {
+        req.setChunked(true).sendHead();
+        return req.response()
+          .compose(HttpClientResponse::end)
+          .compose(body -> {
+            List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.client.active.requests"));
+            ctx.assertEquals(1D, datapoints.get(0).value());
+            datapoints = listDatapoints(startsWith("vertx.http.server.active.requests"));
+            ctx.assertEquals(1D, datapoints.get(0).value());
+            return req.end();
+          });
+      }).onComplete(ctx.asyncAssertSuccess(v -> {
+        List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.client.active.requests"));
+        ctx.assertEquals(0D, datapoints.get(0).value());
+      }));
   }
 
   @Test
