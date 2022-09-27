@@ -89,11 +89,15 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     public void requestReset(Handler handler) {
       requestResetCount.get(handler.customTags, local, handler.address, handler.path, handler.method).increment();
       requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+      handler.requestReset();
     }
 
     @Override
     public void requestEnd(Handler handler, HttpRequest request, long bytesRead) {
       requestBytes.get(handler.customTags, local, handler.address, handler.path, handler.method).record(bytesRead);
+      if (handler.requestEnded()) {
+        requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+      }
     }
 
     @Override
@@ -113,8 +117,10 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
       String handlerRoute = handler.getRoute();
       handler.timer.end(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code);
       requestCount.get(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code).increment();
-      requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
       responseBytes.get(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code).record(bytesWritten);
+      if (handler.requestEnded()) {
+        requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+      }
     }
 
     @Override
@@ -148,6 +154,9 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     private int routesLength;
     private Timers.EventTiming timer;
     private Iterable<Tag> customTags;
+    private boolean responseEnded;
+    private boolean requestEnded;
+    private boolean reset;
 
     Handler(String address, String path, String method) {
       this.address = address;
@@ -193,5 +202,18 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
       routes = concatenation.toString();
       return (String) routes;
     }
-  }
+
+    void requestReset() {
+      reset = true;
+    }
+
+    boolean requestEnded() {
+      requestEnded = true;
+      return !reset && responseEnded;
+    }
+
+    boolean responseEnded() {
+      responseEnded = true;
+      return !reset && requestEnded;
+    }  }
 }

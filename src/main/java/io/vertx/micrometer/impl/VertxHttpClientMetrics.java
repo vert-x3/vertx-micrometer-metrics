@@ -107,11 +107,15 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         @Override
         public void requestEnd(Handler handler, long bytesWritten) {
           requestBytes.get(handler.customTags, local, handler.address, handler.path, handler.method).record(bytesWritten);
+          if (handler.requestEnded()) {
+            requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+          }
         }
 
         @Override
         public void requestReset(Handler handler) {
           requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+          handler.requestReset();
         }
 
         @Override
@@ -122,7 +126,9 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
         @Override
         public void responseEnd(Handler handler, long bytesRead) {
           String code = String.valueOf(handler.response.statusCode());
-          requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+          if (handler.responseEnded()) {
+            requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+          }
           responseCount.get(handler.customTags, local, handler.address, handler.path, handler.method, code).increment();
           handler.timer.end(handler.customTags, local, handler.address, handler.path, handler.method, code);
           responseBytes.get(handler.customTags, local, handler.address, handler.path, handler.method, code).record(bytesRead);
@@ -154,11 +160,28 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     private Timers.EventTiming timer;
     HttpResponse response;
     private Iterable<Tag> customTags;
+    private boolean responseEnded;
+    private boolean requestEnded;
+    private boolean reset;
 
     Handler(String address, String path, String method) {
       this.address = address;
       this.path = path;
       this.method = method;
+    }
+
+    void requestReset() {
+      reset = true;
+    }
+
+    boolean requestEnded() {
+      requestEnded = true;
+      return !reset && responseEnded;
+    }
+
+    boolean responseEnded() {
+      responseEnded = true;
+      return !reset && requestEnded;
     }
   }
 }
