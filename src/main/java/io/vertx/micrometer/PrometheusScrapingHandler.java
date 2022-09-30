@@ -16,11 +16,15 @@
 
 package io.vertx.micrometer;
 
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.impl.PrometheusScrapingHandlerImpl;
+
+import static io.vertx.codegen.annotations.GenIgnore.*;
 
 /**
  * A Vert.x Web {@link io.vertx.ext.web.Route} handler for Prometheus metrics scraping.
@@ -53,4 +57,15 @@ public interface PrometheusScrapingHandler {
     return new PrometheusScrapingHandlerImpl(registryName);
   }
 
+  /**
+   * Creates a Vert.x Web {@link io.vertx.ext.web.Route} handler for Prometheus metrics scraping.
+   * The registry specified by {@code registry} is used.
+   *
+   * @param registry the backend metrics registry
+   * @return a {@link io.vertx.ext.web.Route} handler for a specific metrics registry
+   */
+  @GenIgnore(PERMITTED_TYPE)
+  static Handler<RoutingContext> create(PrometheusMeterRegistry registry) {
+    return new PrometheusScrapingHandlerImpl(registry);
+  }
 }
