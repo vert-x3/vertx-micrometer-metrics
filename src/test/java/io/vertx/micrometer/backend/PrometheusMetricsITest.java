@@ -17,17 +17,28 @@
 package io.vertx.micrometer.backend;
 
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
-import io.vertx.micrometer.*;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.Match;
+import io.vertx.micrometer.MatchType;
+import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.MicrometerMetricsTestBase;
+import io.vertx.micrometer.PrometheusScrapingHandler;
+import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.function.Supplier;
+
+import static org.assertj.core.api.Assertions.*;
 
 @RunWith(VertxUnitRunner.class)
 public class PrometheusMetricsITest extends MicrometerMetricsTestBase {
@@ -62,7 +73,16 @@ public class PrometheusMetricsITest extends MicrometerMetricsTestBase {
   }
 
   @Test
-  public void shouldBindExistingServer(TestContext context) {
+  public void scrapeByName(TestContext context) {
+    shouldBindExistingServer(context, () -> PrometheusScrapingHandler.create(registryName));
+  }
+
+  @Test
+  public void scrapeByInstance(TestContext context) {
+    shouldBindExistingServer(context, () -> PrometheusScrapingHandler.create((PrometheusMeterRegistry) BackendRegistries.getNow(registryName)));
+  }
+
+  private void shouldBindExistingServer(TestContext context, Supplier<Handler<RoutingContext>> scrapingHandler) {
     metricsOptions = new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
       .setRegistryName(registryName)
@@ -71,11 +91,7 @@ public class PrometheusMetricsITest extends MicrometerMetricsTestBase {
     vertx = vertx(context);
 
     Router router = Router.router(vertx);
-    router.route("/custom").handler(routingContext -> {
-      PrometheusMeterRegistry prometheusRegistry = (PrometheusMeterRegistry) BackendRegistries.getNow(registryName);
-      String response = prometheusRegistry.scrape();
-      routingContext.response().end(response);
-    });
+    router.route("/custom").handler(scrapingHandler.get());
     vertx.createHttpServer().requestHandler(router).exceptionHandler(context.exceptionHandler()).listen(8081);
 
     Async async = context.async();

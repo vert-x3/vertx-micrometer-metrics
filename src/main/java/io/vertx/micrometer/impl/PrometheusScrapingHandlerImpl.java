@@ -18,11 +18,14 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.prometheus.client.exporter.common.TextFormat;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
+
+import java.util.Objects;
+
+import static io.prometheus.client.exporter.common.TextFormat.*;
+import static io.vertx.core.http.HttpHeaders.*;
 
 /**
  * @author Thomas Segismont
@@ -30,17 +33,29 @@ import io.vertx.micrometer.backends.BackendRegistries;
 public class PrometheusScrapingHandlerImpl implements Handler<RoutingContext> {
 
   private final String registryName;
+  private final PrometheusMeterRegistry registry;
 
   public PrometheusScrapingHandlerImpl() {
     registryName = null;
+    registry = null;
   }
 
   public PrometheusScrapingHandlerImpl(String registryName) {
-    this.registryName = registryName;
+    this.registryName = Objects.requireNonNull(registryName);
+    registry = null;
+  }
+
+  public PrometheusScrapingHandlerImpl(PrometheusMeterRegistry registry) {
+    registryName = null;
+    this.registry = Objects.requireNonNull(registry);
   }
 
   @Override
   public void handle(RoutingContext rc) {
+    if (registry != null) {
+      scrapeAndReply(rc, registry);
+      return;
+    }
     MeterRegistry registry;
     if (registryName == null) {
       registry = BackendRegistries.getDefaultNow();
@@ -48,15 +63,18 @@ public class PrometheusScrapingHandlerImpl implements Handler<RoutingContext> {
       registry = BackendRegistries.getNow(registryName);
     }
     if (registry instanceof PrometheusMeterRegistry) {
-      PrometheusMeterRegistry prometheusMeterRegistry = (PrometheusMeterRegistry) registry;
-      rc.response()
-        .putHeader(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_004)
-        .end(prometheusMeterRegistry.scrape());
+      scrapeAndReply(rc, (PrometheusMeterRegistry) registry);
     } else {
       String statusMessage = "Invalid registry: " + (registry != null ? registry.getClass().getName() : null);
       rc.response()
         .setStatusCode(500).setStatusMessage(statusMessage)
         .end();
     }
+  }
+
+  private static void scrapeAndReply(RoutingContext rc, PrometheusMeterRegistry prometheusMeterRegistry) {
+    rc.response()
+      .putHeader(CONTENT_TYPE, CONTENT_TYPE_004)
+      .end(prometheusMeterRegistry.scrape());
   }
 }
