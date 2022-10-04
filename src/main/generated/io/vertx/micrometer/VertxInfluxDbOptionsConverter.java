@@ -25,6 +25,11 @@ public class VertxInfluxDbOptionsConverter {
             obj.setBatchSize(((Number)member.getValue()).intValue());
           }
           break;
+        case "bucket":
+          if (member.getValue() instanceof String) {
+            obj.setBucket((String)member.getValue());
+          }
+          break;
         case "compressed":
           if (member.getValue() instanceof Boolean) {
             obj.setCompressed((Boolean)member.getValue());
@@ -50,6 +55,11 @@ public class VertxInfluxDbOptionsConverter {
             obj.setNumThreads(((Number)member.getValue()).intValue());
           }
           break;
+        case "org":
+          if (member.getValue() instanceof String) {
+            obj.setOrg((String)member.getValue());
+          }
+          break;
         case "password":
           if (member.getValue() instanceof String) {
             obj.setPassword((String)member.getValue());
@@ -68,6 +78,11 @@ public class VertxInfluxDbOptionsConverter {
         case "step":
           if (member.getValue() instanceof Number) {
             obj.setStep(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "token":
+          if (member.getValue() instanceof String) {
+            obj.setToken((String)member.getValue());
           }
           break;
         case "uri":
@@ -90,6 +105,9 @@ public class VertxInfluxDbOptionsConverter {
 
   public static void toJson(VertxInfluxDbOptions obj, java.util.Map<String, Object> json) {
     json.put("batchSize", obj.getBatchSize());
+    if (obj.getBucket() != null) {
+      json.put("bucket", obj.getBucket());
+    }
     json.put("compressed", obj.isCompressed());
     json.put("connectTimeout", obj.getConnectTimeout());
     if (obj.getDb() != null) {
@@ -97,6 +115,9 @@ public class VertxInfluxDbOptionsConverter {
     }
     json.put("enabled", obj.isEnabled());
     json.put("numThreads", obj.getNumThreads());
+    if (obj.getOrg() != null) {
+      json.put("org", obj.getOrg());
+    }
     if (obj.getPassword() != null) {
       json.put("password", obj.getPassword());
     }
@@ -105,6 +126,9 @@ public class VertxInfluxDbOptionsConverter {
       json.put("retentionPolicy", obj.getRetentionPolicy());
     }
     json.put("step", obj.getStep());
+    if (obj.getToken() != null) {
+      json.put("token", obj.getToken());
+    }
     if (obj.getUri() != null) {
       json.put("uri", obj.getUri());
     }

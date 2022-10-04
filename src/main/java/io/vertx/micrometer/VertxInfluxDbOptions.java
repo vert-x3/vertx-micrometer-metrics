@@ -87,6 +87,9 @@ public class VertxInfluxDbOptions {
   private int connectTimeout;
   private int readTimeout;
   private int batchSize;
+  private String org;
+  private String bucket;
+  private String token;
 
   /**
    * Create default options for InfluxDB reporting. Note that they are disabled by default.
@@ -119,6 +122,9 @@ public class VertxInfluxDbOptions {
     connectTimeout = other.connectTimeout;
     readTimeout = other.readTimeout;
     batchSize = other.batchSize;
+    org = other.org;
+    bucket = other.bucket;
+    token = other.token;
   }
 
   /**
@@ -261,15 +267,21 @@ public class VertxInfluxDbOptions {
   }
 
   /**
-   * Get the number of threads used by the push scheduler
+   * Get the number of threads used by the push scheduler.
+   *
+   * @deprecated no longer used by Micrometer
    */
+  @Deprecated
   public int getNumThreads() {
     return numThreads;
   }
 
   /**
    * Number of threads to use by the push scheduler. Default is 2.
+   *
+   * @deprecated no longer used by Micrometer
    */
+  @Deprecated
   public VertxInfluxDbOptions setNumThreads(int numThreads) {
     this.numThreads = numThreads;
     return this;
@@ -318,6 +330,62 @@ public class VertxInfluxDbOptions {
    */
   public VertxInfluxDbOptions setBatchSize(int batchSize) {
     this.batchSize = batchSize;
+    return this;
+  }
+
+  /**
+   * @return the destination organization for writes
+   */
+  public String getOrg() {
+    return org;
+  }
+
+  /**
+   * Specifies the destination organization for writes. Takes either the ID or Name interchangeably.
+   * This is only used with InfluxDB v2.
+   *
+   * @param org the destination organization for writes
+   * @return a reference to this, so the API can be used fluently
+   */
+  public VertxInfluxDbOptions setOrg(String org) {
+    this.org = org;
+    return this;
+  }
+
+  /**
+   * @return the destination bucket for writes
+   */
+  public String getBucket() {
+    return bucket;
+  }
+
+  /**
+   * Specifies the destination bucket for writes. Takes either the ID or Name interchangeably.
+   * This is only used with InfluxDB v2.
+   *
+   * @param bucket the destination bucket for writes
+   * @return a reference to this, so the API can be used fluently
+   */
+  public VertxInfluxDbOptions setBucket(String bucket) {
+    this.bucket = bucket;
+    return this;
+  }
+
+  /**
+   * @return the authentication token for the InfluxDB API
+   */
+  public String getToken() {
+    return token;
+  }
+
+  /**
+   * Authentication token for the InfluxDB API. This takes precedence over userName/password if configured.
+   *
+   * @param token the authentication token for the InfluxDB API
+   * @return a reference to this, so the API can be used fluently
+   */
+  public VertxInfluxDbOptions setToken(String token) {
+    this.token = token;
     return this;
   }
 
@@ -384,6 +452,21 @@ public class VertxInfluxDbOptions {
       @Override
       public int batchSize() {
         return batchSize;
+      }
+
+      @Override
+      public String org() {
+        return org;
+      }
+
+      @Override
+      public String bucket() {
+        return bucket;
+      }
+
+      @Override
+      public String token() {
+        return token;
       }
     };
   }

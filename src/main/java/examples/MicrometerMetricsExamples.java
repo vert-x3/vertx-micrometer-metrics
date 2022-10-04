@@ -40,7 +40,16 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
-import io.vertx.micrometer.*;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.Match;
+import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MetricsNaming;
+import io.vertx.micrometer.MetricsService;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.PrometheusScrapingHandler;
+import io.vertx.micrometer.VertxInfluxDbOptions;
+import io.vertx.micrometer.VertxJmxMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.util.Collections;
@@ -51,6 +60,7 @@ import java.util.regex.Pattern;
 /**
  * @author Joel Takvorian
  */
+@SuppressWarnings("unused")
 @Source
 public class MicrometerMetricsExamples {
   Vertx vertx;
@@ -62,11 +72,26 @@ public class MicrometerMetricsExamples {
         .setEnabled(true)));
   }
 
-  public void setupInfluxDBWithUriAndDatabase() {
+  public void setupInfluxDBWithUri() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new MicrometerMetricsOptions()
         .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
-          .setUri("http://influxdb.example.com:8888")
+          .setUri("http://influxdb.example.com:8888"))
+        .setEnabled(true)));
+  }
+
+  public void setupInfluxDBV2() {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new MicrometerMetricsOptions()
+        .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
+          .setOrg("my-org"))
+        .setEnabled(true)));
+  }
+
+  public void setupInfluxDBWithDatabase() {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new MicrometerMetricsOptions()
+        .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
           .setDb("sales-department"))
         .setEnabled(true)));
   }
@@ -77,6 +102,14 @@ public class MicrometerMetricsExamples {
         .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
           .setUserName("username")
           .setPassword("password"))
+        .setEnabled(true)));
+  }
+
+  public void setupInfluxDBWithTokenAuthentication(String authToken) {
+    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+      new MicrometerMetricsOptions()
+        .setInfluxDbOptions(new VertxInfluxDbOptions().setEnabled(true)
+          .setToken(authToken))
         .setEnabled(true)));
   }
 

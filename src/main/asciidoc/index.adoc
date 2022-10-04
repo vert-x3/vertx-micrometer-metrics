@@ -47,25 +47,55 @@ compile 'io.micrometer:micrometer-registry-influx:${micrometer.version}'
 
 === Configuration examples
 
-Vert.x does not enable SPI implementations by default. You must enable metric collection in the Vert.x options.
+Vert.x does not enable SPI implementations by default.
+You must enable metric collection in the Vert.x options.
 
 [source,$lang]
 ----
 {@link examples.MicrometerMetricsExamples#setupMinimalInfluxDB()}
 ----
 
-==== Using a specific URI and database name
+==== Using a specific URI
 
 [source,$lang]
 ----
-{@link examples.MicrometerMetricsExamples#setupInfluxDBWithUriAndDatabase()}
+{@link examples.MicrometerMetricsExamples#setupInfluxDBWithUri}
 ----
+
+==== Connecting to InfluxDB V2
+
+Connecting to InfluxDB V2 requires that at least the {@link io.vertx.micrometer.VertxInfluxDbOptions#setOrg org} property is set.
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#setupInfluxDBV2}
+----
+
+==== Using a specific database name or bucket
+
+To configure a specific database name:
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#setupInfluxDBWithDatabase}
+----
+
+For InfluxDB V2, you can use {@link io.vertx.micrometer.VertxInfluxDbOptions#setBucket} as well.
 
 ==== With authentication
 
+Authentication can be configured with a username and a password:
+
 [source,$lang]
 ----
-{@link examples.MicrometerMetricsExamples#setupInfluxDBWithAuthentication()}
+{@link examples.MicrometerMetricsExamples#setupInfluxDBWithAuthentication}
+----
+
+Or it can be configured with a token:
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#setupInfluxDBWithTokenAuthentication}
 ----
 
 == Prometheus
