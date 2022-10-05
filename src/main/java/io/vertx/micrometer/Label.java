@@ -79,7 +79,7 @@ public enum Label {
    */
   NAMESPACE("client_namespace");
 
-  private String labelOutput;
+  private final String labelOutput;
 
   Label(String labelOutput) {
     this.labelOutput = labelOutput;

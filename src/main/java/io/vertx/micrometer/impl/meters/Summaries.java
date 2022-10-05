@@ -21,7 +21,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.vertx.micrometer.Label;
-import io.vertx.micrometer.impl.Labels;
 
 /**
  * @author Joel Takvorian
@@ -47,7 +46,7 @@ public class Summaries {
   }
 
   public DistributionSummary get(Iterable<Tag> customTags, String... values) {
-    Tags tags = Tags.of(Labels.toTags(keys, values)).and(customTags);
+    Tags tags = TagsCache.getOrCreate(customTags, keys, values);
     return DistributionSummary.builder(name)
       .description(description)
       .tags(tags)

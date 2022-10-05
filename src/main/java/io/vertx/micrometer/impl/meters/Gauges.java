@@ -17,9 +17,12 @@
 
 package io.vertx.micrometer.impl.meters;
 
-import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
 import io.vertx.micrometer.Label;
-import io.vertx.micrometer.impl.Labels;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -60,7 +63,7 @@ public class Gauges<T> {
 
   @SuppressWarnings("unchecked")
   public T get(Iterable<Tag> customTags, String... values) {
-    Tags tags = Tags.of(Labels.toTags(keys, values)).and(customTags);
+    Tags tags = TagsCache.getOrCreate(customTags, keys, values);
     ValueSupplier<T> supplier = new ValueSupplier<>(gauges, dGetter);
     Gauge gauge = Gauge.builder(name, supplier)
       .description(description)
