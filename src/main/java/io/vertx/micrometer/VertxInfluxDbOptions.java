@@ -461,7 +461,7 @@ public class VertxInfluxDbOptions {
 
       @Override
       public String bucket() {
-        return bucket;
+        return bucket != null ? bucket : db;
       }
 
       @Override
