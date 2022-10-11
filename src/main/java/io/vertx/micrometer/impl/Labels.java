@@ -16,10 +16,11 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.micrometer.Label;
+
+import java.util.Arrays;
 
 /**
  * @author Joel Takvorian
@@ -55,13 +56,23 @@ public final class Labels {
       return Tags.empty();
     }
     // Creating a Tags object is faster and consumes less resources when providing an array
-    Tag[] tags = new Tag[keys.length];
+    String[] keyValuePairs = new String[2 * keys.length];
+    int count = 0;
     for (int i = 0; i < keys.length; i++) {
-      if (values[i] != null) {
+      String value = values[i];
+      if (value != null) {
         String lowKey = keys[i].toString();
-        tags[i] = Tag.of(lowKey, values[i]);
+        keyValuePairs[2 * count] = lowKey;
+        keyValuePairs[2 * count + 1] = value;
+        count++;
       }
     }
-    return Tags.of(tags);
+    if (count == 0) {
+      return Tags.empty();
+    }
+    if (count == keys.length) {
+      return Tags.of(keyValuePairs);
+    }
+    return Tags.of(Arrays.copyOf(keyValuePairs, 2 * count));
   }
 }
