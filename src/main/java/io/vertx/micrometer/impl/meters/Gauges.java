@@ -17,9 +17,14 @@
 
 package io.vertx.micrometer.impl.meters;
 
-import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import io.vertx.core.Vertx;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.micrometer.Label;
-import io.vertx.micrometer.impl.Labels;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -30,6 +35,9 @@ import java.util.function.ToDoubleFunction;
  * @author Joel Takvorian
  */
 public class Gauges<T> {
+
+  private static final Object VALUE_SUPPLIER = new Object();
+
   private final String name;
   private final String description;
   private final Label[] keys;
@@ -60,16 +68,41 @@ public class Gauges<T> {
 
   @SuppressWarnings("unchecked")
   public T get(Iterable<Tag> customTags, String... values) {
-    Tags tags = Tags.of(Labels.toTags(keys, values)).and(customTags);
-    ValueSupplier<T> supplier = new ValueSupplier<>(gauges, dGetter);
-    Gauge gauge = Gauge.builder(name, supplier)
+    Tags tags = TagsCache.getOrCreate(customTags, keys, values);
+    ContextInternal context = (ContextInternal) Vertx.currentContext();
+    ValueSupplier<T> valueSupplier = getOrCreateValueSupplier(context);
+    Gauge gauge = Gauge.builder(name, valueSupplier)
       .description(description)
       .tags(tags)
       .strongReference(true)
       .register(registry);
     Meter.Id meterId = gauge.getId();
-    supplier.id = meterId;
-    return (T) gauges.computeIfAbsent(meterId, tSupplier);
+    T res = (T) gauges.get(meterId);
+    if (res == null) {
+      T candidate = tSupplier.apply(meterId);
+      if ((res = (T) gauges.putIfAbsent(meterId, candidate)) == null) {
+        res = candidate;
+        valueSupplier.id = meterId;
+        return res;
+      }
+    }
+    recycleValueSupplier(context, valueSupplier);
+    return res;
+  }
+
+  @SuppressWarnings("unchecked")
+  private ValueSupplier<T> getOrCreateValueSupplier(ContextInternal context) {
+    ValueSupplier<T> res;
+    if (context == null || (res = (ValueSupplier<T>) context.contextData().get(VALUE_SUPPLIER)) == null) {
+      res = new ValueSupplier<>(gauges, dGetter);
+    }
+    return res;
+  }
+
+  private void recycleValueSupplier(ContextInternal context, ValueSupplier<T> valueSupplier) {
+    if (context != null) {
+      context.contextData().put(VALUE_SUPPLIER, valueSupplier);
+    }
   }
 
   private static class ValueSupplier<G> implements Supplier<Number> {

@@ -21,7 +21,6 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.micrometer.Label;
-import io.vertx.micrometer.impl.Labels;
 
 import java.util.concurrent.TimeUnit;
 
@@ -49,7 +48,7 @@ public class Timers {
   }
 
   public Timer get(Iterable<Tag> customTags, String... values) {
-    Tags tags = Tags.of(Labels.toTags(keys, values)).and(customTags);
+    Tags tags = TagsCache.getOrCreate(customTags, keys, values);
     return Timer.builder(name)
       .description(description)
       .tags(tags)
