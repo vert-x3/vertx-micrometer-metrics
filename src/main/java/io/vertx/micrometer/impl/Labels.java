@@ -16,13 +16,11 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.micrometer.Label;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * @author Joel Takvorian
@@ -51,17 +49,30 @@ public final class Labels {
     return local ? "local" : "remote";
   }
 
-  public static List<Tag> toTags(Label[] keys, String[] values) {
+  public static Tags toTags(Label[] keys, String[] values) {
+    // Here we shall use Tags object instead of List.
+    // Otherwise, some extra copies / iterations will be made
     if (keys.length == 0) {
-      return Collections.emptyList();
+      return Tags.empty();
     }
-    List<Tag> tags = new ArrayList<>(keys.length);
+    // Creating a Tags object is faster and consumes less resources when providing an array
+    String[] keyValuePairs = new String[2 * keys.length];
+    int count = 0;
     for (int i = 0; i < keys.length; i++) {
-      if (values[i] != null) {
+      String value = values[i];
+      if (value != null) {
         String lowKey = keys[i].toString();
-        tags.add(Tag.of(lowKey, values[i]));
+        keyValuePairs[2 * count] = lowKey;
+        keyValuePairs[2 * count + 1] = value;
+        count++;
       }
     }
-    return tags;
+    if (count == 0) {
+      return Tags.empty();
+    }
+    if (count == keys.length) {
+      return Tags.of(keyValuePairs);
+    }
+    return Tags.of(Arrays.copyOf(keyValuePairs, 2 * count));
   }
 }
