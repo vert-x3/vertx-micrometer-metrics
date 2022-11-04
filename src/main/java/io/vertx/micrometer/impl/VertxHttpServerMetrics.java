@@ -118,7 +118,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
       handler.timer.end(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code);
       requestCount.get(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code).increment();
       responseBytes.get(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code).record(bytesWritten);
-      if (handler.requestEnded()) {
+      if (handler.responseEnded()) {
         requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
       }
     }
