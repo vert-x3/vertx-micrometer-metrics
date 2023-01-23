@@ -36,7 +36,7 @@ import java.util.function.ToDoubleFunction;
  */
 public class Gauges<T> {
 
-  private static final Object VALUE_SUPPLIER = new Object();
+  private final Object valueSupplierKey = new Object();
 
   private final String name;
   private final String description;
@@ -93,7 +93,7 @@ public class Gauges<T> {
   @SuppressWarnings("unchecked")
   private ValueSupplier<T> getOrCreateValueSupplier(ContextInternal context) {
     ValueSupplier<T> res;
-    if (context == null || (res = (ValueSupplier<T>) context.contextData().get(VALUE_SUPPLIER)) == null) {
+    if (context == null || (res = (ValueSupplier<T>) context.contextData().get(valueSupplierKey)) == null) {
       res = new ValueSupplier<>(gauges, dGetter);
     }
     return res;
@@ -101,7 +101,7 @@ public class Gauges<T> {
 
   private void recycleValueSupplier(ContextInternal context, ValueSupplier<T> valueSupplier) {
     if (context != null) {
-      context.contextData().put(VALUE_SUPPLIER, valueSupplier);
+      context.contextData().put(valueSupplierKey, valueSupplier);
     }
   }
 
