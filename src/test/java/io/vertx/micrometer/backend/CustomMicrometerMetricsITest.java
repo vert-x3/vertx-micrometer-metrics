@@ -17,7 +17,10 @@
 package io.vertx.micrometer.backend;
 
 import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.config.MeterFilterReply;
 import io.micrometer.influx.InfluxConfig;
 import io.micrometer.influx.InfluxMeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
@@ -41,6 +44,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -138,5 +142,46 @@ public class CustomMicrometerMetricsITest {
       });
     });
     async.awaitSuccess(10000);
+  }
+
+  @Test
+  public void shouldNotFailWithDenyMetrics(TestContext context) {
+    PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    removeRequestMetrics(registry);
+    vertx = Vertx.vertx(new VertxOptions()
+      .setMetricsOptions(new MicrometerMetricsOptions()
+        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+          .setPublishQuantiles(true)
+          .setStartEmbeddedServer(true)
+          .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
+        .setMicrometerRegistry(registry)
+        .setEnabled(true)));
+
+    Async async = context.async();
+    // Dummy connection to trigger some metrics
+    PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", r1 -> {
+      // Delay to make "sure" metrics are populated
+      vertx.setTimer(500, l -> {
+        assertThat(registry.scrape()).contains("vertx_http_client_responseTime_seconds_bucket{code=\"200\"");
+        assertThat(registry.scrape()).doesNotContain("vertx_http_client_requests{method=\"GET\",} 0.0");
+        async.complete();
+      });
+    });
+    async.awaitSuccess(10000);
+  }
+
+  private void removeRequestMetrics(PrometheusMeterRegistry registry) {
+    registry.config().meterFilter(
+      new MeterFilter() {
+        @Override
+        public MeterFilterReply accept(final Meter.Id id) {
+          MeterFilterReply result = MeterFilterReply.NEUTRAL;
+          String metricName = id.getName();
+          if (metricName.startsWith("vertx.http.client.requests")) {
+            result = MeterFilterReply.DENY;
+          }
+          return result;
+        }
+      });
   }
 }

@@ -21,6 +21,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.noop.NoopGauge;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
@@ -70,6 +71,10 @@ public class Gauges<T> {
     for (; ; ) {
       res = gauges.get(gaugeId);
       if (res != null) {
+        break;
+      }
+      if (gauge instanceof NoopGauge) {
+        res = candidate;
         break;
       }
       ensureGetterInvoked(gauge);
