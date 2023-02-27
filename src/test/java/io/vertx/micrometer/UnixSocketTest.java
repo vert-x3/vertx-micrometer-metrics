@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static io.vertx.micrometer.RegistryInspector.*;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RunWith(VertxUnitRunner.class)
 public class UnixSocketTest {
@@ -27,18 +27,18 @@ public class UnixSocketTest {
   @Test
   public void shouldWriteOnUnixSocket(TestContext ctx) {
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true)
-      .setMetricsOptions(new MicrometerMetricsOptions()
-      .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-      .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
-      .addLabels(Label.REMOTE)
-      .setRegistryName(registryName)
-      .setEnabled(true)))
+        .setMetricsOptions(new MicrometerMetricsOptions()
+          .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+          .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
+          .addLabels(Label.REMOTE)
+          .setRegistryName(registryName)
+          .setEnabled(true)))
       .exceptionHandler(ctx.exceptionHandler());
 
     Async allDeployed = ctx.async();
-    vertx.deployVerticle(
-      new DomainSocketServer(),
-      h -> vertx.deployVerticle(new DomainSocketClientTriggerVerticle(), ch -> allDeployed.complete()));
+    vertx.deployVerticle(new DomainSocketServer(), ctx.asyncAssertSuccess(h -> {
+      vertx.deployVerticle(new DomainSocketClientTriggerVerticle(), ctx.asyncAssertSuccess(ch -> allDeployed.complete()));
+    }));
 
     allDeployed.await(2000);
     waitForValue(vertx, ctx, registryName, "vertx.net.client.connections[remote=/var/tmp/myservice.sock]$VALUE", v -> v.intValue() == 0);

@@ -20,6 +20,7 @@ package io.vertx.micrometer.impl.meters;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
@@ -33,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author Joel Takvorian
@@ -84,5 +85,15 @@ public class GaugesTest {
     assertThat(g).isNull();
     g = registry.find("my_gauge").tags("address", "addr2").gauge();
     assertThat(g).isNull();
+  }
+
+  @Test
+  public void shouldSupportNoopGauges() {
+    MeterRegistry registry = new SimpleMeterRegistry();
+    registry.config().meterFilter(MeterFilter.deny(id -> "my_gauge".equals(id.getName())));
+    Gauges<LongAdder> gauges = new Gauges<>(gaugesTable, "my_gauge", "", LongAdder::new, LongAdder::doubleValue, registry);
+    gauges.get().increment();
+
+    assertThat(registry.find("my_gauge").gauges()).isEmpty();
   }
 }

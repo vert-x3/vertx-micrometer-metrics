@@ -144,7 +144,6 @@
       <!-- Test dependency is for Unix socket test (linux) -->
       <groupId>io.netty</groupId>
       <artifactId>netty-transport-native-epoll</artifactId>
-      <version>4.1.74.Final</version>
       <classifier>linux-x86_64</classifier>
       <scope>test</scope>
     </dependency>
@@ -152,7 +151,6 @@
       <!-- Test dependency is for Unix socket test (bsd/macos) -->
       <groupId>io.netty</groupId>
       <artifactId>netty-transport-native-kqueue</artifactId>
-      <version>4.1.74.Final</version>
       <classifier>osx-x86_64</classifier>
       <scope>test</scope>
     </dependency>

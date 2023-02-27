@@ -70,7 +70,7 @@ public enum Label {
    */
   POOL_NAME("pool_name");
 
-  private String labelOutput;
+  private final String labelOutput;
 
   Label(String labelOutput) {
     this.labelOutput = labelOutput;

@@ -18,6 +18,7 @@ package io.vertx.micrometer.backends;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.micrometer.Label;
@@ -27,6 +28,7 @@ import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxInfluxDbOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +37,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import static java.util.stream.Collectors.*;
+
 /**
  * {@link BackendRegistries} is responsible for managing registries related to particular micrometer backends (influxdb, prometheus...)
  * It contains a store of {@link BackendRegistry} objects, each of whose encapsulating a micrometer's {@link MeterRegistry}
+ *
  * @author Joel Takvorian
  */
 public final class BackendRegistries {
@@ -116,10 +121,12 @@ public final class BackendRegistries {
   }
 
   public static void registerMatchers(MeterRegistry registry, Set<Label> enabledLabels, List<Match> matches) {
-    String[] ignored = EnumSet.complementOf(EnumSet.copyOf(enabledLabels)).stream()
+    Set<String> ignored = EnumSet.complementOf(EnumSet.copyOf(enabledLabels)).stream()
       .map(Label::toString)
-      .toArray(String[]::new);
-    registry.config().meterFilter(MeterFilter.ignoreTags(ignored));
+      .collect(toSet());
+    if (!ignored.isEmpty()) {
+      registry.config().meterFilter(ignoreTags(ignored));
+    }
     matches.forEach(m -> {
       switch (m.getType()) {
         case EQUALS:
@@ -178,6 +185,23 @@ public final class BackendRegistries {
           break;
       }
     });
+  }
+
+  private static MeterFilter ignoreTags(Set<String> ignored) {
+    return new MeterFilter() {
+      @Override
+      public Meter.Id map(Meter.Id id) {
+        List<Tag> tags = new ArrayList<>();
+        int count = 0;
+        for (Tag tag : id.getTagsAsIterable()) {
+          if (!ignored.contains(tag.getKey())) {
+            tags.add(tag);
+          }
+          count++;
+        }
+        return tags.size() == count ? id : id.replaceTags(tags);
+      }
+    };
   }
 
   private static MeterFilter replaceTagValues(MetricsDomain domain, String tagKey, Function<String, String> replacement) {

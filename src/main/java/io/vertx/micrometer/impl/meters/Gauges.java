@@ -21,10 +21,13 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+import io.vertx.core.Vertx;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 
@@ -32,10 +35,13 @@ import java.util.function.ToDoubleFunction;
  * @author Joel Takvorian
  */
 public class Gauges<T> {
+
+  private final Object valueSupplierKey = new Object();
+
   private final String name;
   private final String description;
   private final Label[] keys;
-  private final Supplier<T> tSupplier;
+  private final Function<Meter.Id, T> tSupplier;
   private final ToDoubleFunction<T> dGetter;
   private final MeterRegistry registry;
   private final ConcurrentMap<Meter.Id, Object> gauges;
@@ -50,7 +56,7 @@ public class Gauges<T> {
     this.gauges = gauges;
     this.name = name;
     this.description = description;
-    this.tSupplier = tSupplier;
+    this.tSupplier = id -> tSupplier.get();
     this.dGetter = dGetter;
     this.registry = registry;
     this.keys = keys;
@@ -59,47 +65,63 @@ public class Gauges<T> {
   @SuppressWarnings("unchecked")
   public T get(String... values) {
     Tags tags = Tags.of(Labels.toTags(keys, values));
-    T candidate = tSupplier.get();
-    ToDoubleFunc<T> candidateFunc = new ToDoubleFunc<>(dGetter);
-    Gauge gauge = Gauge.builder(name, candidate, candidateFunc)
+    ContextInternal context = (ContextInternal) Vertx.currentContext();
+    ValueSupplier<T> valueSupplier = getOrCreateValueSupplier(context);
+    Gauge gauge = Gauge.builder(name, valueSupplier)
       .description(description)
-      .tags(Labels.toTags(keys, values))
+      .tags(tags)
+      .strongReference(true)
       .register(registry);
-    Meter.Id gaugeId = gauge.getId();
-    Object res;
-    for (; ; ) {
-      res = gauges.get(gaugeId);
-      if (res != null) {
-        break;
-      }
-      ensureGetterInvoked(gauge);
-      if (candidateFunc.invoked) {
-        gauges.put(gaugeId, candidate);
+    Meter.Id meterId = gauge.getId();
+    T res = (T) gauges.get(meterId);
+    if (res == null) {
+      T candidate = tSupplier.apply(meterId);
+      if ((res = (T) gauges.putIfAbsent(meterId, candidate)) == null) {
         res = candidate;
-        break;
+        valueSupplier.id = meterId;
+        return res;
       }
     }
-    return (T) res;
+    recycleValueSupplier(context, valueSupplier);
+    return res;
   }
 
-  private void ensureGetterInvoked(Gauge gauge) {
-    gauge.value();
+  @SuppressWarnings("unchecked")
+  private ValueSupplier<T> getOrCreateValueSupplier(ContextInternal context) {
+    ValueSupplier<T> res;
+    if (context == null || (res = (ValueSupplier<T>) context.contextData().get(valueSupplierKey)) == null) {
+      res = new ValueSupplier<>(gauges, dGetter);
+    }
+    return res;
   }
 
-  private static class ToDoubleFunc<R> implements ToDoubleFunction<R> {
-    final ToDoubleFunction<R> delegate;
-    volatile boolean invoked;
+  private void recycleValueSupplier(ContextInternal context, ValueSupplier<T> valueSupplier) {
+    if (context != null) {
+      context.contextData().put(valueSupplierKey, valueSupplier);
+    }
+  }
 
-    ToDoubleFunc(ToDoubleFunction<R> delegate) {
-      this.delegate = delegate;
+  private static class ValueSupplier<G> implements Supplier<Number> {
+    final ConcurrentMap<Meter.Id, Object> gauges;
+    final ToDoubleFunction<G> toDoubleFunc;
+    volatile Meter.Id id;
+
+    ValueSupplier(ConcurrentMap<Meter.Id, Object> gauges, ToDoubleFunction<G> toDoubleFunc) {
+      this.gauges = gauges;
+      this.toDoubleFunc = toDoubleFunc;
     }
 
     @Override
-    public double applyAsDouble(R value) {
-      if (!invoked) {
-        invoked = true;
+    @SuppressWarnings("unchecked")
+    public Number get() {
+      Meter.Id key = id;
+      if (key != null) {
+        Object o = gauges.get(key);
+        if (o != null) {
+          return toDoubleFunc.applyAsDouble((G) o);
+        }
       }
-      return delegate.applyAsDouble(value);
+      return 0.0D;
     }
   }
 }
