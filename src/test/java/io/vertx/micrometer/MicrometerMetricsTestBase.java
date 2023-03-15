@@ -72,7 +72,7 @@ public class MicrometerMetricsTestBase {
 
   protected void tearDown(TestContext context) {
     if (vertx != null) {
-      vertx.close(context.asyncAssertSuccess());
+      vertx.close().onComplete(context.asyncAssertSuccess());
     }
   }
 

@@ -79,7 +79,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
             vertx.setTimer(REQ_DELAY, handler ->
               req.routed("MyRoute").response().setChunked(true).putHeader("Content-Type", "text/plain").end(SERVER_RESPONSE));
           })
-          .listen(9195, "127.0.0.1", r -> {
+          .listen(9195, "127.0.0.1").onComplete(r -> {
             if (r.failed()) {
               ctx.fail(r.cause());
             } else {
@@ -255,7 +255,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
 
   private void wsRequest(HttpClient httpClient, TestContext ctx) {
     Async async = ctx.async();
-    httpClient.webSocket(9195, "127.0.0.1", "", ctx.asyncAssertSuccess(ws -> {
+    httpClient.webSocket(9195, "127.0.0.1", "").onComplete(ctx.asyncAssertSuccess(ws -> {
       ws.handler(event -> {
         async.complete();
         ws.close();

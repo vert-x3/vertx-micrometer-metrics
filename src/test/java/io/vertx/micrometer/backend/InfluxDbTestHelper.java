@@ -54,7 +54,7 @@ public final class InfluxDbTestHelper {
         });
       })
       .exceptionHandler(System.err::println)
-      .listen(port, "localhost", res -> {
+      .listen(port, "localhost").onComplete(res -> {
         if (res.succeeded()) {
           ready.complete();
         } else {

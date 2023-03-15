@@ -68,8 +68,8 @@ public class VertxEventBusMetricsTest extends MicrometerMetricsTestBase {
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": true, \"sleep\": 10}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": true, \"sleep\": 10}"));
-    vertx.eventBus().request("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"), ar -> {});
-    vertx.eventBus().request("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"), ar -> {});
+    vertx.eventBus().request("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
+    vertx.eventBus().request("no handler", new JsonObject("{\"fail\": false, \"sleep\": 30}"));
     vertx.eventBus().publish("testSubject", new JsonObject("{\"fail\": false, \"sleep\": 30, \"last\": true}"));
     allReceived.awaitSuccess();
 

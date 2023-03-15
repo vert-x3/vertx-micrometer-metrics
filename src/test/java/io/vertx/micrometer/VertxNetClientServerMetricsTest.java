@@ -55,7 +55,7 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
         netServer = vertx.createNetServer();
         netServer
           .connectHandler(socket -> socket.handler(buffer -> socket.write(SERVER_RESPONSE)))
-          .listen(9194, "localhost", r -> {
+          .listen(9194, "localhost").onComplete(r -> {
             if (r.failed()) {
               ctx.fail(r.cause());
             } else {
@@ -110,7 +110,7 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
   private void request(NetClient client, TestContext ctx) {
     for (int i = 0; i < SENT_COUNT; i++) {
       Async async = ctx.async();
-      client.connect(9194, "localhost", res -> {
+      client.connect(9194, "localhost").onComplete(res -> {
         if (res.failed()) {
           async.complete();
           ctx.fail(res.cause());
