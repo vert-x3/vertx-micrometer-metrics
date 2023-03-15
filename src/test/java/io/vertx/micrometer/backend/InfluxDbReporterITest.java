@@ -36,7 +36,7 @@ public class InfluxDbReporterITest extends MicrometerMetricsTestBase {
   @Override
   protected void tearDown(TestContext context) {
     super.tearDown(context);
-    vertxForSimulatedServer.close(context.asyncAssertSuccess());
+    vertxForSimulatedServer.close().onComplete(context.asyncAssertSuccess());
   }
 
   @Test

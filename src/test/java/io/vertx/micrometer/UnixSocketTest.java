@@ -39,8 +39,8 @@ public class UnixSocketTest extends MicrometerMetricsTestBase {
 
     Async allDeployed = ctx.async();
     vertx.deployVerticle(
-      new DomainSocketServer(),
-      h -> vertx.deployVerticle(new DomainSocketClientTriggerVerticle(), ch -> allDeployed.complete()));
+      new DomainSocketServer()).onComplete(
+      h -> vertx.deployVerticle(new DomainSocketClientTriggerVerticle()).onComplete( ch -> allDeployed.complete()));
 
     allDeployed.await(2000);
     waitForValue(ctx, "vertx.net.client.active.connections[remote=/var/tmp/myservice.sock]$VALUE", v -> v.intValue() == 0);
@@ -55,7 +55,7 @@ public class UnixSocketTest extends MicrometerMetricsTestBase {
     public void start(Promise<Void> startPromise) {
       vertx.createHttpServer().requestHandler(req -> {
         })
-        .listen(SocketAddress.domainSocketAddress("/var/tmp/myservice.sock"), ar -> {
+        .listen(SocketAddress.domainSocketAddress("/var/tmp/myservice.sock")).onComplete(ar -> {
           if (ar.succeeded()) {
             startPromise.complete();
           } else {
@@ -75,11 +75,11 @@ public class UnixSocketTest extends MicrometerMetricsTestBase {
     public void start(Promise<Void> startPromise) {
       NetClient netClient = vertx.createNetClient();
       SocketAddress addr = SocketAddress.domainSocketAddress("/var/tmp/myservice.sock");
-      netClient.connect(addr, ar -> {
+      netClient.connect(addr).onComplete(ar -> {
         if (ar.succeeded()) {
           NetSocket socket = ar.result().exceptionHandler(startPromise::fail);
           socket.write("test");
-          socket.close(v -> startPromise.complete());
+          socket.close().onComplete(v -> startPromise.complete());
         } else {
           startPromise.fail(ar.cause());
         }

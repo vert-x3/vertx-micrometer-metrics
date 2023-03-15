@@ -50,7 +50,7 @@ public class ExternalConfigurationTest {
   @After
   public void tearDown(TestContext context) {
     if (vertx != null) {
-      vertx.close(context.asyncAssertSuccess());
+      vertx.close().onComplete(context.asyncAssertSuccess());
     }
   }
 

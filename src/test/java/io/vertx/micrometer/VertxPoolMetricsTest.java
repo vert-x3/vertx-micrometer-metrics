@@ -44,7 +44,7 @@ public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
           throw new RuntimeException(e);
         }
         future.complete();
-      }, false, context.asyncAssertSuccess(v -> {
+      }, false).onComplete(context.asyncAssertSuccess(v -> {
         ready.countDown();
       }));
     }

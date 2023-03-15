@@ -71,7 +71,7 @@ public class VertxHttpServerMetricsConfigTest extends MicrometerMetricsTestBase 
             vertx.setTimer(30L, handler ->
               req.response().setChunked(true).putHeader("Content-Type", "text/plain").end(""));
           })
-          .listen(9195, "127.0.0.1", r -> {
+          .listen(9195, "127.0.0.1").onComplete(r -> {
             if (r.failed()) {
               ctx.fail(r.cause());
             } else {

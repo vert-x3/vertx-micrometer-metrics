@@ -31,7 +31,7 @@ public class VertxDatagramSocketMetricsTest extends MicrometerMetricsTestBase {
     String host = "localhost";
     Async receiveLatch = context.async(loops);
     Async listenLatch = context.async();
-    vertx.createDatagramSocket().listen(port, host, context.asyncAssertSuccess(so -> {
+    vertx.createDatagramSocket().listen(port, host).onComplete(context.asyncAssertSuccess(so -> {
       so.handler(packet -> receiveLatch.countDown());
       listenLatch.complete();
     }));
@@ -40,7 +40,7 @@ public class VertxDatagramSocketMetricsTest extends MicrometerMetricsTestBase {
     // Send to server
     DatagramSocket client = vertx.createDatagramSocket();
     for (int i = 0; i < loops; i++) {
-      client.send(datagramContent, port, host, context.asyncAssertSuccess());
+      client.send(datagramContent, port, host).onComplete(context.asyncAssertSuccess());
     }
     receiveLatch.awaitSuccess(15000);
 
@@ -66,7 +66,7 @@ public class VertxDatagramSocketMetricsTest extends MicrometerMetricsTestBase {
     String host = "localhost";
     Async receiveLatch = context.async();
     Async listenLatch = context.async();
-    vertx.createDatagramSocket().listen(port, host, context.asyncAssertSuccess(so -> {
+    vertx.createDatagramSocket().listen(port, host).onComplete(context.asyncAssertSuccess(so -> {
       so.handler(packet -> receiveLatch.countDown());
       listenLatch.complete();
     }));
@@ -74,7 +74,7 @@ public class VertxDatagramSocketMetricsTest extends MicrometerMetricsTestBase {
 
     // Send to server
     DatagramSocket client = vertx.createDatagramSocket();
-    client.send(datagramContent, port, host, context.asyncAssertSuccess());
+    client.send(datagramContent, port, host).onComplete(context.asyncAssertSuccess());
     receiveLatch.awaitSuccess(15000);
 
     waitForValue(context, "vertx.datagram.bytesSent[]$COUNT", value -> value.intValue() == 1);
