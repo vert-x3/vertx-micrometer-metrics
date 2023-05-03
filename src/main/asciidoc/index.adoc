@@ -645,7 +645,7 @@ The actual names may vary depending on the metrics backend.
 |Summary
 |Size in bytes of the responses.
 
-|`vertx_http_client_active_ws_connections`
+|`vertx_http_server_active_ws_connections`
 |`local`, `remote`
 |Gauge
 |Number of websockets currently opened.
