@@ -40,6 +40,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
 
   private final int concurrentClients = ForkJoinPool.commonPool().getParallelism();
   private HttpServer httpServer;
+  private HttpClient httpClient;
 
   @Override
   protected MicrometerMetricsOptions metricOptions() {
@@ -91,9 +92,16 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
     serverReady.awaitSuccess();
   }
 
+  @Override
+  protected void tearDown(TestContext context) {
+    super.tearDown(context);
+    httpServer = null;
+    httpClient = null;
+  }
+
   @Test
   public void shouldDecrementActiveRequestsWhenRequestEndedAfterResponseEnded(TestContext ctx) {
-    HttpClient httpClient = vertx.createHttpClient(new HttpClientOptions().setProtocolVersion(HttpVersion.HTTP_2).setHttp2ClearTextUpgrade(false));
+    httpClient = vertx.createHttpClient(new HttpClientOptions().setProtocolVersion(HttpVersion.HTTP_2).setHttp2ClearTextUpgrade(false));
     httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource")
       .compose(req -> {
         req.setChunked(true).sendHead();
@@ -222,7 +230,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
     Async clientsFinished = ctx.async(concurrentClients);
     for (int i = 0; i < concurrentClients; i++) {
       ForkJoinPool.commonPool().execute(() -> {
-        HttpClient httpClient = vertx.createHttpClient();
+        httpClient = vertx.createHttpClient();
         httpRequest(httpClient, ctx, user);
         if (ws) {
           wsRequest(httpClient, ctx);
