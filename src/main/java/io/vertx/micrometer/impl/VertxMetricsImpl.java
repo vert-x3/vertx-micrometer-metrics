@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static io.vertx.micrometer.MetricsDomain.*;
 
@@ -57,6 +59,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final VertxPoolMetrics poolMetrics;
   private final Map<String, VertxClientMetrics> mapClientMetrics = new ConcurrentHashMap<>();
   private final Set<String> disabledCategories = new HashSet<>();
+  private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
   public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
     super(backendRegistry.getMeterRegistry(), gaugesTable);
@@ -160,6 +163,8 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
 
   @Override
   public void close() {
-    BackendRegistries.stop(registryName);
+    executor.execute(() -> {
+      BackendRegistries.stop(registryName);
+    });
   }
 }
