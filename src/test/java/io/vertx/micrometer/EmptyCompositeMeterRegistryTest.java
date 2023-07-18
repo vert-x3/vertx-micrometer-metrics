@@ -40,6 +40,6 @@ public class EmptyCompositeMeterRegistryTest extends MicrometerMetricsTestBase {
     vertx = vertx(ctx);
 
     // If the task is executed then the gauge lookup succedeed
-    vertx.executeBlocking(prom -> prom.complete()).onComplete(ctx.asyncAssertSuccess());
+    vertx.executeBlocking(() -> null).onComplete(ctx.asyncAssertSuccess());
   }
 }

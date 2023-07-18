@@ -37,13 +37,9 @@ public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
     WorkerExecutor workerExecutor = vertx.createSharedWorkerExecutor("test-worker", maxPoolSize);
     Async ready = context.async(taskCount);
     for (int i = 0; i < taskCount; i++) {
-      workerExecutor.executeBlocking(future -> {
-        try {
-          Thread.sleep(sleepMillis);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-        future.complete();
+      workerExecutor.executeBlocking(() -> {
+        Thread.sleep(sleepMillis);
+        return null;
       }, false).onComplete(context.asyncAssertSuccess(v -> {
         ready.countDown();
       }));
