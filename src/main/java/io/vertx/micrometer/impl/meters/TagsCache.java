@@ -20,37 +20,31 @@ package io.vertx.micrometer.impl.meters;
 import io.micrometer.core.instrument.ImmutableTag;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
-import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.impl.Labels;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 
 /**
- * Cache {@link Tags} in Vert.x contexts.
- * Each Vert.x context gets its own cache to avoid concurrency complications.
- * In case this cache is called on a non-Vert.x thread, a new instance of {@link Tags} is returned.
+ * Cache {@link Tags} in Vert.x EL contexts.
+ * Each Vert.x EL context gets its own cache to avoid concurrency complications.
+ * In case this cache is called on a non-Vert.x thread or a worker thread, a new instance of {@link Tags} is returned.
  */
 public class TagsCache {
 
   // To avoid creating cache keys on each lookup, a flyweight is stored in the Vert.x context
-  // It is possible to have this flyweight because the caller is either on an event loop context or a worker context
-  // Never two workers will request a Tags instance on the same context concurrently
+  // It is possible to have this flyweight because the caller is on an event loop thread
   private static final Object TAGS_DATA_FLYWEIGHT = new Object();
   // Used to store the per-context Tags cache
   private static final Object CACHE = new Object();
 
   public static Tags getOrCreate(Iterable<Tag> customTags, Label[] keys, String[] values) {
-    ContextInternal context = (ContextInternal) Vertx.currentContext();
-    if (context == null) {
+    ContextInternal context = ContextInternal.current();
+    if (context == null || context.isWorkerContext() || !context.inThread()) {
       return createTags(customTags, keys, values);
     }
     Map<TagsData, Tags> cache = cache(context);
@@ -75,7 +69,8 @@ public class TagsCache {
     return tagsData;
   }
 
-  private static Tags createTags(Iterable<Tag> customTags, Label[] keys, String[] values) {
+  // Visible for testing
+  static Tags createTags(Iterable<Tag> customTags, Label[] keys, String[] values) {
     return Labels.toTags(keys, values).and(customTags);
   }
 
@@ -179,7 +174,7 @@ public class TagsCache {
     @Override
     public String toString() {
       return "TagsData{" +
-        "customTags=" + StreamSupport.stream(customTags.spliterator(), false).collect(toList()) +
+        "customTags=" + (customTags == null ? null : StreamSupport.stream(customTags.spliterator(), false).collect(toList())) +
         ", keys=" + Arrays.toString(keys) +
         ", values=" + Arrays.toString(values) +
         '}';
