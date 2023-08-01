@@ -142,6 +142,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-launcher-legacy-cli</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <!-- Test dependency is for Unix socket test (linux) -->
       <groupId>io.netty</groupId>
       <artifactId>netty-transport-native-epoll</artifactId>
