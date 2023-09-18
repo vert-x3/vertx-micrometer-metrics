@@ -5,12 +5,7 @@ import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpVersion;
+import io.vertx.core.http.*;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
@@ -41,6 +36,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
   private final int concurrentClients = ForkJoinPool.commonPool().getParallelism();
   private HttpServer httpServer;
   private HttpClient httpClient;
+  private WebSocketClient wsClient;
 
   @Override
   protected MicrometerMetricsOptions metricOptions() {
@@ -231,9 +227,10 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
     for (int i = 0; i < concurrentClients; i++) {
       ForkJoinPool.commonPool().execute(() -> {
         httpClient = vertx.createHttpClient();
+        wsClient = vertx.createWebSocketClient();
         httpRequest(httpClient, ctx, user);
         if (ws) {
-          wsRequest(httpClient, ctx);
+          wsRequest(wsClient, ctx);
         }
         clientsFinished.countDown();
       });
@@ -261,9 +258,9 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
     async.await();
   }
 
-  private void wsRequest(HttpClient httpClient, TestContext ctx) {
+  private void wsRequest(WebSocketClient httpClient, TestContext ctx) {
     Async async = ctx.async();
-    httpClient.webSocket(9195, "127.0.0.1", "").onComplete(ctx.asyncAssertSuccess(ws -> {
+    httpClient.connect(9195, "127.0.0.1", "").onComplete(ctx.asyncAssertSuccess(ws -> {
       ws.handler(event -> {
         async.complete();
         ws.close();

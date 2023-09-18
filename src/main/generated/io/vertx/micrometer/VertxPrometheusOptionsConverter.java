@@ -20,9 +20,14 @@ public class VertxPrometheusOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, VertxPrometheusOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "embeddedServerEndpoint":
-          if (member.getValue() instanceof String) {
-            obj.setEmbeddedServerEndpoint((String)member.getValue());
+        case "enabled":
+          if (member.getValue() instanceof Boolean) {
+            obj.setEnabled((Boolean)member.getValue());
+          }
+          break;
+        case "startEmbeddedServer":
+          if (member.getValue() instanceof Boolean) {
+            obj.setStartEmbeddedServer((Boolean)member.getValue());
           }
           break;
         case "embeddedServerOptions":
@@ -30,19 +35,14 @@ public class VertxPrometheusOptionsConverter {
             obj.setEmbeddedServerOptions(new io.vertx.core.http.HttpServerOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
-        case "enabled":
-          if (member.getValue() instanceof Boolean) {
-            obj.setEnabled((Boolean)member.getValue());
+        case "embeddedServerEndpoint":
+          if (member.getValue() instanceof String) {
+            obj.setEmbeddedServerEndpoint((String)member.getValue());
           }
           break;
         case "publishQuantiles":
           if (member.getValue() instanceof Boolean) {
             obj.setPublishQuantiles((Boolean)member.getValue());
-          }
-          break;
-        case "startEmbeddedServer":
-          if (member.getValue() instanceof Boolean) {
-            obj.setStartEmbeddedServer((Boolean)member.getValue());
           }
           break;
       }
@@ -54,14 +54,14 @@ public class VertxPrometheusOptionsConverter {
   }
 
   public static void toJson(VertxPrometheusOptions obj, java.util.Map<String, Object> json) {
-    if (obj.getEmbeddedServerEndpoint() != null) {
-      json.put("embeddedServerEndpoint", obj.getEmbeddedServerEndpoint());
-    }
+    json.put("enabled", obj.isEnabled());
+    json.put("startEmbeddedServer", obj.isStartEmbeddedServer());
     if (obj.getEmbeddedServerOptions() != null) {
       json.put("embeddedServerOptions", obj.getEmbeddedServerOptions().toJson());
     }
-    json.put("enabled", obj.isEnabled());
+    if (obj.getEmbeddedServerEndpoint() != null) {
+      json.put("embeddedServerEndpoint", obj.getEmbeddedServerEndpoint());
+    }
     json.put("publishQuantiles", obj.isPublishQuantiles());
-    json.put("startEmbeddedServer", obj.isStartEmbeddedServer());
   }
 }

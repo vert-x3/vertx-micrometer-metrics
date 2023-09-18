@@ -20,14 +20,9 @@ public class MetricsNamingConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MetricsNaming obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "clientProcessingPending":
+        case "clientQueueTime":
           if (member.getValue() instanceof String) {
-            obj.setClientProcessingPending((String)member.getValue());
-          }
-          break;
-        case "clientProcessingTime":
-          if (member.getValue() instanceof String) {
-            obj.setClientProcessingTime((String)member.getValue());
+            obj.setClientQueueTime((String)member.getValue());
           }
           break;
         case "clientQueuePending":
@@ -35,9 +30,14 @@ public class MetricsNamingConverter {
             obj.setClientQueuePending((String)member.getValue());
           }
           break;
-        case "clientQueueTime":
+        case "clientProcessingTime":
           if (member.getValue() instanceof String) {
-            obj.setClientQueueTime((String)member.getValue());
+            obj.setClientProcessingTime((String)member.getValue());
+          }
+          break;
+        case "clientProcessingPending":
+          if (member.getValue() instanceof String) {
+            obj.setClientProcessingPending((String)member.getValue());
           }
           break;
         case "clientResetsCount":
@@ -60,26 +60,6 @@ public class MetricsNamingConverter {
             obj.setDatagramErrorCount((String)member.getValue());
           }
           break;
-        case "ebBytesRead":
-          if (member.getValue() instanceof String) {
-            obj.setEbBytesRead((String)member.getValue());
-          }
-          break;
-        case "ebBytesWritten":
-          if (member.getValue() instanceof String) {
-            obj.setEbBytesWritten((String)member.getValue());
-          }
-          break;
-        case "ebDelivered":
-          if (member.getValue() instanceof String) {
-            obj.setEbDelivered((String)member.getValue());
-          }
-          break;
-        case "ebDiscarded":
-          if (member.getValue() instanceof String) {
-            obj.setEbDiscarded((String)member.getValue());
-          }
-          break;
         case "ebHandlers":
           if (member.getValue() instanceof String) {
             obj.setEbHandlers((String)member.getValue());
@@ -100,9 +80,24 @@ public class MetricsNamingConverter {
             obj.setEbPublished((String)member.getValue());
           }
           break;
+        case "ebSent":
+          if (member.getValue() instanceof String) {
+            obj.setEbSent((String)member.getValue());
+          }
+          break;
         case "ebReceived":
           if (member.getValue() instanceof String) {
             obj.setEbReceived((String)member.getValue());
+          }
+          break;
+        case "ebDelivered":
+          if (member.getValue() instanceof String) {
+            obj.setEbDelivered((String)member.getValue());
+          }
+          break;
+        case "ebDiscarded":
+          if (member.getValue() instanceof String) {
+            obj.setEbDiscarded((String)member.getValue());
           }
           break;
         case "ebReplyFailures":
@@ -110,24 +105,14 @@ public class MetricsNamingConverter {
             obj.setEbReplyFailures((String)member.getValue());
           }
           break;
-        case "ebSent":
+        case "ebBytesRead":
           if (member.getValue() instanceof String) {
-            obj.setEbSent((String)member.getValue());
+            obj.setEbBytesRead((String)member.getValue());
           }
           break;
-        case "httpActiveRequests":
+        case "ebBytesWritten":
           if (member.getValue() instanceof String) {
-            obj.setHttpActiveRequests((String)member.getValue());
-          }
-          break;
-        case "httpActiveWsConnections":
-          if (member.getValue() instanceof String) {
-            obj.setHttpActiveWsConnections((String)member.getValue());
-          }
-          break;
-        case "httpQueuePending":
-          if (member.getValue() instanceof String) {
-            obj.setHttpQueuePending((String)member.getValue());
+            obj.setEbBytesWritten((String)member.getValue());
           }
           break;
         case "httpQueueTime":
@@ -135,14 +120,14 @@ public class MetricsNamingConverter {
             obj.setHttpQueueTime((String)member.getValue());
           }
           break;
-        case "httpRequestBytes":
+        case "httpQueuePending":
           if (member.getValue() instanceof String) {
-            obj.setHttpRequestBytes((String)member.getValue());
+            obj.setHttpQueuePending((String)member.getValue());
           }
           break;
-        case "httpRequestResetsCount":
+        case "httpActiveRequests":
           if (member.getValue() instanceof String) {
-            obj.setHttpRequestResetsCount((String)member.getValue());
+            obj.setHttpActiveRequests((String)member.getValue());
           }
           break;
         case "httpRequestsCount":
@@ -150,9 +135,9 @@ public class MetricsNamingConverter {
             obj.setHttpRequestsCount((String)member.getValue());
           }
           break;
-        case "httpResponseBytes":
+        case "httpRequestBytes":
           if (member.getValue() instanceof String) {
-            obj.setHttpResponseBytes((String)member.getValue());
+            obj.setHttpRequestBytes((String)member.getValue());
           }
           break;
         case "httpResponseTime":
@@ -165,9 +150,44 @@ public class MetricsNamingConverter {
             obj.setHttpResponsesCount((String)member.getValue());
           }
           break;
+        case "httpResponseBytes":
+          if (member.getValue() instanceof String) {
+            obj.setHttpResponseBytes((String)member.getValue());
+          }
+          break;
+        case "httpActiveWsConnections":
+          if (member.getValue() instanceof String) {
+            obj.setHttpActiveWsConnections((String)member.getValue());
+          }
+          break;
+        case "httpRequestResetsCount":
+          if (member.getValue() instanceof String) {
+            obj.setHttpRequestResetsCount((String)member.getValue());
+          }
+          break;
         case "netActiveConnections":
           if (member.getValue() instanceof String) {
             obj.setNetActiveConnections((String)member.getValue());
+          }
+          break;
+        case "poolUsage":
+          if (member.getValue() instanceof String) {
+            obj.setPoolUsage((String)member.getValue());
+          }
+          break;
+        case "poolInUse":
+          if (member.getValue() instanceof String) {
+            obj.setPoolInUse((String)member.getValue());
+          }
+          break;
+        case "poolUsageRatio":
+          if (member.getValue() instanceof String) {
+            obj.setPoolUsageRatio((String)member.getValue());
+          }
+          break;
+        case "poolCompleted":
+          if (member.getValue() instanceof String) {
+            obj.setPoolCompleted((String)member.getValue());
           }
           break;
         case "netBytesRead":
@@ -185,34 +205,14 @@ public class MetricsNamingConverter {
             obj.setNetErrorCount((String)member.getValue());
           }
           break;
-        case "poolCompleted":
-          if (member.getValue() instanceof String) {
-            obj.setPoolCompleted((String)member.getValue());
-          }
-          break;
-        case "poolInUse":
-          if (member.getValue() instanceof String) {
-            obj.setPoolInUse((String)member.getValue());
-          }
-          break;
-        case "poolQueuePending":
-          if (member.getValue() instanceof String) {
-            obj.setPoolQueuePending((String)member.getValue());
-          }
-          break;
         case "poolQueueTime":
           if (member.getValue() instanceof String) {
             obj.setPoolQueueTime((String)member.getValue());
           }
           break;
-        case "poolUsage":
+        case "poolQueuePending":
           if (member.getValue() instanceof String) {
-            obj.setPoolUsage((String)member.getValue());
-          }
-          break;
-        case "poolUsageRatio":
-          if (member.getValue() instanceof String) {
-            obj.setPoolUsageRatio((String)member.getValue());
+            obj.setPoolQueuePending((String)member.getValue());
           }
           break;
       }
@@ -224,17 +224,17 @@ public class MetricsNamingConverter {
   }
 
   public static void toJson(MetricsNaming obj, java.util.Map<String, Object> json) {
-    if (obj.getClientProcessingPending() != null) {
-      json.put("clientProcessingPending", obj.getClientProcessingPending());
-    }
-    if (obj.getClientProcessingTime() != null) {
-      json.put("clientProcessingTime", obj.getClientProcessingTime());
+    if (obj.getClientQueueTime() != null) {
+      json.put("clientQueueTime", obj.getClientQueueTime());
     }
     if (obj.getClientQueuePending() != null) {
       json.put("clientQueuePending", obj.getClientQueuePending());
     }
-    if (obj.getClientQueueTime() != null) {
-      json.put("clientQueueTime", obj.getClientQueueTime());
+    if (obj.getClientProcessingTime() != null) {
+      json.put("clientProcessingTime", obj.getClientProcessingTime());
+    }
+    if (obj.getClientProcessingPending() != null) {
+      json.put("clientProcessingPending", obj.getClientProcessingPending());
     }
     if (obj.getClientResetsCount() != null) {
       json.put("clientResetsCount", obj.getClientResetsCount());
@@ -248,18 +248,6 @@ public class MetricsNamingConverter {
     if (obj.getDatagramErrorCount() != null) {
       json.put("datagramErrorCount", obj.getDatagramErrorCount());
     }
-    if (obj.getEbBytesRead() != null) {
-      json.put("ebBytesRead", obj.getEbBytesRead());
-    }
-    if (obj.getEbBytesWritten() != null) {
-      json.put("ebBytesWritten", obj.getEbBytesWritten());
-    }
-    if (obj.getEbDelivered() != null) {
-      json.put("ebDelivered", obj.getEbDelivered());
-    }
-    if (obj.getEbDiscarded() != null) {
-      json.put("ebDiscarded", obj.getEbDiscarded());
-    }
     if (obj.getEbHandlers() != null) {
       json.put("ebHandlers", obj.getEbHandlers());
     }
@@ -272,38 +260,41 @@ public class MetricsNamingConverter {
     if (obj.getEbPublished() != null) {
       json.put("ebPublished", obj.getEbPublished());
     }
+    if (obj.getEbSent() != null) {
+      json.put("ebSent", obj.getEbSent());
+    }
     if (obj.getEbReceived() != null) {
       json.put("ebReceived", obj.getEbReceived());
+    }
+    if (obj.getEbDelivered() != null) {
+      json.put("ebDelivered", obj.getEbDelivered());
+    }
+    if (obj.getEbDiscarded() != null) {
+      json.put("ebDiscarded", obj.getEbDiscarded());
     }
     if (obj.getEbReplyFailures() != null) {
       json.put("ebReplyFailures", obj.getEbReplyFailures());
     }
-    if (obj.getEbSent() != null) {
-      json.put("ebSent", obj.getEbSent());
+    if (obj.getEbBytesRead() != null) {
+      json.put("ebBytesRead", obj.getEbBytesRead());
     }
-    if (obj.getHttpActiveRequests() != null) {
-      json.put("httpActiveRequests", obj.getHttpActiveRequests());
-    }
-    if (obj.getHttpActiveWsConnections() != null) {
-      json.put("httpActiveWsConnections", obj.getHttpActiveWsConnections());
-    }
-    if (obj.getHttpQueuePending() != null) {
-      json.put("httpQueuePending", obj.getHttpQueuePending());
+    if (obj.getEbBytesWritten() != null) {
+      json.put("ebBytesWritten", obj.getEbBytesWritten());
     }
     if (obj.getHttpQueueTime() != null) {
       json.put("httpQueueTime", obj.getHttpQueueTime());
     }
-    if (obj.getHttpRequestBytes() != null) {
-      json.put("httpRequestBytes", obj.getHttpRequestBytes());
+    if (obj.getHttpQueuePending() != null) {
+      json.put("httpQueuePending", obj.getHttpQueuePending());
     }
-    if (obj.getHttpRequestResetsCount() != null) {
-      json.put("httpRequestResetsCount", obj.getHttpRequestResetsCount());
+    if (obj.getHttpActiveRequests() != null) {
+      json.put("httpActiveRequests", obj.getHttpActiveRequests());
     }
     if (obj.getHttpRequestsCount() != null) {
       json.put("httpRequestsCount", obj.getHttpRequestsCount());
     }
-    if (obj.getHttpResponseBytes() != null) {
-      json.put("httpResponseBytes", obj.getHttpResponseBytes());
+    if (obj.getHttpRequestBytes() != null) {
+      json.put("httpRequestBytes", obj.getHttpRequestBytes());
     }
     if (obj.getHttpResponseTime() != null) {
       json.put("httpResponseTime", obj.getHttpResponseTime());
@@ -311,8 +302,29 @@ public class MetricsNamingConverter {
     if (obj.getHttpResponsesCount() != null) {
       json.put("httpResponsesCount", obj.getHttpResponsesCount());
     }
+    if (obj.getHttpResponseBytes() != null) {
+      json.put("httpResponseBytes", obj.getHttpResponseBytes());
+    }
+    if (obj.getHttpActiveWsConnections() != null) {
+      json.put("httpActiveWsConnections", obj.getHttpActiveWsConnections());
+    }
+    if (obj.getHttpRequestResetsCount() != null) {
+      json.put("httpRequestResetsCount", obj.getHttpRequestResetsCount());
+    }
     if (obj.getNetActiveConnections() != null) {
       json.put("netActiveConnections", obj.getNetActiveConnections());
+    }
+    if (obj.getPoolUsage() != null) {
+      json.put("poolUsage", obj.getPoolUsage());
+    }
+    if (obj.getPoolInUse() != null) {
+      json.put("poolInUse", obj.getPoolInUse());
+    }
+    if (obj.getPoolUsageRatio() != null) {
+      json.put("poolUsageRatio", obj.getPoolUsageRatio());
+    }
+    if (obj.getPoolCompleted() != null) {
+      json.put("poolCompleted", obj.getPoolCompleted());
     }
     if (obj.getNetBytesRead() != null) {
       json.put("netBytesRead", obj.getNetBytesRead());
@@ -323,23 +335,11 @@ public class MetricsNamingConverter {
     if (obj.getNetErrorCount() != null) {
       json.put("netErrorCount", obj.getNetErrorCount());
     }
-    if (obj.getPoolCompleted() != null) {
-      json.put("poolCompleted", obj.getPoolCompleted());
-    }
-    if (obj.getPoolInUse() != null) {
-      json.put("poolInUse", obj.getPoolInUse());
-    }
-    if (obj.getPoolQueuePending() != null) {
-      json.put("poolQueuePending", obj.getPoolQueuePending());
-    }
     if (obj.getPoolQueueTime() != null) {
       json.put("poolQueueTime", obj.getPoolQueueTime());
     }
-    if (obj.getPoolUsage() != null) {
-      json.put("poolUsage", obj.getPoolUsage());
-    }
-    if (obj.getPoolUsageRatio() != null) {
-      json.put("poolUsageRatio", obj.getPoolUsageRatio());
+    if (obj.getPoolQueuePending() != null) {
+      json.put("poolQueuePending", obj.getPoolQueuePending());
     }
   }
 }
