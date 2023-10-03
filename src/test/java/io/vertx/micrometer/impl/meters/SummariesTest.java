@@ -19,16 +19,14 @@ package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.backends.BackendRegistries;
-import io.vertx.micrometer.impl.Labels;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.EnumSet;
 
 import static io.vertx.micrometer.Label.EB_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,20 +36,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class SummariesTest {
 
-  private static final EnumSet<Label> ALL_LABELS = EnumSet.allOf(Label.class);
-
   @Test
   public void shouldAliasSummaryLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue("addr1")
       .setAlias("1")));
-    DistributionSummary s1 = DistributionSummary.builder("my_summary").tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    DistributionSummary s1 = DistributionSummary.builder("my_summary").tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     s1.record(5);
     s1.record(8);
-    DistributionSummary s2 = DistributionSummary.builder("my_summary").tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    DistributionSummary s2 = DistributionSummary.builder("my_summary").tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     s2.record(10);
 
     DistributionSummary s = registry.find("my_summary").tags("address", "1").summary();
@@ -67,15 +63,15 @@ public class SummariesTest {
   @Test
   public void shouldIgnoreSummaryLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue(".*")
       .setAlias("_")));
-    DistributionSummary s1 = DistributionSummary.builder("my_summary").tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    DistributionSummary s1 = DistributionSummary.builder("my_summary").tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     s1.record(5);
     s1.record(8);
-    DistributionSummary s2 = DistributionSummary.builder("my_summary").tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    DistributionSummary s2 = DistributionSummary.builder("my_summary").tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     s2.record(10);
 
     DistributionSummary s = registry.find("my_summary").tags("address", "_").summary();

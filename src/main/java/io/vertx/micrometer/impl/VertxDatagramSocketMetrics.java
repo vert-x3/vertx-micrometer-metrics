@@ -20,9 +20,12 @@ import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.DatagramSocketMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
+
+import java.util.EnumSet;
 
 import static io.vertx.micrometer.Label.CLASS_NAME;
 import static io.vertx.micrometer.Label.LOCAL;
@@ -35,15 +38,15 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
   private volatile DistributionSummary bytesWritten;
   private volatile DistributionSummary bytesRead;
 
-  VertxDatagramSocketMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges) {
-    super(registry, names, MetricsDomain.DATAGRAM_SOCKET, longGauges);
+  VertxDatagramSocketMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+    super(registry, names, MetricsDomain.DATAGRAM_SOCKET, longGauges, enabledLabels);
   }
 
   @Override
   public void listening(String localName, SocketAddress localAddress) {
     bytesRead = distributionSummary(names.getDatagramBytesRead())
       .description("Total number of datagram bytes received")
-      .tags(Labels.toTags(LOCAL, Labels.address(localAddress, localName)))
+      .tags(toTags(LOCAL, Labels::address, localAddress, localName))
       .register(registry);
   }
 
@@ -68,7 +71,7 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
   public void exceptionOccurred(Void socketMetric, SocketAddress remoteAddress, Throwable t) {
     counter(names.getDatagramErrorCount())
       .description("Total number of datagram errors")
-      .tags(Labels.toTags(CLASS_NAME, t.getClass().getSimpleName()))
+      .tags(toTags(CLASS_NAME, Class::getSimpleName, t.getClass()))
       .register(registry)
       .increment();
   }

@@ -22,9 +22,11 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.NAMESPACE;
@@ -35,8 +37,8 @@ import static io.vertx.micrometer.Label.REMOTE;
  */
 class VertxClientMetrics extends AbstractMetrics {
 
-  VertxClientMetrics(MeterRegistry registry, String type, MetricsNaming names, LongGauges longGauges) {
-    super(registry, names, type, longGauges);
+  VertxClientMetrics(MeterRegistry registry, String type, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+    super(registry, names, type, longGauges, enabledLabels);
   }
 
   ClientMetrics<Timer.Sample, Timer.Sample, Object, Object> forInstance(SocketAddress remoteAddress, String namespace) {
@@ -53,7 +55,7 @@ class VertxClientMetrics extends AbstractMetrics {
 
 
     Instance(SocketAddress remoteAddress, String namespace) {
-      Tags tags = Labels.toTags(REMOTE, Labels.address(remoteAddress), NAMESPACE, namespace == null ? "" : namespace);
+      Tags tags = toTags(REMOTE, Labels::address, remoteAddress, NAMESPACE, s -> s == null ? "" : s, namespace);
       queueDelay = timer(names.getClientQueueTime())
         .description("Time spent in queue before being processed")
         .tags(tags)

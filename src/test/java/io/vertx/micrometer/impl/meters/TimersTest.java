@@ -18,17 +18,15 @@
 package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.backends.BackendRegistries;
-import io.vertx.micrometer.impl.Labels;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
 import static io.vertx.micrometer.Label.EB_ADDRESS;
@@ -39,20 +37,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class TimersTest {
 
-  private static final EnumSet<Label> ALL_LABELS = EnumSet.allOf(Label.class);
-
   @Test
   public void shouldAliasTimerLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue("addr1")
       .setAlias("1")));
-    Timer t1 = Timer.builder("my_timer").tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    Timer t1 = Timer.builder("my_timer").tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     t1.record(5, TimeUnit.MILLISECONDS);
     t1.record(8, TimeUnit.MILLISECONDS);
-    Timer t2 = Timer.builder("my_timer").tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    Timer t2 = Timer.builder("my_timer").tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     t2.record(10, TimeUnit.MILLISECONDS);
 
     Timer t = registry.find("my_timer").tags("address", "1").timer();
@@ -68,15 +64,15 @@ public class TimersTest {
   @Test
   public void shouldIgnoreTimerLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue(".*")
       .setAlias("_")));
-    Timer t1 = Timer.builder("my_timer").tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    Timer t1 = Timer.builder("my_timer").tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     t1.record(5, TimeUnit.MILLISECONDS);
     t1.record(8, TimeUnit.MILLISECONDS);
-    Timer t2 = Timer.builder("my_timer").tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    Timer t2 = Timer.builder("my_timer").tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     t2.record(10, TimeUnit.MILLISECONDS);
 
     Timer t = registry.find("my_timer").timer();

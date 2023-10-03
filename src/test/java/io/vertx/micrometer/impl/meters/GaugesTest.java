@@ -19,17 +19,15 @@ package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.backends.BackendRegistries;
-import io.vertx.micrometer.impl.Labels;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -41,22 +39,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class GaugesTest {
 
-  private static final EnumSet<Label> ALL_LABELS = EnumSet.allOf(Label.class);
-
   private LongGauges longGauges = new LongGauges(new ConcurrentHashMap<>());
 
   @Test
   public void shouldAliasGaugeLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue("addr1")
       .setAlias("1")));
-    LongAdder g1 = longGauges.builder("my_gauge", LongAdder::doubleValue).tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    LongAdder g1 = longGauges.builder("my_gauge", LongAdder::doubleValue).tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     g1.increment();
     g1.increment();
-    LongAdder g2 = longGauges.builder("my_gauge", LongAdder::doubleValue).tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    LongAdder g2 = longGauges.builder("my_gauge", LongAdder::doubleValue).tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     g2.increment();
 
     Gauge g = registry.get("my_gauge").tags("address", "1").gauge();
@@ -70,15 +66,15 @@ public class GaugesTest {
   @Test
   public void shouldIgnoreGaugeLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue(".*")
       .setAlias("_")));
-    LongAdder g1 = longGauges.builder("my_gauge", LongAdder::doubleValue).tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    LongAdder g1 = longGauges.builder("my_gauge", LongAdder::doubleValue).tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     g1.increment();
     g1.increment();
-    LongAdder g2 = longGauges.builder("my_gauge", LongAdder::doubleValue).tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    LongAdder g2 = longGauges.builder("my_gauge", LongAdder::doubleValue).tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     g2.increment();
 
     Gauge g = registry.get("my_gauge").tags("address", "_").gauge();

@@ -23,10 +23,12 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.HttpClientMetrics;
 import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
@@ -39,8 +41,8 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
 
-  VertxHttpClientMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider, LongGauges longGauges) {
-    super(registry, MetricsDomain.HTTP_CLIENT, names, longGauges);
+  VertxHttpClientMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+    super(registry, MetricsDomain.HTTP_CLIENT, names, longGauges, enabledLabels);
     this.customTagsProvider = customTagsProvider;
   }
 
@@ -57,7 +59,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
 
     @Override
     public ClientMetrics<RequestMetric, Timer.Sample, HttpRequest, HttpResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
-      Tags endPointTags = local.and(Labels.toTags(REMOTE, Labels.address(remoteAddress)));
+      Tags endPointTags = local.and(toTags(REMOTE, Labels::address, remoteAddress));
       return new EndpointMetrics(endPointTags);
     }
 
@@ -65,7 +67,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     public LongAdder connected(WebSocket webSocket) {
       LongAdder wsConnections = longGauge(names.getHttpActiveWsConnections())
         .description("Number of websockets currently opened")
-        .tags(local.and(Labels.toTags(REMOTE, Labels.address(webSocket.remoteAddress()))))
+        .tags(local.and(toTags(REMOTE, Labels::address, webSocket.remoteAddress())))
         .register(registry);
       wsConnections.increment();
       return wsConnections;
@@ -111,7 +113,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     @Override
     public RequestMetric requestBegin(String uri, HttpRequest request) {
       Tags tags = endPointTags
-        .and(Labels.toTags(HTTP_PATH, request.uri(), HTTP_METHOD, request.method().toString()))
+        .and(toTags(HTTP_PATH, HttpRequest::uri, request, HTTP_METHOD, r -> r.method().toString(), request))
         .and(customTagsProvider == null ? Tags.empty() : customTagsProvider.apply(request));
       RequestMetric requestMetric = new RequestMetric(tags);
       requestMetric.requests.increment();
@@ -194,7 +196,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     }
 
     public void responseBegin(HttpResponse response) {
-      Tags responseTags = tags.and(Labels.toTags(HTTP_CODE, String.valueOf(response.statusCode())));
+      Tags responseTags = tags.and(toTags(HTTP_CODE, r -> String.valueOf(r.statusCode()), response));
       responseTime = timer(names.getHttpResponseTime())
         .description("Response time")
         .tags(responseTags)

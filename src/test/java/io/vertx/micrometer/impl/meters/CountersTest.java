@@ -19,16 +19,14 @@ package io.vertx.micrometer.impl.meters;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.backends.BackendRegistries;
-import io.vertx.micrometer.impl.Labels;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.EnumSet;
 
 import static io.vertx.micrometer.Label.EB_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,20 +36,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class CountersTest {
 
-  private static final EnumSet<Label> ALL_LABELS = EnumSet.allOf(Label.class);
-
   @Test
   public void shouldAliasCounterLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue("addr1")
       .setAlias("1")));
-    Counter c1 = Counter.builder("my_counter").tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    Counter c1 = Counter.builder("my_counter").tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     c1.increment();
     c1.increment();
-    Counter c2 = Counter.builder("my_counter").tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    Counter c2 = Counter.builder("my_counter").tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     c2.increment();
 
     Counter c = registry.find("my_counter").tags("address", "1").counter();
@@ -65,15 +61,15 @@ public class CountersTest {
   @Test
   public void shouldIgnoreCounterLabel() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, ALL_LABELS, Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.REGEX)
       .setValue(".*")
       .setAlias("_")));
-    Counter c1 = Counter.builder("my_counter").tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    Counter c1 = Counter.builder("my_counter").tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     c1.increment();
     c1.increment();
-    Counter c2 = Counter.builder("my_counter").tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    Counter c2 = Counter.builder("my_counter").tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     c2.increment();
 
     Counter c = registry.find("my_counter").tags("address", "_").counter();

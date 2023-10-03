@@ -21,10 +21,12 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
@@ -34,12 +36,12 @@ import static io.vertx.micrometer.Label.*;
  */
 class VertxNetClientMetrics extends AbstractMetrics {
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges) {
-    this(registry, MetricsDomain.NET_CLIENT, names, longGauges);
+  VertxNetClientMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+    this(registry, MetricsDomain.NET_CLIENT, names, longGauges, enabledLabels);
   }
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names, LongGauges longGauges) {
-    super(registry, names, domain, longGauges);
+  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+    super(registry, names, domain, longGauges, enabledLabels);
   }
 
   TCPMetrics<?> forAddress(String localAddress) {
@@ -51,12 +53,12 @@ class VertxNetClientMetrics extends AbstractMetrics {
     final Tags local;
 
     Instance(String localAddress) {
-      local = Labels.toTags(LOCAL, localAddress == null ? "?" : localAddress);
+      local = toTags(LOCAL, s -> s == null ? "?" : s, localAddress);
     }
 
     @Override
     public NetClientSocketMetric connected(SocketAddress remoteAddress, String remoteName) {
-      Tags tags = local.and(Labels.toTags(REMOTE, Labels.address(remoteAddress, remoteName)));
+      Tags tags = local.and(toTags(REMOTE, Labels::address, remoteAddress, remoteName));
       NetClientSocketMetric socketMetric = new NetClientSocketMetric(tags);
       socketMetric.connections.increment();
       return socketMetric;
@@ -81,7 +83,7 @@ class VertxNetClientMetrics extends AbstractMetrics {
     public void exceptionOccurred(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
       counter(names.getNetErrorCount())
         .description("Number of errors")
-        .tags(socketMetric.tags.and(Labels.toTags(CLASS_NAME, t.getClass().getSimpleName())))
+        .tags(socketMetric.tags.and(toTags(CLASS_NAME, Class::getSimpleName, t.getClass())))
         .register(registry)
         .increment();
     }

@@ -16,10 +16,7 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.micrometer.Label;
 
 /**
  * @author Joel Takvorian
@@ -47,16 +44,5 @@ public final class Labels {
 
   static String side(boolean local) {
     return local ? "local" : "remote";
-  }
-
-  public static Tags toTags(Label l1, String v1) {
-    return Tags.of(l1.toString(), v1);
-  }
-
-  public static Tags toTags(Label l1, String v1, Label l2, String v2) {
-    return Tags.of(
-      Tag.of(l1.toString(), v1),
-      Tag.of(l2.toString(), v2)
-    );
   }
 }

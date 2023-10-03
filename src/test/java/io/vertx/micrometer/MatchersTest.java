@@ -19,15 +19,14 @@ package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.backends.BackendRegistries;
-import io.vertx.micrometer.impl.Labels;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Collections;
-import java.util.EnumSet;
 
 import static io.vertx.micrometer.Label.EB_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,13 +40,13 @@ public class MatchersTest {
   @Test
   public void shouldFilterMetric() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, EnumSet.allOf(Label.class), Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setType(MatchType.EQUALS)
       .setValue("addr1")));
-    Counter c1 = Counter.builder("my_counter").tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    Counter c1 = Counter.builder("my_counter").tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     c1.increment();
-    Counter c2 = Counter.builder("my_counter").tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    Counter c2 = Counter.builder("my_counter").tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     c2.increment();
 
     Counter c = registry.find("my_counter").tags("address", "addr1").counter();
@@ -59,20 +58,20 @@ public class MatchersTest {
   @Test
   public void shouldFilterDomainMetric() {
     MeterRegistry registry = new SimpleMeterRegistry();
-    BackendRegistries.registerMatchers(registry, EnumSet.allOf(Label.class), Collections.singletonList(new Match()
+    BackendRegistries.registerMatchers(registry, Collections.singletonList(new Match()
       .setLabel("address")
       .setDomain(MetricsDomain.EVENT_BUS)
       .setType(MatchType.EQUALS)
       .setValue("addr1")));
     String metric1 = MetricsDomain.EVENT_BUS.getPrefix() + "_counter";
-    Counter c1 = Counter.builder(metric1).tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    Counter c1 = Counter.builder(metric1).tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     c1.increment();
-    Counter c2 = Counter.builder(metric1).tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    Counter c2 = Counter.builder(metric1).tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     c2.increment();
     String metric2 = "another_domain_counter";
-    Counter c3 = Counter.builder(metric2).tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    Counter c3 = Counter.builder(metric2).tags(Tags.of(EB_ADDRESS.toString(), "addr1")).register(registry);
     c3.increment();
-    Counter c4 = Counter.builder(metric2).tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    Counter c4 = Counter.builder(metric2).tags(Tags.of(EB_ADDRESS.toString(), "addr2")).register(registry);
     c4.increment();
 
     // In domain where the rule applies, filter is performed

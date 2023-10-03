@@ -20,21 +20,24 @@ import io.micrometer.core.instrument.Tags;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
+import static java.util.function.UnaryOperator.identity;
 
 /**
  * @author Joel Takvorian
  */
 class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<VertxEventBusMetrics.Handler> {
 
-  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges) {
-    super(registry, names, MetricsDomain.EVENT_BUS, longGauges);
+  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+    super(registry, names, MetricsDomain.EVENT_BUS, longGauges, enabledLabels);
   }
 
   private static boolean isNotInternal(String address) {
@@ -44,7 +47,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   @Override
   public Handler handlerRegistered(String address) {
     if (isNotInternal(address)) {
-      Handler handler = new Handler(Labels.toTags(EB_ADDRESS, address));
+      Handler handler = new Handler(toTags(EB_ADDRESS, identity(), address));
       handler.handlers.increment();
       return handler;
     }
@@ -61,7 +64,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   @Override
   public void messageDelivered(Handler handler, boolean local) {
     if (handler != null) {
-      Tags tags = handler.tags.and(Labels.toTags(EB_SIDE, Labels.side(local)));
+      Tags tags = handler.tags.and(toTags(EB_SIDE, Labels::side, local));
       longGauge(names.getEbPending())
         .description("Number of messages not processed yet")
         .tags(tags)
@@ -78,7 +81,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   @Override
   public void discardMessage(Handler handler, boolean local, Message<?> msg) {
     if (handler != null) {
-      Tags tags = handler.tags.and(Labels.toTags(EB_SIDE, Labels.side(local)));
+      Tags tags = handler.tags.and(toTags(EB_SIDE, Labels::side, local));
       longGauge(names.getEbPending())
         .description("Number of messages not processed yet")
         .tags(tags)
@@ -95,7 +98,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   @Override
   public void messageSent(String address, boolean publish, boolean local, boolean remote) {
     if (isNotInternal(address)) {
-      Tags tags = Labels.toTags(EB_ADDRESS, address, EB_SIDE, Labels.side(local));
+      Tags tags = toTags(EB_ADDRESS, identity(), address, EB_SIDE, Labels::side, local);
       if (publish) {
         counter(names.getEbPublished())
           .description("Number of messages published (publish / subscribe)")
@@ -115,7 +118,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   @Override
   public void messageReceived(String address, boolean publish, boolean local, int handlers) {
     if (isNotInternal(address)) {
-      Tags tags = Labels.toTags(EB_ADDRESS, address, EB_SIDE, Labels.side(local));
+      Tags tags = toTags(EB_ADDRESS, identity(), address, EB_SIDE, Labels::side, local);
       counter(names.getEbReceived())
         .description("Number of messages received")
         .tags(tags)
@@ -141,7 +144,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     if (isNotInternal(address)) {
       distributionSummary(names.getEbBytesWritten())
         .description("Number of bytes sent while sending messages to event bus cluster peers")
-        .tags(Labels.toTags(EB_ADDRESS, address))
+        .tags(toTags(EB_ADDRESS, identity(), address))
         .register(registry)
         .record(numberOfBytes);
     }
@@ -152,7 +155,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     if (isNotInternal(address)) {
       distributionSummary(names.getEbBytesRead())
         .description("Number of bytes received while reading messages from event bus cluster peers")
-        .tags(Labels.toTags(EB_ADDRESS, address))
+        .tags(toTags(EB_ADDRESS, identity(), address))
         .register(registry)
         .record(numberOfBytes);
     }
@@ -163,7 +166,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     if (isNotInternal(address)) {
       counter(names.getEbReplyFailures())
         .description("Number of message reply failures")
-        .tags(Labels.toTags(EB_ADDRESS, address, EB_FAILURE, failure.name()))
+        .tags(toTags(EB_ADDRESS, identity(), address, EB_FAILURE, ReplyFailure::name, failure))
         .register(registry).increment();
     }
   }

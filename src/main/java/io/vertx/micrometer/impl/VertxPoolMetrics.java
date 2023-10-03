@@ -21,22 +21,25 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.spi.metrics.PoolMetrics;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.POOL_NAME;
 import static io.vertx.micrometer.Label.POOL_TYPE;
+import static java.util.function.Function.identity;
 
 /**
  * @author Joel Takvorian
  */
 class VertxPoolMetrics extends AbstractMetrics {
 
-  VertxPoolMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges) {
-    super(registry, names, MetricsDomain.NAMED_POOLS, longGauges);
+  VertxPoolMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+    super(registry, names, MetricsDomain.NAMED_POOLS, longGauges, enabledLabels);
   }
 
   PoolMetrics<Timer.Sample> forInstance(String poolType, String poolName, int maxPoolSize) {
@@ -53,7 +56,7 @@ class VertxPoolMetrics extends AbstractMetrics {
     final Counter completed;
 
     Instance(String poolType, String poolName, int maxPoolSize) {
-      Tags tags = Labels.toTags(POOL_TYPE, poolType, POOL_NAME, poolName);
+      Tags tags = toTags(POOL_TYPE, identity(), poolType, POOL_NAME, identity(), poolName);
       queueDelay = timer(names.getPoolQueueTime())
         .description("Time spent in queue before being processed")
         .tags(tags)

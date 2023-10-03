@@ -22,10 +22,12 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
 import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
+import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
 
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +35,7 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
 import static io.vertx.micrometer.Label.*;
+import static java.util.function.Function.identity;
 
 /**
  * @author Joel Takvorian
@@ -41,8 +44,8 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
 
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
 
-  VertxHttpServerMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider, LongGauges longGauges) {
-    super(registry, names, MetricsDomain.HTTP_SERVER, longGauges);
+  VertxHttpServerMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+    super(registry, names, MetricsDomain.HTTP_SERVER, longGauges, enabledLabels);
     this.customTagsProvider = customTagsProvider;
   }
 
@@ -60,7 +63,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     @Override
     public RequestMetric requestBegin(NetServerSocketMetric socketMetric, HttpRequest request) {
       Tags tags = socketMetric.tags
-        .and(Labels.toTags(HTTP_PATH, request.uri(), HTTP_METHOD, request.method().name()))
+        .and(toTags(HTTP_PATH, HttpRequest::uri, request, HTTP_METHOD, r -> r.method().toString(), request))
         .and(customTagsProvider == null ? Tags.empty() : customTagsProvider.apply(request));
       RequestMetric requestMetric = new RequestMetric(tags);
       requestMetric.requests.increment();
@@ -85,7 +88,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     @Override
     public RequestMetric responsePushed(NetServerSocketMetric socketMetric, HttpMethod method, String uri, HttpResponse response) {
       Tags tags = socketMetric.tags
-        .and(Labels.toTags(HTTP_PATH, uri, HTTP_METHOD, method.name()));
+        .and(toTags(HTTP_PATH, identity(), uri, HTTP_METHOD, HttpMethod::toString, method));
       RequestMetric requestMetric = new RequestMetric(tags);
       requestMetric.requests.increment();
       return requestMetric;
@@ -93,7 +96,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
 
     @Override
     public void responseEnd(RequestMetric requestMetric, HttpResponse response, long bytesWritten) {
-      Tags responseTags = requestMetric.tags.and(Labels.toTags(HTTP_ROUTE, requestMetric.getRoute(), HTTP_CODE, String.valueOf(response.statusCode())));
+      Tags responseTags = requestMetric.tags.and(toTags(HTTP_ROUTE, RequestMetric::getRoute, requestMetric, HTTP_CODE, r -> String.valueOf(r.statusCode()), response));
       counter(names.getHttpRequestsCount())
         .description("Number of processed requests")
         .tags(responseTags)
