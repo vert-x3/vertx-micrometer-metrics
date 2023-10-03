@@ -22,6 +22,7 @@ import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGaugeBuilder;
 import io.vertx.micrometer.impl.meters.LongGauges;
+import io.vertx.micrometer.impl.tags.IgnoredTag;
 
 import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
@@ -98,24 +99,11 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
     return Timer.builder(name);
   }
 
-  <T1> Tags toTags(Label l1, Function<T1, String> func1, T1 v1) {
-    return enabledLabels.contains(l1) ? Tags.of(l1.toString(), func1.apply(v1)) : Tags.empty();
+  <U> Tag toTag(Label label, Function<U, String> func, U u) {
+    return enabledLabels.contains(label) ? Tag.of(label.toString(), func.apply(u)) : IgnoredTag.INSTANCE;
   }
 
-  <T1, T11> Tags toTags(Label l1, BiFunction<T1, T11, String> func1, T1 v1, T11 v11) {
-    return enabledLabels.contains(l1) ? Tags.of(l1.toString(), func1.apply(v1, v11)) : Tags.empty();
-  }
-
-  <T1, T2> Tags toTags(Label l1, Function<T1, String> func1, T1 v1, Label l2, Function<T2, String> func2, T2 v2) {
-    if (enabledLabels.contains(l1)) {
-      if (enabledLabels.contains(l2)) {
-        return Tags.of(
-          Tag.of(l1.toString(), func1.apply(v1)),
-          Tag.of(l2.toString(), func2.apply(v2))
-        );
-      }
-      return Tags.of(l1.toString(), func1.apply(v1));
-    }
-    return toTags(l2, func2, v2);
+  <U, V> Tag toTag(Label label, BiFunction<U, V, String> func, U u, V v) {
+    return enabledLabels.contains(label) ? Tag.of(label.toString(), func.apply(u, v)) : IgnoredTag.INSTANCE;
   }
 }

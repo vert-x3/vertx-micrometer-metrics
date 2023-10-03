@@ -24,11 +24,14 @@ import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
+import io.vertx.micrometer.impl.tags.Labels;
+import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.EnumSet;
 
 import static io.vertx.micrometer.Label.CLASS_NAME;
 import static io.vertx.micrometer.Label.LOCAL;
+import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
@@ -44,9 +47,10 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
 
   @Override
   public void listening(String localName, SocketAddress localAddress) {
+    TagsWrapper tags = of(toTag(LOCAL, Labels::address, localAddress, localName));
     bytesRead = distributionSummary(names.getDatagramBytesRead())
       .description("Total number of datagram bytes received")
-      .tags(toTags(LOCAL, Labels::address, localAddress, localName))
+      .tags(tags.unwrap())
       .register(registry);
   }
 
@@ -69,9 +73,10 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
 
   @Override
   public void exceptionOccurred(Void socketMetric, SocketAddress remoteAddress, Throwable t) {
+    TagsWrapper tags = of(toTag(CLASS_NAME, Class::getSimpleName, t.getClass()));
     counter(names.getDatagramErrorCount())
       .description("Total number of datagram errors")
-      .tags(toTags(CLASS_NAME, Class::getSimpleName, t.getClass()))
+      .tags(tags.unwrap())
       .register(registry)
       .increment();
   }

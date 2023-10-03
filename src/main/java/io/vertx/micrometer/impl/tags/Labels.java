@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.vertx.micrometer.impl;
+package io.vertx.micrometer.impl.tags;
 
 import io.vertx.core.net.SocketAddress;
 
@@ -26,11 +26,11 @@ public final class Labels {
     // Utility
   }
 
-  static String address(SocketAddress address) {
+  public static String address(SocketAddress address) {
     return address(address, null);
   }
 
-  static String address(SocketAddress address, String nameOverride) {
+  public static String address(SocketAddress address, String nameOverride) {
     if (address == null) {
       return "?";
     }
@@ -42,7 +42,7 @@ public final class Labels {
     return addrOverride.toString();
   }
 
-  static String side(boolean local) {
+  public static String side(boolean local) {
     return local ? "local" : "remote";
   }
 }

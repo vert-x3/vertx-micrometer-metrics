@@ -18,19 +18,21 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
+import io.vertx.micrometer.impl.tags.Labels;
+import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.NAMESPACE;
 import static io.vertx.micrometer.Label.REMOTE;
+import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
@@ -55,26 +57,26 @@ class VertxClientMetrics extends AbstractMetrics {
 
 
     Instance(SocketAddress remoteAddress, String namespace) {
-      Tags tags = toTags(REMOTE, Labels::address, remoteAddress, NAMESPACE, s -> s == null ? "" : s, namespace);
+      TagsWrapper tags = of(toTag(REMOTE, Labels::address, remoteAddress), toTag(NAMESPACE, s -> s == null ? "" : s, namespace));
       queueDelay = timer(names.getClientQueueTime())
         .description("Time spent in queue before being processed")
-        .tags(tags)
+        .tags(tags.unwrap())
         .register(registry);
       queueSize = longGauge(names.getClientQueuePending())
         .description("Number of pending elements in queue")
-        .tags(tags)
+        .tags(tags.unwrap())
         .register(registry);
       processingTime = timer(names.getClientProcessingTime())
         .description("Processing time, from request start to response end")
-        .tags(tags)
+        .tags(tags.unwrap())
         .register(registry);
       processingPending = longGauge(names.getClientProcessingPending())
         .description("Number of elements being processed")
-        .tags(tags)
+        .tags(tags.unwrap())
         .register(registry);
       resetCount = counter(names.getClientResetsCount())
         .description("Total number of resets")
-        .tags(tags)
+        .tags(tags.unwrap())
         .register(registry);
     }
 

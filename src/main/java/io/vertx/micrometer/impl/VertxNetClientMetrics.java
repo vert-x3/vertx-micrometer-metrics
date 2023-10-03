@@ -18,18 +18,20 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.impl.meters.LongGauges;
+import io.vertx.micrometer.impl.tags.Labels;
+import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
+import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
@@ -50,15 +52,15 @@ class VertxNetClientMetrics extends AbstractMetrics {
 
   class Instance implements MicrometerMetrics, TCPMetrics<NetClientSocketMetric> {
 
-    final Tags local;
+    final TagsWrapper local;
 
     Instance(String localAddress) {
-      local = toTags(LOCAL, s -> s == null ? "?" : s, localAddress);
+      local = of(toTag(LOCAL, s -> s == null ? "?" : s, localAddress));
     }
 
     @Override
     public NetClientSocketMetric connected(SocketAddress remoteAddress, String remoteName) {
-      Tags tags = local.and(toTags(REMOTE, Labels::address, remoteAddress, remoteName));
+      TagsWrapper tags = local.and(toTag(REMOTE, Labels::address, remoteAddress, remoteName));
       NetClientSocketMetric socketMetric = new NetClientSocketMetric(tags);
       socketMetric.connections.increment();
       return socketMetric;
@@ -83,7 +85,7 @@ class VertxNetClientMetrics extends AbstractMetrics {
     public void exceptionOccurred(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
       counter(names.getNetErrorCount())
         .description("Number of errors")
-        .tags(socketMetric.tags.and(toTags(CLASS_NAME, Class::getSimpleName, t.getClass())))
+        .tags(socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
         .register(registry)
         .increment();
     }
@@ -101,25 +103,25 @@ class VertxNetClientMetrics extends AbstractMetrics {
 
   class NetClientSocketMetric {
 
-    final Tags tags;
+    final TagsWrapper tags;
 
     final LongAdder connections;
     final Counter bytesReceived;
     final Counter bytesSent;
 
-    NetClientSocketMetric(Tags tags) {
+    NetClientSocketMetric(TagsWrapper tags) {
       this.tags = tags;
       connections = longGauge(names.getNetActiveConnections())
         .description("Number of connections to the remote host currently opened")
-        .tags(tags)
+        .tags(tags.unwrap())
         .register(registry);
       bytesReceived = counter(names.getNetBytesRead())
         .description("Number of bytes received from the remote host")
-        .tags(tags)
+        .tags(tags.unwrap())
         .register(registry);
       bytesSent = counter(names.getNetBytesWritten())
         .description("Number of bytes sent to the remote host")
-        .tags(tags)
+        .tags(tags.unwrap())
         .register(registry);
     }
   }
