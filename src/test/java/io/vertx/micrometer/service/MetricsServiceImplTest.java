@@ -1,3 +1,20 @@
+/*
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.vertx.micrometer.service;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -68,7 +85,7 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
     httpClient.close();
 
     JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot();
-    assertThat(snapshot).extracting(Map.Entry::getKey).containsExactly(
+    assertThat(snapshot).extracting(Map.Entry::getKey).containsExactlyInAnyOrder(
       "vertx.http.client.active.connections",
       "vertx.http.client.active.requests",
       "vertx.http.client.bytes.read",
@@ -85,20 +102,27 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
       "vertx.http.server.bytes.read",
       "vertx.http.server.bytes.written",
       "vertx.http.server.request.bytes",
+      "vertx.http.server.request.resets",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
-      "vertx.http.server.response.time"
+      "vertx.http.server.response.time",
+      "vertx.pool.completed",
+      "vertx.pool.in.use",
+      "vertx.pool.queue.pending",
+      "vertx.pool.queue.time",
+      "vertx.pool.ratio",
+      "vertx.pool.usage"
     );
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("counter"))
-      .hasSize(10)
+      .hasSize(14)
       .flatExtracting(JsonObject::fieldNames)
       .contains("count");
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("timer"))
-      .hasSize(5)
+      .hasSize(9)
       .flatExtracting(JsonObject::fieldNames)
       .contains("totalTimeMs", "meanMs", "maxMs");
   }
@@ -113,7 +137,7 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
     httpClient.close();
 
     JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot();
-    assertThat(snapshot).extracting(Map.Entry::getKey).filteredOn(k -> k.startsWith("vertx.http")).containsExactly(
+    assertThat(snapshot).extracting(Map.Entry::getKey).filteredOn(k -> k.startsWith("vertx.http")).containsExactlyInAnyOrder(
       "vertx.http.client.bytesReceived",
       "vertx.http.client.bytesSent",
       "vertx.http.client.connections",
@@ -130,6 +154,7 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
       "vertx.http.server.connections",
       "vertx.http.server.request.bytes",
       "vertx.http.server.requestCount",
+      "vertx.http.server.requestResetCount",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
       "vertx.http.server.responseTime"
@@ -145,13 +170,14 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
     httpClient.close();
 
     JsonObject snapshot = MetricsService.create(httpServer).getMetricsSnapshot();
-    assertThat(snapshot).extracting(Map.Entry::getKey).containsExactly(
+    assertThat(snapshot).extracting(Map.Entry::getKey).containsExactlyInAnyOrder(
       "vertx.http.server.active.connections",
       "vertx.http.server.active.requests",
       "vertx.http.server.bytes.read",
       "vertx.http.server.bytes.written",
       "vertx.http.server.request.bytes",
       "vertx.http.server.requests",
+      "vertx.http.server.request.resets",
       "vertx.http.server.response.bytes",
       "vertx.http.server.response.time"
       );

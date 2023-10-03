@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 The original author or authors
+ * Copyright (c) 2011-2023 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,11 +17,6 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
@@ -30,17 +25,20 @@ import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
+import io.vertx.micrometer.impl.meters.LongGauges;
 
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Joel Takvorian
  */
 public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
 
-  private static final Map<MeterRegistry, ConcurrentHashMap<Meter.Id, Object>> tables = new WeakHashMap<>(1);
+  private static final Map<MeterRegistry, ConcurrentMap<Meter.Id, LongAdder>> longGaugesByRegistry = new WeakHashMap<>(1);
 
   @Override
   public VertxMetrics metrics(VertxOptions vertxOptions) {
@@ -52,20 +50,12 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
       options = new MicrometerMetricsOptions(metricsOptions.toJson());
     }
     BackendRegistry backendRegistry = BackendRegistries.setupBackend(options);
-    ConcurrentHashMap<Meter.Id, Object> gaugesTable;
-    synchronized (tables) {
-      gaugesTable = tables.computeIfAbsent(backendRegistry.getMeterRegistry(), meterRegistry -> new ConcurrentHashMap<>());
+    ConcurrentMap<Meter.Id, LongAdder> longGauges;
+    synchronized (longGaugesByRegistry) {
+      longGauges = longGaugesByRegistry.computeIfAbsent(backendRegistry.getMeterRegistry(), meterRegistry -> new ConcurrentHashMap<>());
     }
-    VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry, gaugesTable);
+    VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry, new LongGauges(longGauges));
     metrics.init();
-
-    if (options.isJvmMetricsEnabled()) {
-      new ClassLoaderMetrics().bindTo(backendRegistry.getMeterRegistry());
-      new JvmMemoryMetrics().bindTo(backendRegistry.getMeterRegistry());
-      new JvmGcMetrics().bindTo(backendRegistry.getMeterRegistry());
-      new ProcessorMetrics().bindTo(backendRegistry.getMeterRegistry());
-      new JvmThreadMetrics().bindTo(backendRegistry.getMeterRegistry());
-    }
 
     return metrics;
   }

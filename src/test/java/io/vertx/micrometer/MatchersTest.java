@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Red Hat, Inc. and/or its affiliates
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,13 +22,14 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.backends.BackendRegistries;
-import io.vertx.micrometer.impl.meters.Counters;
+import io.vertx.micrometer.impl.Labels;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Collections;
 import java.util.EnumSet;
 
+import static io.vertx.micrometer.Label.EB_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -44,12 +45,13 @@ public class MatchersTest {
       .setLabel("address")
       .setType(MatchType.EQUALS)
       .setValue("addr1")));
-    Counters counters = new Counters("my_counter", "", registry, Label.EB_ADDRESS);
-    counters.get("addr1").increment();
-    counters.get("addr2").increment();
+    Counter c1 = Counter.builder("my_counter").tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    c1.increment();
+    Counter c2 = Counter.builder("my_counter").tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    c2.increment();
 
     Counter c = registry.find("my_counter").tags("address", "addr1").counter();
-    assertThat(c.count()).isEqualTo(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
     c = registry.find("my_counter").tags("address", "addr2").counter();
     assertThat(c).isNull();
   }
@@ -63,23 +65,25 @@ public class MatchersTest {
       .setType(MatchType.EQUALS)
       .setValue("addr1")));
     String metric1 = MetricsDomain.EVENT_BUS.getPrefix() + "_counter";
-    Counters counters1 = new Counters(metric1, "", registry, Label.EB_ADDRESS);
-    counters1.get("addr1").increment();
-    counters1.get("addr2").increment();
+    Counter c1 = Counter.builder(metric1).tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    c1.increment();
+    Counter c2 = Counter.builder(metric1).tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    c2.increment();
     String metric2 = "another_domain_counter";
-    Counters counters2 = new Counters(metric2, "", registry, Label.EB_ADDRESS);
-    counters2.get("addr1").increment();
-    counters2.get("addr2").increment();
+    Counter c3 = Counter.builder(metric2).tags(Labels.toTags(EB_ADDRESS, "addr1")).register(registry);
+    c3.increment();
+    Counter c4 = Counter.builder(metric2).tags(Labels.toTags(EB_ADDRESS, "addr2")).register(registry);
+    c4.increment();
 
     // In domain where the rule applies, filter is performed
     Counter c = registry.find(metric1).tags("address", "addr1").counter();
-    assertThat(c.count()).isEqualTo(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
     c = registry.find(metric1).tags("address", "addr2").counter();
     assertThat(c).isNull();
     // In other domain, no filter
     c = registry.find(metric2).tags("address", "addr1").counter();
-    assertThat(c.count()).isEqualTo(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
     c = registry.find(metric2).tags("address", "addr2").counter();
-    assertThat(c.count()).isEqualTo(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
   }
 }

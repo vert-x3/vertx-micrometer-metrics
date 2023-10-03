@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 The original author or authors
+ * Copyright (c) 2011-2023 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,153 +15,157 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.*;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
 import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
-import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.Counters;
-import io.vertx.micrometer.impl.meters.Gauges;
-import io.vertx.micrometer.impl.meters.Summaries;
-import io.vertx.micrometer.impl.meters.Timers;
+import io.vertx.micrometer.impl.meters.LongGauges;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
+
+import static io.vertx.micrometer.Label.*;
 
 /**
  * @author Joel Takvorian
  */
 class VertxHttpServerMetrics extends VertxNetServerMetrics {
-  private final Gauges<LongAdder> requests;
-  private final Counters requestCount;
-  private final Counters requestResetCount;
-  private final Summaries requestBytes;
-  private final Timers processingTime;
-  private final Summaries responseBytes;
-  private final Gauges<LongAdder> wsConnections;
+
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
 
-  VertxHttpServerMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    super(registry, MetricsDomain.HTTP_SERVER, names, gaugesTable);
+  VertxHttpServerMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider, LongGauges longGauges) {
+    super(registry, names, MetricsDomain.HTTP_SERVER, longGauges);
     this.customTagsProvider = customTagsProvider;
-    requests = longGauges(names.getHttpActiveRequests(), "Number of requests being processed", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    requestCount = counters(names.getHttpRequestsCount(), "Number of processed requests", Label.LOCAL, Label.REMOTE, Label.HTTP_ROUTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    requestResetCount = counters(names.getHttpRequestResetsCount(), "Number of request resets", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    requestBytes = summaries(names.getHttpRequestBytes(), "Size of requests in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_PATH, Label.HTTP_METHOD);
-    processingTime = timers(names.getHttpResponseTime(), "Request processing time", Label.LOCAL, Label.REMOTE, Label.HTTP_ROUTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    responseBytes = summaries(names.getHttpResponseBytes(), "Size of responses in bytes", Label.LOCAL, Label.REMOTE, Label.HTTP_ROUTE, Label.HTTP_PATH, Label.HTTP_METHOD, Label.HTTP_CODE);
-    wsConnections = longGauges(names.getHttpActiveWsConnections(), "Number of websockets currently opened", Label.LOCAL, Label.REMOTE);
   }
 
   @Override
-  HttpServerMetrics forAddress(SocketAddress localAddress) {
+  HttpServerMetrics<?, ?, ?> forAddress(SocketAddress localAddress) {
     return new Instance(Labels.address(localAddress));
   }
 
-  class Instance extends VertxNetServerMetrics.Instance implements HttpServerMetrics<Handler, String, String> {
+  class Instance extends VertxNetServerMetrics.Instance implements HttpServerMetrics<RequestMetric, LongAdder, NetServerSocketMetric> {
+
     Instance(String local) {
       super(local);
     }
 
     @Override
-    public Handler requestBegin(String remote, HttpRequest request) {
-      Handler handler = new Handler(remote, request.uri(), request.method().name());
-      if (customTagsProvider != null) {
-        handler.customTags = customTagsProvider.apply(request);
-      }
-      requests.get(handler.customTags, local, remote, handler.path, handler.method).increment();
-      handler.timer = processingTime.start();
-      return handler;
+    public RequestMetric requestBegin(NetServerSocketMetric socketMetric, HttpRequest request) {
+      Tags tags = socketMetric.tags
+        .and(Labels.toTags(HTTP_PATH, request.uri(), HTTP_METHOD, request.method().name()))
+        .and(customTagsProvider == null ? Tags.empty() : customTagsProvider.apply(request));
+      RequestMetric requestMetric = new RequestMetric(tags);
+      requestMetric.requests.increment();
+      return requestMetric;
     }
 
     @Override
-    public void requestReset(Handler handler) {
-      requestResetCount.get(handler.customTags, local, handler.address, handler.path, handler.method).increment();
-      requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
-      handler.requestReset();
+    public void requestReset(RequestMetric requestMetric) {
+      requestMetric.requestResetCount.increment();
+      requestMetric.requests.decrement();
+      requestMetric.requestReset();
     }
 
     @Override
-    public void requestEnd(Handler handler, HttpRequest request, long bytesRead) {
-      requestBytes.get(handler.customTags, local, handler.address, handler.path, handler.method).record(bytesRead);
-      if (handler.requestEnded()) {
-        requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
-      }
-    }
-
-    @Override
-    public Handler responsePushed(String remote, HttpMethod method, String uri, HttpResponse response) {
-      Handler handler = new Handler(remote, uri, method.name());
-      requests.get(handler.customTags, local, remote, handler.path, handler.method).increment();
-      return handler;
-    }
-
-    @Override
-    public void responseBegin(Handler handler, HttpResponse response) {
-    }
-
-    @Override
-    public void responseEnd(Handler handler, HttpResponse response, long bytesWritten) {
-      String code = String.valueOf(response.statusCode());
-      String handlerRoute = handler.getRoute();
-      handler.timer.end(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code);
-      requestCount.get(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code).increment();
-      responseBytes.get(handler.customTags, local, handler.address, handlerRoute, handler.path, handler.method, code).record(bytesWritten);
-      if (handler.responseEnded()) {
-        requests.get(handler.customTags, local, handler.address, handler.path, handler.method).decrement();
+    public void requestEnd(RequestMetric requestMetric, HttpRequest request, long bytesRead) {
+      requestMetric.requestBytes.record(bytesRead);
+      if (requestMetric.requestEnded()) {
+        requestMetric.requests.decrement();
       }
     }
 
     @Override
-    public String connected(String socketMetric, Handler handler, ServerWebSocket serverWebSocket) {
-      wsConnections.get(local, handler.address).increment();
-      return handler.address;
+    public RequestMetric responsePushed(NetServerSocketMetric socketMetric, HttpMethod method, String uri, HttpResponse response) {
+      Tags tags = socketMetric.tags
+        .and(Labels.toTags(HTTP_PATH, uri, HTTP_METHOD, method.name()));
+      RequestMetric requestMetric = new RequestMetric(tags);
+      requestMetric.requests.increment();
+      return requestMetric;
     }
 
     @Override
-    public void disconnected(String remote) {
-      wsConnections.get(local, remote).decrement();
+    public void responseEnd(RequestMetric requestMetric, HttpResponse response, long bytesWritten) {
+      Tags responseTags = requestMetric.tags.and(Labels.toTags(HTTP_ROUTE, requestMetric.getRoute(), HTTP_CODE, String.valueOf(response.statusCode())));
+      counter(names.getHttpRequestsCount())
+        .description("Number of processed requests")
+        .tags(responseTags)
+        .register(registry)
+        .increment();
+      requestMetric.sample.stop(timer(names.getHttpResponseTime())
+        .description("Request processing time")
+        .tags(responseTags)
+        .register(registry));
+      distributionSummary(names.getHttpResponseBytes())
+        .description("Size of responses in bytes")
+        .tags(responseTags)
+        .register(registry)
+        .record(bytesWritten);
+      if (requestMetric.responseEnded()) {
+        requestMetric.requests.decrement();
+      }
     }
 
     @Override
-    public void requestRouted(Handler handler, String route) {
-      handler.addRoute(route);
+    public LongAdder connected(NetServerSocketMetric socketMetric, RequestMetric requestMetric, ServerWebSocket serverWebSocket) {
+      LongAdder wsConnections = longGauge(names.getHttpActiveWsConnections())
+        .description("Number of websockets currently opened")
+        .tags(socketMetric.tags)
+        .register(registry);
+      wsConnections.increment();
+      return wsConnections;
     }
 
     @Override
-    public void close() {
+    public void disconnected(LongAdder wsConnections) {
+      wsConnections.decrement();
+    }
+
+    @Override
+    public void requestRouted(RequestMetric requestMetric, String route) {
+      requestMetric.addRoute(route);
     }
   }
 
-  public static class Handler {
-    private final String address;
-    private final String path;
-    private final String method;
+  class RequestMetric {
+
+    final Tags tags;
+
+    final LongAdder requests;
+    final Counter requestResetCount;
+    final DistributionSummary requestBytes;
+    final Timer.Sample sample;
+
     // a string for a single route, a list of string for multiple
     private Object routes;
     // tracks length of resulting routes string
     private int routesLength;
-    private Timers.EventTiming timer;
-    private Iterable<Tag> customTags;
     private boolean responseEnded;
     private boolean requestEnded;
     private boolean reset;
 
-    Handler(String address, String path, String method) {
-      this.address = address;
-      this.path = path;
-      this.method = method;
+    RequestMetric(Tags tags) {
+      this.tags = tags;
+      requests = longGauge(names.getHttpActiveRequests())
+        .description("Number of requests being processed")
+        .tags(tags)
+        .register(registry);
+      requestResetCount = counter(names.getHttpRequestResetsCount())
+        .description("Number of request resets")
+        .tags(tags)
+        .register(registry);
+      requestBytes = distributionSummary(names.getHttpRequestBytes())
+        .description("Size of requests in bytes")
+        .tags(tags)
+        .register(registry);
+      sample = Timer.start();
     }
 
     // we try to minimize allocations as far as possible. see https://github.com/vert-x3/vertx-dropwizard-metrics/pull/101
@@ -215,5 +219,6 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
     boolean responseEnded() {
       responseEnded = true;
       return !reset && requestEnded;
-    }  }
+    }
+  }
 }

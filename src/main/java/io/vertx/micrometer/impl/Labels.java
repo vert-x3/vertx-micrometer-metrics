@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,17 +16,17 @@
  */
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.micrometer.Label;
-
-import java.util.Arrays;
 
 /**
  * @author Joel Takvorian
  */
 public final class Labels {
   private Labels() {
+    // Utility
   }
 
   static String address(SocketAddress address) {
@@ -45,34 +45,18 @@ public final class Labels {
     return addrOverride.toString();
   }
 
-  static String getSide(boolean local) {
+  static String side(boolean local) {
     return local ? "local" : "remote";
   }
 
-  public static Tags toTags(Label[] keys, String[] values) {
-    // Here we shall use Tags object instead of List.
-    // Otherwise, some extra copies / iterations will be made
-    if (keys.length == 0) {
-      return Tags.empty();
-    }
-    // Creating a Tags object is faster and consumes less resources when providing an array
-    String[] keyValuePairs = new String[2 * keys.length];
-    int count = 0;
-    for (int i = 0; i < keys.length; i++) {
-      String value = values[i];
-      if (value != null) {
-        String lowKey = keys[i].toString();
-        keyValuePairs[2 * count] = lowKey;
-        keyValuePairs[2 * count + 1] = value;
-        count++;
-      }
-    }
-    if (count == 0) {
-      return Tags.empty();
-    }
-    if (count == keys.length) {
-      return Tags.of(keyValuePairs);
-    }
-    return Tags.of(Arrays.copyOf(keyValuePairs, 2 * count));
+  public static Tags toTags(Label l1, String v1) {
+    return Tags.of(l1.toString(), v1);
+  }
+
+  public static Tags toTags(Label l1, String v1, Label l2, String v2) {
+    return Tags.of(
+      Tag.of(l1.toString(), v1),
+      Tag.of(l2.toString(), v2)
+    );
   }
 }

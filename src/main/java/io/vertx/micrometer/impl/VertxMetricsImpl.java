@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 The original author or authors
+ * Copyright (c) 2011-2023 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,8 +16,11 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.vertx.core.datagram.DatagramSocketOptions;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
@@ -26,16 +29,15 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.*;
-import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
+import io.vertx.micrometer.impl.meters.LongGauges;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static io.vertx.micrometer.MetricsDomain.*;
 
@@ -47,8 +49,7 @@ import static io.vertx.micrometer.MetricsDomain.*;
 public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final BackendRegistry backendRegistry;
   private final String registryName;
-  private final MetricsNaming names;
-  private final EventBusMetrics eventBusMetrics;
+  private final EventBusMetrics<?> eventBusMetrics;
   private final DatagramSocketMetrics datagramSocketMetrics;
   private final VertxNetClientMetrics netClientMetrics;
   private final VertxNetServerMetrics netServerMetrics;
@@ -57,39 +58,49 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final VertxPoolMetrics poolMetrics;
   private final Map<String, VertxClientMetrics> mapClientMetrics = new ConcurrentHashMap<>();
   private final Set<String> disabledCategories = new HashSet<>();
+  private final JvmGcMetrics jvmGcMetrics;
 
-  public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    super(backendRegistry.getMeterRegistry(), gaugesTable);
+  public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, LongGauges longGauges) {
+    super(backendRegistry.getMeterRegistry(), options.getMetricsNaming(), longGauges);
+
     this.backendRegistry = backendRegistry;
     registryName = options.getRegistryName();
-    MeterRegistry registry = backendRegistry.getMeterRegistry();
+
     if (options.getDisabledMetricsCategories() != null) {
       disabledCategories.addAll(options.getDisabledMetricsCategories());
     }
-    names = options.getMetricsNaming();
+
+    jvmGcMetrics = options.isJvmMetricsEnabled() ? new JvmGcMetrics() : null;
 
     eventBusMetrics = options.isMetricsCategoryDisabled(EVENT_BUS) ? null
-      : new VertxEventBusMetrics(registry, names, gaugesTable);
+      : new VertxEventBusMetrics(registry, names, longGauges);
     datagramSocketMetrics = options.isMetricsCategoryDisabled(DATAGRAM_SOCKET) ? null
-      : new VertxDatagramSocketMetrics(registry, names, gaugesTable);
+      : new VertxDatagramSocketMetrics(registry, names, longGauges);
     netClientMetrics = options.isMetricsCategoryDisabled(NET_CLIENT) ? null
-      : new VertxNetClientMetrics(registry, names, gaugesTable);
+      : new VertxNetClientMetrics(registry, names, longGauges);
     netServerMetrics = options.isMetricsCategoryDisabled(NET_SERVER) ? null
-      : new VertxNetServerMetrics(registry, names, gaugesTable);
+      : new VertxNetServerMetrics(registry, names, longGauges);
     httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? null
-      : new VertxHttpClientMetrics(registry, names, options.getClientRequestTagsProvider(), gaugesTable);
+      : new VertxHttpClientMetrics(registry, names, options.getClientRequestTagsProvider(), longGauges);
     httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? null
-      : new VertxHttpServerMetrics(registry, names, options.getServerRequestTagsProvider(), gaugesTable);
+      : new VertxHttpServerMetrics(registry, names, options.getServerRequestTagsProvider(), longGauges);
     poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
-      : new VertxPoolMetrics(registry, names, gaugesTable);
+      : new VertxPoolMetrics(registry, names, longGauges);
   }
 
   void init() {
     backendRegistry.init();
+    if (jvmGcMetrics != null) {
+      new ClassLoaderMetrics().bindTo(registry);
+      new JvmMemoryMetrics().bindTo(registry);
+      jvmGcMetrics.bindTo(registry);
+      new ProcessorMetrics().bindTo(registry);
+      new JvmThreadMetrics().bindTo(registry);
+    }
   }
 
   @Override
-  public EventBusMetrics createEventBusMetrics() {
+  public EventBusMetrics<?> createEventBusMetrics() {
     if (eventBusMetrics != null) {
       return eventBusMetrics;
     }
@@ -149,7 +160,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (disabledCategories.contains(type)) {
       return DummyVertxMetrics.DummyClientMetrics.INSTANCE;
     }
-    VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type, names, gaugesTable));
+    VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type, names, longGauges));
     return clientMetrics.forInstance(remoteAddress, namespace);
   }
 
@@ -160,6 +171,9 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
 
   @Override
   public void close() {
+    if (jvmGcMetrics != null) {
+      jvmGcMetrics.close();
+    }
     BackendRegistries.stop(registryName);
   }
 }

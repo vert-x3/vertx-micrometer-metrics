@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 The original author or authors
+ * Copyright (c) 2011-2023 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -47,7 +47,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   /**
    * Default label match for public http server: exclude remote label
    */
-  public static final List<Label> DEFAULT_LABELS = Arrays.asList(Label.HTTP_ROUTE, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_TYPE, Label.EB_SIDE);
+  public static final List<Label> DEFAULT_LABELS = Arrays.asList(Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_TYPE, Label.EB_SIDE);
 
   /**
    * Whether JVM metrics should be collected by default = false.

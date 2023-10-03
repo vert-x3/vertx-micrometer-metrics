@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 The original author or authors
+ * Copyright (c) 2011-2023 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,80 +16,74 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
-import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.Counters;
-import io.vertx.micrometer.impl.meters.Gauges;
+import io.vertx.micrometer.impl.meters.LongGauges;
 
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
+
+import static io.vertx.micrometer.Label.*;
 
 /**
  * @author Joel Takvorian
  */
 class VertxNetClientMetrics extends AbstractMetrics {
-  private final Gauges<LongAdder> connections;
-  private final Counters bytesReceived;
-  private final Counters bytesSent;
-  private final Counters errorCount;
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    this(registry, MetricsDomain.NET_CLIENT, names, gaugesTable);
+  VertxNetClientMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges) {
+    this(registry, MetricsDomain.NET_CLIENT, names, longGauges);
   }
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    super(registry, domain, gaugesTable);
-    connections = longGauges(names.getNetActiveConnections(), "Number of connections to the remote host currently opened", Label.LOCAL, Label.REMOTE);
-    bytesReceived = counters(names.getNetBytesRead(), "Number of bytes received from the remote host", Label.LOCAL, Label.REMOTE);
-    bytesSent = counters(names.getNetBytesWritten(), "Number of bytes sent to the remote host", Label.LOCAL, Label.REMOTE);
-    errorCount = counters(names.getNetErrorCount(), "Number of errors", Label.LOCAL, Label.REMOTE, Label.CLASS_NAME);
+  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names, LongGauges longGauges) {
+    super(registry, names, domain, longGauges);
   }
 
-  TCPMetrics forAddress(String localAddress) {
+  TCPMetrics<?> forAddress(String localAddress) {
     return new Instance(localAddress);
   }
 
-  class Instance implements MicrometerMetrics, TCPMetrics<String> {
-    protected final String local;
+  class Instance implements MicrometerMetrics, TCPMetrics<NetClientSocketMetric> {
+
+    final Tags local;
 
     Instance(String localAddress) {
-      this.local = localAddress == null ? "?" : localAddress;
+      local = Labels.toTags(LOCAL, localAddress == null ? "?" : localAddress);
     }
 
     @Override
-    public String connected(SocketAddress remoteAddress, String remoteName) {
-      String remote = Labels.address(remoteAddress, remoteName);
-      connections.get(local, remote).increment();
-      return remote;
+    public NetClientSocketMetric connected(SocketAddress remoteAddress, String remoteName) {
+      Tags tags = local.and(Labels.toTags(REMOTE, Labels.address(remoteAddress, remoteName)));
+      NetClientSocketMetric socketMetric = new NetClientSocketMetric(tags);
+      socketMetric.connections.increment();
+      return socketMetric;
     }
 
     @Override
-    public void disconnected(String remote, SocketAddress remoteAddress) {
-      connections.get(local, remote).decrement();
+    public void disconnected(NetClientSocketMetric socketMetric, SocketAddress remoteAddress) {
+      socketMetric.connections.decrement();
     }
 
     @Override
-    public void bytesRead(String remote, SocketAddress remoteAddress, long numberOfBytes) {
-      bytesReceived.get(local, remote).increment(numberOfBytes);
+    public void bytesRead(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
+      socketMetric.bytesReceived.increment(numberOfBytes);
     }
 
     @Override
-    public void bytesWritten(String remote, SocketAddress remoteAddress, long numberOfBytes) {
-      bytesSent.get(local, remote).increment(numberOfBytes);
+    public void bytesWritten(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
+      socketMetric.bytesSent.increment(numberOfBytes);
     }
 
     @Override
-    public void exceptionOccurred(String remote, SocketAddress remoteAddress, Throwable t) {
-      errorCount.get(local, remote, t.getClass().getSimpleName()).increment();
-    }
-
-    @Override
-    public void close() {
+    public void exceptionOccurred(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
+      counter(names.getNetErrorCount())
+        .description("Number of errors")
+        .tags(socketMetric.tags.and(Labels.toTags(CLASS_NAME, t.getClass().getSimpleName())))
+        .register(registry)
+        .increment();
     }
 
     @Override
@@ -100,6 +94,31 @@ class VertxNetClientMetrics extends AbstractMetrics {
     @Override
     public String baseName() {
       return VertxNetClientMetrics.this.baseName();
+    }
+  }
+
+  class NetClientSocketMetric {
+
+    final Tags tags;
+
+    final LongAdder connections;
+    final Counter bytesReceived;
+    final Counter bytesSent;
+
+    NetClientSocketMetric(Tags tags) {
+      this.tags = tags;
+      connections = longGauge(names.getNetActiveConnections())
+        .description("Number of connections to the remote host currently opened")
+        .tags(tags)
+        .register(registry);
+      bytesReceived = counter(names.getNetBytesRead())
+        .description("Number of bytes received from the remote host")
+        .tags(tags)
+        .register(registry);
+      bytesSent = counter(names.getNetBytesWritten())
+        .description("Number of bytes sent to the remote host")
+        .tags(tags)
+        .register(registry);
     }
   }
 }

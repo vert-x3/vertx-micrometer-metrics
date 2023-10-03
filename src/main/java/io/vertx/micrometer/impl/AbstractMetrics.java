@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Red Hat, Inc.
+ * Copyright 2023 Red Hat, Inc.
  *
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
@@ -16,18 +16,17 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.micrometer.Label;
+import io.micrometer.core.instrument.Timer;
 import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.impl.meters.Counters;
-import io.vertx.micrometer.impl.meters.Gauges;
-import io.vertx.micrometer.impl.meters.Summaries;
-import io.vertx.micrometer.impl.meters.Timers;
+import io.vertx.micrometer.MetricsNaming;
+import io.vertx.micrometer.impl.meters.LongGaugeBuilder;
+import io.vertx.micrometer.impl.meters.LongGauges;
 
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.ToDoubleFunction;
 
 /**
  * Abstract class for metrics container.
@@ -36,25 +35,29 @@ import java.util.concurrent.atomic.LongAdder;
  */
 public abstract class AbstractMetrics implements MicrometerMetrics {
   protected final MeterRegistry registry;
+  protected final MetricsNaming names;
   protected final String category;
-  protected final ConcurrentMap<Meter.Id, Object> gaugesTable;
+  protected final LongGauges longGauges;
 
-  AbstractMetrics(MeterRegistry registry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges) {
     this.registry = registry;
-    this.gaugesTable = gaugesTable;
+    this.names = names;
+    this.longGauges = longGauges;
     this.category = null;
   }
 
-  AbstractMetrics(MeterRegistry registry, String category, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, String category, LongGauges longGauges) {
     this.registry = registry;
+    this.names = names;
     this.category = category;
-    this.gaugesTable = gaugesTable;
+    this.longGauges = longGauges;
   }
 
-  AbstractMetrics(MeterRegistry registry, MetricsDomain domain, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, MetricsDomain domain, LongGauges longGauges) {
     this.registry = registry;
+    this.names = names;
     this.category = (domain == null) ? null : domain.toCategory();
-    this.gaugesTable = gaugesTable;
+    this.longGauges = longGauges;
   }
 
   /**
@@ -70,23 +73,23 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
     return category == null ? null : "vertx." + category + ".";
   }
 
-  Counters counters(String name, String description, Label... keys) {
-    return new Counters(baseName() + name, description, registry, keys);
+  Counter.Builder counter(String name) {
+    return Counter.builder(baseName() + name);
   }
 
-  Gauges<LongAdder> longGauges(String name, String description, Label... keys) {
-    return new Gauges<>(gaugesTable, baseName() + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
+  LongGaugeBuilder longGauge(String name) {
+    return longGauges.builder(baseName() + name, LongAdder::doubleValue);
   }
 
-  Gauges<AtomicReference<Double>> doubleGauges(String name, String description, Label... keys) {
-    return new Gauges<>(gaugesTable, baseName() + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
+  LongGaugeBuilder longGauge(String name, ToDoubleFunction<LongAdder> func) {
+    return longGauges.builder(baseName() + name, func);
   }
 
-  Summaries summaries(String name, String description, Label... keys) {
-    return new Summaries(baseName() + name, description, registry, keys);
+  DistributionSummary.Builder distributionSummary(String name) {
+    return DistributionSummary.builder(baseName() + name);
   }
 
-  Timers timers(String name, String description, Label... keys) {
-    return new Timers(baseName() + name, description, registry, keys);
+  Timer.Builder timer(String name) {
+    return Timer.builder(baseName() + name);
   }
 }
