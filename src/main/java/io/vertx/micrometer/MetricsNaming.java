@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -575,5 +575,52 @@ public class MetricsNaming {
   public MetricsNaming setPoolQueuePending(String poolQueuePending) {
     this.poolQueuePending = poolQueuePending;
     return this;
+  }
+
+  public MetricsNaming withBaseName(String baseName) {
+    if (baseName == null || baseName.isEmpty()) {
+      return new MetricsNaming(this);
+    }
+    MetricsNaming copy = new MetricsNaming();
+    copy.clientQueueTime = baseName + this.clientQueueTime;
+    copy.clientQueuePending = baseName + this.clientQueuePending;
+    copy.clientProcessingTime = baseName + this.clientProcessingTime;
+    copy.clientProcessingPending = baseName + this.clientProcessingPending;
+    copy.clientResetsCount = baseName + this.clientResetsCount;
+    copy.datagramBytesRead = baseName + this.datagramBytesRead;
+    copy.datagramBytesWritten = baseName + this.datagramBytesWritten;
+    copy.datagramErrorCount = baseName + this.datagramErrorCount;
+    copy.ebHandlers = baseName + this.ebHandlers;
+    copy.ebPending = baseName + this.ebPending;
+    copy.ebProcessed = baseName + this.ebProcessed;
+    copy.ebPublished = baseName + this.ebPublished;
+    copy.ebSent = baseName + this.ebSent;
+    copy.ebReceived = baseName + this.ebReceived;
+    copy.ebDelivered = baseName + this.ebDelivered;
+    copy.ebDiscarded = baseName + this.ebDiscarded;
+    copy.ebReplyFailures = baseName + this.ebReplyFailures;
+    copy.ebBytesRead = baseName + this.ebBytesRead;
+    copy.ebBytesWritten = baseName + this.ebBytesWritten;
+    copy.httpQueueTime = baseName + this.httpQueueTime;
+    copy.httpQueuePending = baseName + this.httpQueuePending;
+    copy.httpActiveRequests = baseName + this.httpActiveRequests;
+    copy.httpRequestsCount = baseName + this.httpRequestsCount;
+    copy.httpRequestBytes = baseName + this.httpRequestBytes;
+    copy.httpResponseTime = baseName + this.httpResponseTime;
+    copy.httpResponsesCount = baseName + this.httpResponsesCount;
+    copy.httpResponseBytes = baseName + this.httpResponseBytes;
+    copy.httpActiveWsConnections = baseName + this.httpActiveWsConnections;
+    copy.httpRequestResetsCount = baseName + this.httpRequestResetsCount;
+    copy.netActiveConnections = baseName + this.netActiveConnections;
+    copy.netBytesRead = baseName + this.netBytesRead;
+    copy.netBytesWritten = baseName + this.netBytesWritten;
+    copy.netErrorCount = baseName + this.netErrorCount;
+    copy.poolQueueTime = baseName + this.poolQueueTime;
+    copy.poolQueuePending = baseName + this.poolQueuePending;
+    copy.poolUsage = baseName + this.poolUsage;
+    copy.poolInUse = baseName + this.poolInUse;
+    copy.poolUsageRatio = baseName + this.poolUsageRatio;
+    copy.poolCompleted = baseName + this.poolCompleted;
+    return copy;
   }
 }

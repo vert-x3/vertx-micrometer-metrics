@@ -43,26 +43,26 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
 
   AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
     this.registry = registry;
-    this.names = names;
     this.longGauges = longGauges;
     this.category = null;
     this.enabledLabels = enabledLabels;
+    this.names = names.withBaseName(baseName());
   }
 
   AbstractMetrics(MeterRegistry registry, MetricsNaming names, String category, LongGauges longGauges, EnumSet<Label> enabledLabels) {
     this.registry = registry;
-    this.names = names;
     this.category = category;
     this.longGauges = longGauges;
     this.enabledLabels = enabledLabels;
+    this.names = names.withBaseName(baseName());
   }
 
   AbstractMetrics(MeterRegistry registry, MetricsNaming names, MetricsDomain domain, LongGauges longGauges, EnumSet<Label> enabledLabels) {
     this.registry = registry;
-    this.names = names;
     this.category = (domain == null) ? null : domain.toCategory();
     this.longGauges = longGauges;
     this.enabledLabels = enabledLabels;
+    this.names = names.withBaseName(baseName());
   }
 
   /**
@@ -79,23 +79,23 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
   }
 
   Counter.Builder counter(String name) {
-    return Counter.builder(baseName() + name);
+    return Counter.builder(name);
   }
 
   LongGaugeBuilder longGauge(String name) {
-    return longGauges.builder(baseName() + name, LongAdder::doubleValue);
+    return longGauges.builder(name, LongAdder::doubleValue);
   }
 
   LongGaugeBuilder longGauge(String name, ToDoubleFunction<LongAdder> func) {
-    return longGauges.builder(baseName() + name, func);
+    return longGauges.builder(name, func);
   }
 
   DistributionSummary.Builder distributionSummary(String name) {
-    return DistributionSummary.builder(baseName() + name);
+    return DistributionSummary.builder(name);
   }
 
   Timer.Builder timer(String name) {
-    return Timer.builder(baseName() + name);
+    return Timer.builder(name);
   }
 
   <T1> Tags toTags(Label l1, Function<T1, String> func1, T1 v1) {
