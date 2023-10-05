@@ -68,7 +68,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   }
 
   @Override
-  public Handler handlerRegistered(String address, String repliedAddress) {
+  public Handler handlerRegistered(String address) {
     if (isInternal(address)) {
       // Ignore internal metrics
       return IGNORED;
