@@ -20,7 +20,6 @@ import io.micrometer.core.instrument.*;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.LongGaugeBuilder;
 import io.vertx.micrometer.impl.meters.LongGauges;
 import io.vertx.micrometer.impl.tags.IgnoredTag;
 
@@ -29,6 +28,8 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
+
+import static io.micrometer.core.instrument.Meter.Type.*;
 
 /**
  * Abstract class for metrics container.
@@ -41,29 +42,33 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
   protected final String category;
   protected final LongGauges longGauges;
   protected final EnumSet<Label> enabledLabels;
+  protected final MeterCache meterCache;
 
-  AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
     this.registry = registry;
     this.longGauges = longGauges;
     this.category = null;
     this.enabledLabels = enabledLabels;
     this.names = names.withBaseName(baseName());
+    this.meterCache = meterCache;
   }
 
-  AbstractMetrics(MeterRegistry registry, MetricsNaming names, String category, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, String category, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
     this.registry = registry;
     this.category = category;
     this.longGauges = longGauges;
     this.enabledLabels = enabledLabels;
     this.names = names.withBaseName(baseName());
+    this.meterCache = meterCache;
   }
 
-  AbstractMetrics(MeterRegistry registry, MetricsNaming names, MetricsDomain domain, LongGauges longGauges, EnumSet<Label> enabledLabels) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, MetricsDomain domain, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
     this.registry = registry;
     this.category = (domain == null) ? null : domain.toCategory();
     this.longGauges = longGauges;
     this.enabledLabels = enabledLabels;
     this.names = names.withBaseName(baseName());
+    this.meterCache = meterCache;
   }
 
   /**
@@ -79,24 +84,52 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
     return category == null ? null : "vertx." + category + ".";
   }
 
-  Counter.Builder counter(String name) {
-    return Counter.builder(name);
+  Counter counter(String name, String description, Tags tags) {
+    Meter.Id id = new Meter.Id(name, tags, null, description, COUNTER);
+    Counter c = meterCache.get(id);
+    if (c != null) {
+      return c;
+    }
+    c = Counter.builder(name).description(description).tags(tags).register(registry);
+    meterCache.put(id, c);
+    return c;
   }
 
-  LongGaugeBuilder longGauge(String name) {
-    return longGauges.builder(name, LongAdder::doubleValue);
+  LongAdder longGauge(String name, String description, Tags tags) {
+    return longGauge(name, description, tags, LongAdder::doubleValue);
   }
 
-  LongGaugeBuilder longGauge(String name, ToDoubleFunction<LongAdder> func) {
-    return longGauges.builder(name, func);
+  LongAdder longGauge(String name, String description, Tags tags, ToDoubleFunction<LongAdder> func) {
+    Meter.Id id = new Meter.Id(name, tags, null, description, GAUGE);
+    LongAdder la = meterCache.get(id);
+    if (la != null) {
+      return la;
+    }
+    la = longGauges.builder(name, func).description(description).tags(tags).register(registry);
+    meterCache.put(id, la);
+    return la;
   }
 
-  DistributionSummary.Builder distributionSummary(String name) {
-    return DistributionSummary.builder(name);
+  DistributionSummary distributionSummary(String name, String description, Tags tags) {
+    Meter.Id id = new Meter.Id(name, tags, null, description, DISTRIBUTION_SUMMARY);
+    DistributionSummary ds = meterCache.get(id);
+    if (ds != null) {
+      return ds;
+    }
+    ds = DistributionSummary.builder(name).description(description).tags(tags).register(registry);
+    meterCache.put(id, ds);
+    return ds;
   }
 
-  Timer.Builder timer(String name) {
-    return Timer.builder(name);
+  Timer timer(String name, String description, Tags tags) {
+    Meter.Id id = new Meter.Id(name, tags, null, description, TIMER);
+    Timer t = meterCache.get(id);
+    if (t != null) {
+      return t;
+    }
+    t = Timer.builder(name).description(description).tags(tags).register(registry);
+    meterCache.put(id, t);
+    return t;
   }
 
   <U> Tag toTag(Label label, Function<U, String> func, U u) {

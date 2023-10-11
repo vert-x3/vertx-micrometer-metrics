@@ -38,8 +38,8 @@ import static java.util.function.UnaryOperator.identity;
  */
 class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<VertxEventBusMetrics.Handler> {
 
-  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
-    super(registry, names, MetricsDomain.EVENT_BUS, longGauges, enabledLabels);
+  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+    super(registry, names, MetricsDomain.EVENT_BUS, longGauges, enabledLabels, meterCache);
   }
 
   private static boolean isNotInternal(String address) {
@@ -68,15 +68,9 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void messageDelivered(Handler handler, boolean local) {
     if (handler != null) {
       TagsWrapper tags = handler.tags.and(toTag(EB_SIDE, Labels::side, local));
-      longGauge(names.getEbPending())
-        .description("Number of messages not processed yet")
-        .tags(tags.unwrap())
-        .register(registry)
+      longGauge(names.getEbPending(), "Number of messages not processed yet", tags.unwrap())
         .decrement();
-      counter(names.getEbProcessed())
-        .description("Number of processed messages")
-        .tags(tags.unwrap())
-        .register(registry)
+      counter(names.getEbProcessed(), "Number of processed messages", tags.unwrap())
         .increment();
     }
   }
@@ -85,15 +79,9 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void discardMessage(Handler handler, boolean local, Message<?> msg) {
     if (handler != null) {
       TagsWrapper tags = handler.tags.and(toTag(EB_SIDE, Labels::side, local));
-      longGauge(names.getEbPending())
-        .description("Number of messages not processed yet")
-        .tags(tags.unwrap())
-        .register(registry)
+      longGauge(names.getEbPending(), "Number of messages not processed yet", tags.unwrap())
         .decrement();
-      counter(names.getEbDiscarded())
-        .description("Number of discarded messages")
-        .tags(tags.unwrap())
-        .register(registry)
+      counter(names.getEbDiscarded(), "Number of discarded messages", tags.unwrap())
         .increment();
     }
   }
@@ -103,16 +91,10 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     if (isNotInternal(address)) {
       TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_SIDE, Labels::side, local));
       if (publish) {
-        counter(names.getEbPublished())
-          .description("Number of messages published (publish / subscribe)")
-          .tags(tags.unwrap())
-          .register(registry)
+        counter(names.getEbPublished(), "Number of messages published (publish / subscribe)", tags.unwrap())
           .increment();
       } else {
-        counter(names.getEbSent())
-          .description("Number of messages sent (point-to-point)")
-          .tags(tags.unwrap())
-          .register(registry)
+        counter(names.getEbSent(), "Number of messages sent (point-to-point)", tags.unwrap())
           .increment();
       }
     }
@@ -122,21 +104,12 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void messageReceived(String address, boolean publish, boolean local, int handlers) {
     if (isNotInternal(address)) {
       TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_SIDE, Labels::side, local));
-      counter(names.getEbReceived())
-        .description("Number of messages received")
-        .tags(tags.unwrap())
-        .register(registry)
+      counter(names.getEbReceived(), "Number of messages received", tags.unwrap())
         .increment();
       if (handlers > 0) {
-        longGauge(names.getEbPending())
-          .description("Number of messages not processed yet")
-          .tags(tags.unwrap())
-          .register(registry)
+        longGauge(names.getEbPending(), "Number of messages not processed yet", tags.unwrap())
           .add(handlers);
-        counter(names.getEbDelivered())
-          .description("Number of messages delivered to handlers")
-          .tags(tags.unwrap())
-          .register(registry)
+        counter(names.getEbDelivered(), "Number of messages delivered to handlers", tags.unwrap())
           .increment();
       }
     }
@@ -146,10 +119,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void messageWritten(String address, int numberOfBytes) {
     if (isNotInternal(address)) {
       TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
-      distributionSummary(names.getEbBytesWritten())
-        .description("Number of bytes sent while sending messages to event bus cluster peers")
-        .tags(tags.unwrap())
-        .register(registry)
+      distributionSummary(names.getEbBytesWritten(), "Number of bytes sent while sending messages to event bus cluster peers", tags.unwrap())
         .record(numberOfBytes);
     }
   }
@@ -158,10 +128,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void messageRead(String address, int numberOfBytes) {
     if (isNotInternal(address)) {
       TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
-      distributionSummary(names.getEbBytesRead())
-        .description("Number of bytes received while reading messages from event bus cluster peers")
-        .tags(tags.unwrap())
-        .register(registry)
+      distributionSummary(names.getEbBytesRead(), "Number of bytes received while reading messages from event bus cluster peers", tags.unwrap())
         .record(numberOfBytes);
     }
   }
@@ -170,10 +137,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   public void replyFailure(String address, ReplyFailure failure) {
     if (isNotInternal(address)) {
       TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_FAILURE, ReplyFailure::name, failure));
-      counter(names.getEbReplyFailures())
-        .description("Number of message reply failures")
-        .tags(tags.unwrap())
-        .register(registry).increment();
+      counter(names.getEbReplyFailures(), "Number of message reply failures", tags.unwrap()).increment();
     }
   }
 
@@ -184,10 +148,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
     Handler(TagsWrapper tags) {
       this.tags = tags;
-      handlers = longGauge(names.getEbHandlers())
-        .description("Number of event bus handlers in use")
-        .tags(tags.unwrap())
-        .register(registry);
+      handlers = longGauge(names.getEbHandlers(), "Number of event bus handlers in use", tags.unwrap());
     }
   }
 }

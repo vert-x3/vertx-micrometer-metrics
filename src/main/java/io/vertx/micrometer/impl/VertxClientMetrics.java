@@ -39,8 +39,8 @@ import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
  */
 class VertxClientMetrics extends AbstractMetrics {
 
-  VertxClientMetrics(MeterRegistry registry, String type, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
-    super(registry, names, type, longGauges, enabledLabels);
+  VertxClientMetrics(MeterRegistry registry, String type, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+    super(registry, names, type, longGauges, enabledLabels, meterCache);
   }
 
   ClientMetrics<Timer.Sample, Timer.Sample, Object, Object> forInstance(SocketAddress remoteAddress, String namespace) {
@@ -58,26 +58,11 @@ class VertxClientMetrics extends AbstractMetrics {
 
     Instance(SocketAddress remoteAddress, String namespace) {
       TagsWrapper tags = of(toTag(REMOTE, Labels::address, remoteAddress), toTag(NAMESPACE, s -> s == null ? "" : s, namespace));
-      queueDelay = timer(names.getClientQueueTime())
-        .description("Time spent in queue before being processed")
-        .tags(tags.unwrap())
-        .register(registry);
-      queueSize = longGauge(names.getClientQueuePending())
-        .description("Number of pending elements in queue")
-        .tags(tags.unwrap())
-        .register(registry);
-      processingTime = timer(names.getClientProcessingTime())
-        .description("Processing time, from request start to response end")
-        .tags(tags.unwrap())
-        .register(registry);
-      processingPending = longGauge(names.getClientProcessingPending())
-        .description("Number of elements being processed")
-        .tags(tags.unwrap())
-        .register(registry);
-      resetCount = counter(names.getClientResetsCount())
-        .description("Total number of resets")
-        .tags(tags.unwrap())
-        .register(registry);
+      queueDelay = timer(names.getClientQueueTime(), "Time spent in queue before being processed", tags.unwrap());
+      queueSize = longGauge(names.getClientQueuePending(), "Number of pending elements in queue", tags.unwrap());
+      processingTime = timer(names.getClientProcessingTime(), "Processing time, from request start to response end", tags.unwrap());
+      processingPending = longGauge(names.getClientProcessingPending(), "Number of elements being processed", tags.unwrap());
+      resetCount = counter(names.getClientResetsCount(), "Total number of resets", tags.unwrap());
     }
 
     @Override

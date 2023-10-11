@@ -39,8 +39,8 @@ import static java.util.function.Function.identity;
  */
 class VertxPoolMetrics extends AbstractMetrics {
 
-  VertxPoolMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
-    super(registry, names, MetricsDomain.NAMED_POOLS, longGauges, enabledLabels);
+  VertxPoolMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+    super(registry, names, MetricsDomain.NAMED_POOLS, longGauges, enabledLabels, meterCache);
   }
 
   PoolMetrics<Timer.Sample> forInstance(String poolType, String poolName, int maxPoolSize) {
@@ -58,30 +58,12 @@ class VertxPoolMetrics extends AbstractMetrics {
 
     Instance(String poolType, String poolName, int maxPoolSize) {
       TagsWrapper tags = of(toTag(POOL_TYPE, identity(), poolType), toTag(POOL_NAME, identity(), poolName));
-      queueDelay = timer(names.getPoolQueueTime())
-        .description("Time spent in queue before being processed")
-        .tags(tags.unwrap())
-        .register(registry);
-      queueSize = longGauge(names.getPoolQueuePending())
-        .description("Number of pending elements in queue")
-        .tags(tags.unwrap())
-        .register(registry);
-      usage = timer(names.getPoolUsage())
-        .description("Time using a resource")
-        .tags(tags.unwrap())
-        .register(registry);
-      inUse = longGauge(names.getPoolInUse())
-        .description("Number of resources used")
-        .tags(tags.unwrap())
-        .register(registry);
-      usageRatio = longGauge(names.getPoolUsageRatio(), value -> maxPoolSize > 0 ? value.doubleValue() / maxPoolSize : Double.NaN)
-        .description("Pool usage ratio, only present if maximum pool size could be determined")
-        .tags(tags.unwrap())
-        .register(registry);
-      completed = counter(names.getPoolCompleted())
-        .description("Number of elements done with the resource")
-        .tags(tags.unwrap())
-        .register(registry);
+      queueDelay = timer(names.getPoolQueueTime(), "Time spent in queue before being processed", tags.unwrap());
+      queueSize = longGauge(names.getPoolQueuePending(), "Number of pending elements in queue", tags.unwrap());
+      usage = timer(names.getPoolUsage(), "Time using a resource", tags.unwrap());
+      inUse = longGauge(names.getPoolInUse(), "Number of resources used", tags.unwrap());
+      usageRatio = longGauge(names.getPoolUsageRatio(), "Pool usage ratio, only present if maximum pool size could be determined", tags.unwrap(), value -> maxPoolSize > 0 ? value.doubleValue() / maxPoolSize : Double.NaN);
+      completed = counter(names.getPoolCompleted(), "Number of elements done with the resource", tags.unwrap());
     }
 
     @Override

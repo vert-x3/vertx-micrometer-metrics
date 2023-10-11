@@ -37,12 +37,12 @@ import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
  */
 class VertxNetServerMetrics extends AbstractMetrics {
 
-  VertxNetServerMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
-    this(registry, names, MetricsDomain.NET_SERVER, longGauges, enabledLabels);
+  VertxNetServerMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+    this(registry, names, MetricsDomain.NET_SERVER, longGauges, enabledLabels, meterCache);
   }
 
-  VertxNetServerMetrics(MeterRegistry registry, MetricsNaming names, MetricsDomain domain, LongGauges longGauges, EnumSet<Label> enabledLabels) {
-    super(registry, names, domain, longGauges, enabledLabels);
+  VertxNetServerMetrics(MeterRegistry registry, MetricsNaming names, MetricsDomain domain, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+    super(registry, names, domain, longGauges, enabledLabels, meterCache);
   }
 
   TCPMetrics<?> forAddress(SocketAddress localAddress) {
@@ -82,10 +82,7 @@ class VertxNetServerMetrics extends AbstractMetrics {
 
     @Override
     public void exceptionOccurred(NetServerSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
-      counter(names.getNetErrorCount())
-        .description("Number of errors")
-        .tags(socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
-        .register(registry)
+      counter(names.getNetErrorCount(), "Number of errors", socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
         .increment();
     }
 
@@ -110,18 +107,9 @@ class VertxNetServerMetrics extends AbstractMetrics {
 
     NetServerSocketMetric(TagsWrapper tags) {
       this.tags = tags;
-      connections = longGauge(names.getNetActiveConnections())
-        .description("Number of opened connections to the server")
-        .tags(tags.unwrap())
-        .register(registry);
-      bytesReceived = counter(names.getNetBytesRead())
-        .description("Number of bytes received by the server")
-        .tags(tags.unwrap())
-        .register(registry);
-      bytesSent = counter(names.getNetBytesWritten())
-        .description("Number of bytes sent by the server")
-        .tags(tags.unwrap())
-        .register(registry);
+      connections = longGauge(names.getNetActiveConnections(), "Number of opened connections to the server", tags.unwrap());
+      bytesReceived = counter(names.getNetBytesRead(), "Number of bytes received by the server", tags.unwrap());
+      bytesSent = counter(names.getNetBytesWritten(), "Number of bytes sent by the server", tags.unwrap());
     }
   }
 }

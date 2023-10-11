@@ -54,7 +54,8 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
     synchronized (longGaugesByRegistry) {
       longGauges = longGaugesByRegistry.computeIfAbsent(backendRegistry.getMeterRegistry(), meterRegistry -> new ConcurrentHashMap<>());
     }
-    VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry, new LongGauges(longGauges));
+    MeterCache meterCache = options.isMeterCacheEnabled() ? new MeterCacheImpl() : MeterCache.DISABLED;
+    VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry, new LongGauges(longGauges), meterCache);
     metrics.init();
 
     return metrics;

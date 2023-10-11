@@ -18,6 +18,7 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.DatagramSocketMetrics;
 import io.vertx.micrometer.Label;
@@ -41,17 +42,14 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
   private volatile DistributionSummary bytesWritten;
   private volatile DistributionSummary bytesRead;
 
-  VertxDatagramSocketMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
-    super(registry, names, MetricsDomain.DATAGRAM_SOCKET, longGauges, enabledLabels);
+  VertxDatagramSocketMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+    super(registry, names, MetricsDomain.DATAGRAM_SOCKET, longGauges, enabledLabels, meterCache);
   }
 
   @Override
   public void listening(String localName, SocketAddress localAddress) {
     TagsWrapper tags = of(toTag(LOCAL, Labels::address, localAddress, localName));
-    bytesRead = distributionSummary(names.getDatagramBytesRead())
-      .description("Total number of datagram bytes received")
-      .tags(tags.unwrap())
-      .register(registry);
+    bytesRead = distributionSummary(names.getDatagramBytesRead(), "Total number of datagram bytes received", tags.unwrap());
   }
 
   @Override
@@ -64,9 +62,7 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
   @Override
   public void bytesWritten(Void socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
     if (bytesWritten == null) {
-      bytesWritten = distributionSummary(names.getDatagramBytesWritten())
-        .description("Total number of datagram bytes sent")
-        .register(registry);
+      bytesWritten = distributionSummary(names.getDatagramBytesWritten(), "Total number of datagram bytes sent", Tags.empty());
     }
     bytesWritten.record(numberOfBytes);
   }
@@ -74,10 +70,7 @@ class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSock
   @Override
   public void exceptionOccurred(Void socketMetric, SocketAddress remoteAddress, Throwable t) {
     TagsWrapper tags = of(toTag(CLASS_NAME, Class::getSimpleName, t.getClass()));
-    counter(names.getDatagramErrorCount())
-      .description("Total number of datagram errors")
-      .tags(tags.unwrap())
-      .register(registry)
+    counter(names.getDatagramErrorCount(), "Total number of datagram errors", tags.unwrap())
       .increment();
   }
 }

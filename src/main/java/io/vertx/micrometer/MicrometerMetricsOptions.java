@@ -59,6 +59,11 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public static final MetricsNaming DEFAULT_METRICS_NAMING = MetricsNaming.v4Names();
 
+  /**
+   * Whether a meter cache should be enabled by default = false.
+   */
+  public static final boolean DEFAULT_METER_CACHED_ENABLED = false;
+
   private Set<String> disabledMetricsCategories;
   private String registryName;
   private Set<Label> labels;
@@ -71,6 +76,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private MetricsNaming metricsNaming;
   private Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider;
   private Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
+  private boolean meterCacheEnabled;
 
   /**
    * Creates default options for Micrometer metrics.
@@ -84,6 +90,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     metricsNaming = DEFAULT_METRICS_NAMING;
     serverRequestTagsProvider = null;
     clientRequestTagsProvider = null;
+    meterCacheEnabled = DEFAULT_METER_CACHED_ENABLED;
   }
 
   /**
@@ -109,6 +116,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     metricsNaming = other.metricsNaming;
     serverRequestTagsProvider = other.serverRequestTagsProvider;
     clientRequestTagsProvider = other.clientRequestTagsProvider;
+    meterCacheEnabled = other.meterCacheEnabled;
   }
 
   /**
@@ -208,7 +216,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
 
   /**
    * Is the given metrics category disabled?
-   * @return true if it is disabled
+   * @return {@code true} if it is disabled
    */
   @GenIgnore
   public boolean isMetricsCategoryDisabled(MetricsDomain metricsDomain) {
@@ -217,7 +225,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
 
   /**
    * Is the given metrics category disabled?
-   * @return true if it is disabled
+   * @return {@code true} if it is disabled
    */
   @GenIgnore
   public boolean isMetricsCategoryDisabled(String category) {
@@ -388,7 +396,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   }
 
   /**
-   * @return true if JVM metrics should be collected, false otherwise
+   * @return {@code true} if JVM metrics should be collected, {@code false} otherwise
    */
   public boolean isJvmMetricsEnabled() {
     return jvmMetricsEnabled;
@@ -397,7 +405,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   /**
    * Whether JVM metrics should be collected. Defaults to {@code false}.
    *
-   * @param jvmMetricsEnabled true to collect JVM metrics, false otherwise. Defaults to {@code false}.
+   * @param jvmMetricsEnabled {@code true} to collect JVM metrics, {@code false} otherwise. Defaults to {@code false}.
    * @return a reference to this, so the API can be used fluently
    */
   public MicrometerMetricsOptions setJvmMetricsEnabled(boolean jvmMetricsEnabled) {
@@ -485,6 +493,24 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   @GenIgnore
   public MicrometerMetricsOptions setClientRequestTagsProvider(Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider) {
     this.clientRequestTagsProvider = clientRequestTagsProvider;
+    return this;
+  }
+
+  /**
+   * @return {@code true} if a meter cache should be enabled, {@code false} otherwise
+   */
+  public boolean isMeterCacheEnabled() {
+    return meterCacheEnabled;
+  }
+
+  /**
+   * Whether a meter cache should be enabled. Defaults to {@code false}.
+   *
+   * @param meterCacheEnabled {@code true} to enable a meter cache,{@code false}otherwise. Defaults to {@code false}.
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MicrometerMetricsOptions setMeterCacheEnabled(boolean meterCacheEnabled) {
+    this.meterCacheEnabled = meterCacheEnabled;
     return this;
   }
 }

@@ -38,12 +38,12 @@ import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
  */
 class VertxNetClientMetrics extends AbstractMetrics {
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
-    this(registry, MetricsDomain.NET_CLIENT, names, longGauges, enabledLabels);
+  VertxNetClientMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+    this(registry, MetricsDomain.NET_CLIENT, names, longGauges, enabledLabels, meterCache);
   }
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
-    super(registry, names, domain, longGauges, enabledLabels);
+  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+    super(registry, names, domain, longGauges, enabledLabels, meterCache);
   }
 
   TCPMetrics<?> forAddress(String localAddress) {
@@ -83,10 +83,7 @@ class VertxNetClientMetrics extends AbstractMetrics {
 
     @Override
     public void exceptionOccurred(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
-      counter(names.getNetErrorCount())
-        .description("Number of errors")
-        .tags(socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
-        .register(registry)
+      counter(names.getNetErrorCount(), "Number of errors", socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
         .increment();
     }
 
@@ -111,18 +108,9 @@ class VertxNetClientMetrics extends AbstractMetrics {
 
     NetClientSocketMetric(TagsWrapper tags) {
       this.tags = tags;
-      connections = longGauge(names.getNetActiveConnections())
-        .description("Number of connections to the remote host currently opened")
-        .tags(tags.unwrap())
-        .register(registry);
-      bytesReceived = counter(names.getNetBytesRead())
-        .description("Number of bytes received from the remote host")
-        .tags(tags.unwrap())
-        .register(registry);
-      bytesSent = counter(names.getNetBytesWritten())
-        .description("Number of bytes sent to the remote host")
-        .tags(tags.unwrap())
-        .register(registry);
+      connections = longGauge(names.getNetActiveConnections(), "Number of connections to the remote host currently opened", tags.unwrap());
+      bytesReceived = counter(names.getNetBytesRead(), "Number of bytes received from the remote host", tags.unwrap());
+      bytesSent = counter(names.getNetBytesWritten(), "Number of bytes sent to the remote host", tags.unwrap());
     }
   }
 }

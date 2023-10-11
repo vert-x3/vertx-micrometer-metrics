@@ -227,11 +227,32 @@ In this example, metrics are reported both for JMX and Graphite:
 
 Please refer to {@link io.vertx.micrometer.MicrometerMetricsOptions} for an exhaustive list of options.
 
+=== Improving performance with a meter cache
+
+Many events require dynamic look-up of meters in Micrometer's registry.
+For example, the `vertx_http_server_requests_total` counter is built with some tags which values are not known until the HTTP server response has been sent (like the HTTP status code).
+
+But dynamic look-up comes with a cost which can be non-negligible under load.
+
+To reduce this cost, Vert.x Micrometer Metrics can use a meter cache, which is disabled by default.
+To enable it, use {@link io.vertx.micrometer.MicrometerMetricsOptions#setMeterCacheEnabled}:
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#enableMeterCache}
+----
+
+[CAUTION]
+====
+Don't use enable the meter cache if you modify the registry config after the application has started.
+For example, if you add a new filter to the registry, Vert.x Micrometer Metrics may use a cached meter which is no longer valid.
+====
+
 === Averages and quantiles in Prometheus
 
 By default, when using the Prometheus registry, histogram-kind metrics will not contain averages or quantile stats.
 
-Averages don't come out of the box but they are typically link:https://prometheus.io/docs/practices/histograms/#count-and-sum-of-observations[computed at query time],
+Averages don't come out of the box, but they are typically link:https://prometheus.io/docs/practices/histograms/#count-and-sum-of-observations[computed at query time],
 with `promql`. Example, for HTTP client response time average during the last 5 minutes:
 
 [source]
@@ -256,7 +277,7 @@ And then, for example the `promql` query for the HTTP client response time, 99th
 ----
 
 The advantage of this option is that it can be leveraged in `promql`, aggregable across dimensions.
-The downside is that it creates a lot of timeseries for stats under the hood.
+The downside is that it creates a lot of time-series for stats under the hood.
 
 The second option is to create limited stats, non-aggregable across dimensions.
 It requires to access directly the Micrometer / Prometheus registry:
@@ -272,7 +293,7 @@ See also, more on histograms and percentiles:
 * from link:https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile[Prometheus doc]
 
 Furthermore, you can check some link:https://github.com/vert-x3/vertx-examples/tree/master/micrometer-metrics-examples[full working examples].
-They come along with few instructions to setup with Prometheus and view dashboards in Grafana.
+They come along with few instructions to set up with Prometheus and view dashboards in Grafana.
 
 === Disable some metric domains
 
@@ -284,7 +305,7 @@ For a full list of domains, see {@link io.vertx.micrometer.MetricsDomain}
 === User-defined metrics
 
 The Micrometer registries are accessible, in order to create new metrics or fetch the existing ones.
-By default, an unique registry is used and will be shared across the Vert.x instances of the JVM:
+By default, a unique registry is used and will be shared across the Vert.x instances of the JVM:
 
 [source,$lang]
 ----
@@ -346,8 +367,7 @@ still possible to retrieve the names used in Vert.x 3.x for compatibility:
 === Labels and matchers
 
 Vert.x Micrometer Metrics defines a set of labels (aka tags or fields) that are used to provide dimensionality
-to a metric. For instance, metrics related to event bus messages have an _address_ label, which allows then to query
-timeseries for a specific event bus address, or compare timeseries per address, or perform any kind of aggregation
+to a metric. For instance, metrics related to event bus messages have an _address_ label, which allows then to query time-series for a specific event bus address, or compare time-series per address, or perform any kind of aggregation
 that the query API allows.
 
 While setting up metrics options, you can specify which labels you want to enable or not:
@@ -433,7 +453,7 @@ measurable:
 {@link examples.MicrometerMetricsExamples#createPartialSnapshot()}
 ----
 
-Finally it is possible to filter the returned metrics from their base names:
+Finally, it is possible to filter the returned metrics from their base names:
 
 [source,$lang]
 ----
