@@ -15,6 +15,7 @@
  */
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Counter;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
@@ -62,22 +63,26 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   @Override
   public void messageDelivered(Handler handler, boolean local) {
     if (handler != null) {
-      TagsWrapper tags = handler.tags.and(toTag(EB_SIDE, Labels::side, local));
-      longGauge(names.getEbPending(), "Number of messages not processed yet", tags.unwrap())
-        .decrement();
-      counter(names.getEbProcessed(), "Number of processed messages", tags.unwrap())
-        .increment();
+      if (local) {
+        handler.ebPendingLocal.decrement();
+        handler.ebProcessedLocal.increment();
+      } else {
+        handler.ebPendingRemote.decrement();
+        handler.ebProcessedRemote.increment();
+      }
     }
   }
 
   @Override
   public void discardMessage(Handler handler, boolean local, Message<?> msg) {
     if (handler != null) {
-      TagsWrapper tags = handler.tags.and(toTag(EB_SIDE, Labels::side, local));
-      longGauge(names.getEbPending(), "Number of messages not processed yet", tags.unwrap())
-        .decrement();
-      counter(names.getEbDiscarded(), "Number of discarded messages", tags.unwrap())
-        .increment();
+      if (local) {
+        handler.ebPendingLocal.decrement();
+        handler.ebDiscardedLocal.increment();
+      } else {
+        handler.ebPendingRemote.decrement();
+        handler.ebDiscardedRemote.increment();
+      }
     }
   }
 
@@ -138,12 +143,24 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
 
   class Handler {
 
-    final TagsWrapper tags;
     final LongAdder handlers;
+    final LongAdder ebPendingLocal;
+    final Counter ebProcessedLocal;
+    final LongAdder ebPendingRemote;
+    final Counter ebProcessedRemote;
+    final Counter ebDiscardedLocal;
+    final Counter ebDiscardedRemote;
 
     Handler(TagsWrapper tags) {
-      this.tags = tags;
       handlers = longGauge(names.getEbHandlers(), "Number of event bus handlers in use", tags.unwrap());
+      TagsWrapper localTags = tags.and(toTag(EB_SIDE, Labels::side, true));
+      ebPendingLocal = longGauge(names.getEbPending(), "Number of messages not processed yet", localTags.unwrap());
+      ebProcessedLocal = counter(names.getEbProcessed(), "Number of processed messages", localTags.unwrap());
+      ebDiscardedLocal = counter(names.getEbDiscarded(), "Number of discarded messages", localTags.unwrap());
+      TagsWrapper remoteTags = tags.and(toTag(EB_SIDE, Labels::side, false));
+      ebPendingRemote = longGauge(names.getEbPending(), "Number of messages not processed yet", remoteTags.unwrap());
+      ebProcessedRemote = counter(names.getEbProcessed(), "Number of processed messages", remoteTags.unwrap());
+      ebDiscardedRemote = counter(names.getEbDiscarded(), "Number of discarded messages", remoteTags.unwrap());
     }
   }
 }

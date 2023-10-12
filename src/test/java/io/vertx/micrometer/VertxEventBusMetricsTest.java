@@ -93,16 +93,20 @@ public class VertxEventBusMetricsTest extends MicrometerMetricsTestBase {
     waitForValue(context, "vertx.eventbus.processed[address=testSubject,side=local]$COUNT",
       value -> value.intValue() == 8 * instances);
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
-    assertThat(datapoints).hasSize(9).contains(
+    assertThat(datapoints).hasSize(13).contains(
       dp("vertx.eventbus.handlers[address=testSubject]$VALUE", instances),
       dp("vertx.eventbus.pending[address=testSubject,side=local]$VALUE", 0),
+      dp("vertx.eventbus.pending[address=testSubject,side=remote]$VALUE", 0),
       dp("vertx.eventbus.sent[address=no handler,side=local]$COUNT", 2),
       dp("vertx.eventbus.published[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.received[address=no handler,side=local]$COUNT", 2),
       dp("vertx.eventbus.received[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.delivered[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.reply.failures[address=no handler,failure=NO_HANDLERS]$COUNT", 2),
-      dp("vertx.eventbus.processed[address=testSubject,side=local]$COUNT", 8d * instances));
+      dp("vertx.eventbus.processed[address=testSubject,side=local]$COUNT", 8d * instances),
+      dp("vertx.eventbus.processed[address=testSubject,side=remote]$COUNT", 0),
+      dp("vertx.eventbus.discarded[address=testSubject,side=local]$COUNT", 0),
+      dp("vertx.eventbus.discarded[address=testSubject,side=remote]$COUNT", 0));
   }
 
   @Test
