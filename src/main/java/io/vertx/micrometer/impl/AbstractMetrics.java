@@ -37,6 +37,7 @@ import static io.micrometer.core.instrument.Meter.Type.*;
  * @author Joel Takvorian
  */
 public abstract class AbstractMetrics implements MicrometerMetrics {
+
   protected final MeterRegistry registry;
   protected final MetricsNaming names;
   protected final String category;
@@ -53,22 +54,17 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
     this.meterCache = meterCache;
   }
 
-  AbstractMetrics(MeterRegistry registry, MetricsNaming names, String category, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
-    this.registry = registry;
-    this.category = category;
-    this.longGauges = longGauges;
-    this.enabledLabels = enabledLabels;
-    this.names = names.withBaseName(baseName());
-    this.meterCache = meterCache;
+  AbstractMetrics(AbstractMetrics parent, MetricsDomain domain) {
+    this(parent, domain == null ? null : domain.toCategory());
   }
 
-  AbstractMetrics(MeterRegistry registry, MetricsNaming names, MetricsDomain domain, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
-    this.registry = registry;
-    this.category = (domain == null) ? null : domain.toCategory();
-    this.longGauges = longGauges;
-    this.enabledLabels = enabledLabels;
-    this.names = names.withBaseName(baseName());
-    this.meterCache = meterCache;
+  AbstractMetrics(AbstractMetrics parent, String category) {
+    this.registry = parent.registry;
+    this.longGauges = parent.longGauges;
+    this.enabledLabels = parent.enabledLabels;
+    this.meterCache = parent.meterCache;
+    this.category = category;
+    this.names = parent.names.withBaseName(baseName());
   }
 
   /**

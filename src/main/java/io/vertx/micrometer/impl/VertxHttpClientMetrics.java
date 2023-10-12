@@ -23,41 +23,28 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.HttpClientMetrics;
 import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.LongGauges;
+import io.vertx.micrometer.impl.VertxHttpClientMetrics.RequestMetric;
+import io.vertx.micrometer.impl.VertxNetClientMetrics.NetClientSocketMetric;
 import io.vertx.micrometer.impl.tags.Labels;
 import io.vertx.micrometer.impl.tags.TagsWrapper;
 
-import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
 import static io.vertx.micrometer.Label.*;
+import static io.vertx.micrometer.MetricsDomain.HTTP_CLIENT;
 
 /**
  * @author Joel Takvorian
  */
-class VertxHttpClientMetrics extends VertxNetClientMetrics {
+class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClientMetrics<RequestMetric, LongAdder, NetClientSocketMetric, Timer.Sample> {
 
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
 
-  VertxHttpClientMetrics(MeterRegistry registry, MetricsNaming names, Function<HttpRequest, Iterable<Tag>> customTagsProvider, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
-    super(registry, MetricsDomain.HTTP_CLIENT, names, longGauges, enabledLabels, meterCache);
-    this.customTagsProvider = customTagsProvider;
+  VertxHttpClientMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider, String localAddress) {
+    super(parent, HTTP_CLIENT, localAddress);
+    this.customTagsProvider = customTagsProvider == null ? r -> Tags.empty() : customTagsProvider;
   }
-
-  @Override
-  HttpClientMetrics<?, ?, ?, ?> forAddress(String localAddress) {
-    return new Instance(localAddress);
-  }
-
-  class Instance extends VertxNetClientMetrics.Instance implements HttpClientMetrics<RequestMetric, LongAdder, NetClientSocketMetric, Timer.Sample> {
-
-    Instance(String localAddress) {
-      super(localAddress);
-    }
 
     @Override
     public ClientMetrics<RequestMetric, Timer.Sample, HttpRequest, HttpResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
@@ -76,7 +63,6 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     public void disconnected(LongAdder wsConnections) {
       wsConnections.decrement();
     }
-  }
 
   class EndpointMetrics implements ClientMetrics<RequestMetric, Timer.Sample, HttpRequest, HttpResponse> {
 
@@ -107,7 +93,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics {
     public RequestMetric requestBegin(String uri, HttpRequest request) {
       TagsWrapper tags = endPointTags
         .and(toTag(HTTP_PATH, HttpRequest::uri, request), toTag(HTTP_METHOD, r -> r.method().toString(), request))
-        .and(customTagsProvider == null ? Tags.empty() : customTagsProvider.apply(request));
+        .and(customTagsProvider.apply(request));
       RequestMetric requestMetric = new RequestMetric(tags);
       requestMetric.requests.increment();
       requestMetric.requestCount.increment();

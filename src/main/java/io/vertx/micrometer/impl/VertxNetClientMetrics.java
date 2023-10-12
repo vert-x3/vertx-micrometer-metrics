@@ -17,85 +17,62 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
-import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.LongGauges;
+import io.vertx.micrometer.impl.VertxNetClientMetrics.NetClientSocketMetric;
 import io.vertx.micrometer.impl.tags.Labels;
 import io.vertx.micrometer.impl.tags.TagsWrapper;
 
-import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
+import static io.vertx.micrometer.MetricsDomain.NET_CLIENT;
 import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
  */
-class VertxNetClientMetrics extends AbstractMetrics {
+class VertxNetClientMetrics extends AbstractMetrics implements TCPMetrics<NetClientSocketMetric> {
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
-    this(registry, MetricsDomain.NET_CLIENT, names, longGauges, enabledLabels, meterCache);
+  final TagsWrapper local;
+
+  VertxNetClientMetrics(AbstractMetrics parent, String localAddress) {
+    this(parent, NET_CLIENT, localAddress);
   }
 
-  VertxNetClientMetrics(MeterRegistry registry, MetricsDomain domain, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
-    super(registry, names, domain, longGauges, enabledLabels, meterCache);
+  VertxNetClientMetrics(AbstractMetrics parent, MetricsDomain domain, String localAddress) {
+    super(parent, domain);
+    local = of(toTag(LOCAL, s -> s == null ? "?" : s, localAddress));
   }
 
-  TCPMetrics<?> forAddress(String localAddress) {
-    return new Instance(localAddress);
+  @Override
+  public NetClientSocketMetric connected(SocketAddress remoteAddress, String remoteName) {
+    TagsWrapper tags = local.and(toTag(REMOTE, Labels::address, remoteAddress, remoteName));
+    NetClientSocketMetric socketMetric = new NetClientSocketMetric(tags);
+    socketMetric.connections.increment();
+    return socketMetric;
   }
 
-  class Instance implements MicrometerMetrics, TCPMetrics<NetClientSocketMetric> {
+  @Override
+  public void disconnected(NetClientSocketMetric socketMetric, SocketAddress remoteAddress) {
+    socketMetric.connections.decrement();
+  }
 
-    final TagsWrapper local;
+  @Override
+  public void bytesRead(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
+    socketMetric.bytesReceived.increment(numberOfBytes);
+  }
 
-    Instance(String localAddress) {
-      local = of(toTag(LOCAL, s -> s == null ? "?" : s, localAddress));
-    }
+  @Override
+  public void bytesWritten(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
+    socketMetric.bytesSent.increment(numberOfBytes);
+  }
 
-    @Override
-    public NetClientSocketMetric connected(SocketAddress remoteAddress, String remoteName) {
-      TagsWrapper tags = local.and(toTag(REMOTE, Labels::address, remoteAddress, remoteName));
-      NetClientSocketMetric socketMetric = new NetClientSocketMetric(tags);
-      socketMetric.connections.increment();
-      return socketMetric;
-    }
-
-    @Override
-    public void disconnected(NetClientSocketMetric socketMetric, SocketAddress remoteAddress) {
-      socketMetric.connections.decrement();
-    }
-
-    @Override
-    public void bytesRead(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
-      socketMetric.bytesReceived.increment(numberOfBytes);
-    }
-
-    @Override
-    public void bytesWritten(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
-      socketMetric.bytesSent.increment(numberOfBytes);
-    }
-
-    @Override
-    public void exceptionOccurred(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
-      counter(names.getNetErrorCount(), "Number of errors", socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
-        .increment();
-    }
-
-    @Override
-    public MeterRegistry registry() {
-      return registry;
-    }
-
-    @Override
-    public String baseName() {
-      return VertxNetClientMetrics.this.baseName();
-    }
+  @Override
+  public void exceptionOccurred(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
+    counter(names.getNetErrorCount(), "Number of errors", socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
+      .increment();
   }
 
   class NetClientSocketMetric {

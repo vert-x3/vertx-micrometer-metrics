@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -24,22 +25,23 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.vertx.core.datagram.DatagramSocketOptions;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.*;
+import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
 import io.vertx.micrometer.impl.meters.LongGauges;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
+import static io.vertx.core.metrics.impl.DummyVertxMetrics.*;
 import static io.vertx.micrometer.MetricsDomain.*;
 
 /**
@@ -50,43 +52,23 @@ import static io.vertx.micrometer.MetricsDomain.*;
 public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final BackendRegistry backendRegistry;
   private final String registryName;
-  private final EventBusMetrics<?> eventBusMetrics;
-  private final DatagramSocketMetrics datagramSocketMetrics;
-  private final VertxNetClientMetrics netClientMetrics;
-  private final VertxNetServerMetrics netServerMetrics;
-  private final VertxHttpClientMetrics httpClientMetrics;
-  private final VertxHttpServerMetrics httpServerMetrics;
-  private final VertxPoolMetrics poolMetrics;
-  private final Map<String, VertxClientMetrics> mapClientMetrics = new ConcurrentHashMap<>();
-  private final Set<String> disabledCategories = new HashSet<>();
+  private final Set<String> disabledCategories;
   private final JvmGcMetrics jvmGcMetrics;
+  private final Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider;
+  private final Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
 
   public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, LongGauges longGauges, MeterCache meterCache) {
     super(backendRegistry.getMeterRegistry(), options.getMetricsNaming(), longGauges, EnumSet.copyOf(options.getLabels()), meterCache);
-
     this.backendRegistry = backendRegistry;
     registryName = options.getRegistryName();
-
     if (options.getDisabledMetricsCategories() != null) {
-      disabledCategories.addAll(options.getDisabledMetricsCategories());
+      disabledCategories = new HashSet<>(options.getDisabledMetricsCategories());
+    } else {
+      disabledCategories = Collections.emptySet();
     }
-
     jvmGcMetrics = options.isJvmMetricsEnabled() ? new JvmGcMetrics() : null;
-
-    eventBusMetrics = options.isMetricsCategoryDisabled(EVENT_BUS) ? null
-      : new VertxEventBusMetrics(registry, names, longGauges, enabledLabels, this.meterCache);
-    datagramSocketMetrics = options.isMetricsCategoryDisabled(DATAGRAM_SOCKET) ? null
-      : new VertxDatagramSocketMetrics(registry, names, longGauges, enabledLabels, this.meterCache);
-    netClientMetrics = options.isMetricsCategoryDisabled(NET_CLIENT) ? null
-      : new VertxNetClientMetrics(registry, names, longGauges, enabledLabels, this.meterCache);
-    netServerMetrics = options.isMetricsCategoryDisabled(NET_SERVER) ? null
-      : new VertxNetServerMetrics(registry, names, longGauges, enabledLabels, this.meterCache);
-    httpClientMetrics = options.isMetricsCategoryDisabled(HTTP_CLIENT) ? null
-      : new VertxHttpClientMetrics(registry, names, options.getClientRequestTagsProvider(), longGauges, enabledLabels, this.meterCache);
-    httpServerMetrics = options.isMetricsCategoryDisabled(HTTP_SERVER) ? null
-      : new VertxHttpServerMetrics(registry, names, options.getServerRequestTagsProvider(), longGauges, enabledLabels, this.meterCache);
-    poolMetrics = options.isMetricsCategoryDisabled(NAMED_POOLS) ? null
-      : new VertxPoolMetrics(registry, names, longGauges, enabledLabels, this.meterCache);
+    serverRequestTagsProvider = options.getServerRequestTagsProvider();
+    clientRequestTagsProvider = options.getClientRequestTagsProvider();
   }
 
   void init() {
@@ -102,67 +84,66 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
 
   @Override
   public EventBusMetrics<?> createEventBusMetrics() {
-    if (eventBusMetrics != null) {
-      return eventBusMetrics;
+    if (disabledCategories.contains(EVENT_BUS.toCategory())) {
+      return DummyEventBusMetrics.INSTANCE;
     }
-    return DummyVertxMetrics.DummyEventBusMetrics.INSTANCE;
+    return new VertxEventBusMetrics(this);
   }
 
   @Override
   public HttpServerMetrics<?, ?, ?> createHttpServerMetrics(HttpServerOptions httpClientOptions, SocketAddress socketAddress) {
-    if (httpServerMetrics != null) {
-      return httpServerMetrics.forAddress(socketAddress);
+    if (disabledCategories.contains(HTTP_SERVER.toCategory())) {
+      return DummyHttpServerMetrics.INSTANCE;
     }
-    return DummyVertxMetrics.DummyHttpServerMetrics.INSTANCE;
+    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, socketAddress);
   }
 
   @Override
   public HttpClientMetrics<?, ?, ?, ?> createHttpClientMetrics(HttpClientOptions httpClientOptions) {
-    if (httpClientMetrics != null) {
-      return httpClientMetrics.forAddress(httpClientOptions.getLocalAddress());
+    if (disabledCategories.contains(HTTP_CLIENT.toCategory())) {
+      return DummyHttpClientMetrics.INSTANCE;
     }
-    return DummyVertxMetrics.DummyHttpClientMetrics.INSTANCE;
+    return new VertxHttpClientMetrics(this, clientRequestTagsProvider, httpClientOptions.getLocalAddress());
   }
 
   @Override
   public TCPMetrics<?> createNetServerMetrics(NetServerOptions netServerOptions, SocketAddress socketAddress) {
-    if (netServerMetrics != null) {
-      return netServerMetrics.forAddress(socketAddress);
+    if (disabledCategories.contains(NET_SERVER.toCategory())) {
+      return DummyTCPMetrics.INSTANCE;
     }
-    return DummyVertxMetrics.DummyTCPMetrics.INSTANCE;
+    return new VertxNetServerMetrics(this, socketAddress);
   }
 
   @Override
   public TCPMetrics<?> createNetClientMetrics(NetClientOptions netClientOptions) {
-    if (netClientMetrics != null) {
-      return netClientMetrics.forAddress(netClientOptions.getLocalAddress());
+    if (disabledCategories.contains(NET_CLIENT.toCategory())) {
+      return DummyTCPMetrics.INSTANCE;
     }
-    return DummyVertxMetrics.DummyTCPMetrics.INSTANCE;
+    return new VertxNetClientMetrics(this, netClientOptions.getLocalAddress());
   }
 
   @Override
   public DatagramSocketMetrics createDatagramSocketMetrics(DatagramSocketOptions options) {
-    if (datagramSocketMetrics != null) {
-      return datagramSocketMetrics;
+    if (disabledCategories.contains(DATAGRAM_SOCKET.toCategory())) {
+      return DummyDatagramMetrics.INSTANCE;
     }
-    return DummyVertxMetrics.DummyDatagramMetrics.INSTANCE;
+    return new VertxDatagramSocketMetrics(this);
   }
 
   @Override
   public PoolMetrics<?> createPoolMetrics(String poolType, String poolName, int maxPoolSize) {
-    if (poolMetrics != null) {
-      return poolMetrics.forInstance(poolType, poolName, maxPoolSize);
+    if (disabledCategories.contains(NAMED_POOLS.toCategory())) {
+      return DummyWorkerPoolMetrics.INSTANCE;
     }
-    return DummyVertxMetrics.DummyWorkerPoolMetrics.INSTANCE;
+    return new VertxPoolMetrics(this, poolType, poolName, maxPoolSize);
   }
 
   @Override
   public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
     if (disabledCategories.contains(type)) {
-      return DummyVertxMetrics.DummyClientMetrics.INSTANCE;
+      return DummyClientMetrics.INSTANCE;
     }
-    VertxClientMetrics clientMetrics = mapClientMetrics.computeIfAbsent(type, t -> new VertxClientMetrics(registry, type, names, longGauges, enabledLabels, meterCache));
-    return clientMetrics.forInstance(remoteAddress, namespace);
+    return new VertxClientMetrics(this, remoteAddress, type, namespace);
   }
 
   @Override

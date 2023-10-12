@@ -15,21 +15,16 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.LongGauges;
 import io.vertx.micrometer.impl.tags.Labels;
 import io.vertx.micrometer.impl.tags.TagsWrapper;
 
-import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
+import static io.vertx.micrometer.MetricsDomain.EVENT_BUS;
 import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 import static java.util.function.UnaryOperator.identity;
 
@@ -38,8 +33,8 @@ import static java.util.function.UnaryOperator.identity;
  */
 class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<VertxEventBusMetrics.Handler> {
 
-  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
-    super(registry, names, MetricsDomain.EVENT_BUS, longGauges, enabledLabels, meterCache);
+  VertxEventBusMetrics(AbstractMetrics parent) {
+    super(parent, EVENT_BUS);
   }
 
   private static boolean isNotInternal(String address) {
