@@ -17,6 +17,7 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -37,7 +38,7 @@ import static io.vertx.micrometer.MetricsDomain.HTTP_CLIENT;
 /**
  * @author Joel Takvorian
  */
-class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClientMetrics<RequestMetric, LongAdder, NetClientSocketMetric, Timer.Sample> {
+class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClientMetrics<RequestMetric, LongAdder, NetClientSocketMetric, Sample> {
 
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
 
@@ -46,25 +47,25 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
     this.customTagsProvider = customTagsProvider == null ? r -> Tags.empty() : customTagsProvider;
   }
 
-    @Override
-    public ClientMetrics<RequestMetric, Timer.Sample, HttpRequest, HttpResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
-      TagsWrapper endPointTags = local.and(toTag(REMOTE, Labels::address, remoteAddress));
-      return new EndpointMetrics(endPointTags);
-    }
+  @Override
+  public ClientMetrics<RequestMetric, Sample, HttpRequest, HttpResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
+    TagsWrapper endPointTags = local.and(toTag(REMOTE, Labels::address, remoteAddress));
+    return new EndpointMetrics(endPointTags);
+  }
 
-    @Override
-    public LongAdder connected(WebSocket webSocket) {
-      LongAdder wsConnections = longGauge(names.getHttpActiveWsConnections(), "Number of websockets currently opened", local.and(toTag(REMOTE, Labels::address, webSocket.remoteAddress())).unwrap());
-      wsConnections.increment();
-      return wsConnections;
-    }
+  @Override
+  public LongAdder connected(WebSocket webSocket) {
+    LongAdder wsConnections = longGauge(names.getHttpActiveWsConnections(), "Number of websockets currently opened", local.and(toTag(REMOTE, Labels::address, webSocket.remoteAddress())).unwrap());
+    wsConnections.increment();
+    return wsConnections;
+  }
 
-    @Override
-    public void disconnected(LongAdder wsConnections) {
-      wsConnections.decrement();
-    }
+  @Override
+  public void disconnected(LongAdder wsConnections) {
+    wsConnections.decrement();
+  }
 
-  class EndpointMetrics implements ClientMetrics<RequestMetric, Timer.Sample, HttpRequest, HttpResponse> {
+  class EndpointMetrics implements ClientMetrics<RequestMetric, Sample, HttpRequest, HttpResponse> {
 
     final TagsWrapper endPointTags;
 
@@ -78,13 +79,13 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
     }
 
     @Override
-    public Timer.Sample enqueueRequest() {
+    public Sample enqueueRequest() {
       queueSize.increment();
       return Timer.start();
     }
 
     @Override
-    public void dequeueRequest(Timer.Sample taskMetric) {
+    public void dequeueRequest(Sample taskMetric) {
       queueSize.decrement();
       taskMetric.stop(queueDelay);
     }
@@ -138,7 +139,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
     final LongAdder requests;
     final Counter requestCount;
     final DistributionSummary requestBytes;
-    final Timer.Sample sample;
+    final Sample sample;
 
     boolean responseEnded;
     boolean requestEnded;

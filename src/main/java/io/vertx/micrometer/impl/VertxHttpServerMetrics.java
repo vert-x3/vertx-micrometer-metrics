@@ -16,6 +16,7 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.net.SocketAddress;
@@ -119,7 +120,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
     final LongAdder requests;
     final Counter requestResetCount;
     final DistributionSummary requestBytes;
-    final Timer.Sample sample;
+    final Sample sample;
 
     // a string for a single route, a list of string for multiple
     private Object routes;

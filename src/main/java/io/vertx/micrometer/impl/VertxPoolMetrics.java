@@ -18,6 +18,7 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.micrometer.impl.tags.TagsWrapper;
 
@@ -32,7 +33,7 @@ import static java.util.function.Function.identity;
 /**
  * @author Joel Takvorian
  */
-class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Timer.Sample> {
+class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample> {
 
   final Timer queueDelay;
   final LongAdder queueSize;
@@ -53,19 +54,19 @@ class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Timer.Samp
   }
 
   @Override
-  public Timer.Sample submitted() {
+  public Sample submitted() {
     queueSize.increment();
     return Timer.start();
   }
 
   @Override
-  public void rejected(Timer.Sample submitted) {
+  public void rejected(Sample submitted) {
     queueSize.decrement();
     submitted.stop(queueDelay);
   }
 
   @Override
-  public Timer.Sample begin(Timer.Sample submitted) {
+  public Sample begin(Sample submitted) {
     queueSize.decrement();
     submitted.stop(queueDelay);
     inUse.increment();
@@ -74,7 +75,7 @@ class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Timer.Samp
   }
 
   @Override
-  public void end(Timer.Sample timer, boolean succeeded) {
+  public void end(Sample timer, boolean succeeded) {
     inUse.decrement();
     usageRatio.decrement();
     timer.stop(usage);

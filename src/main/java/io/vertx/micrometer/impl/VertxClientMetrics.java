@@ -18,6 +18,7 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.micrometer.impl.tags.Labels;
@@ -32,7 +33,7 @@ import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 /**
  * @author Joel Takvorian
  */
-class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Timer.Sample, Timer.Sample, Object, Object> {
+class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample, Sample, Object, Object> {
 
   final Timer queueDelay;
   final LongAdder queueSize;
@@ -51,43 +52,43 @@ class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Timer.
   }
 
   @Override
-  public Timer.Sample enqueueRequest() {
+  public Sample enqueueRequest() {
     queueSize.increment();
     return Timer.start();
   }
 
   @Override
-  public void dequeueRequest(Timer.Sample taskMetric) {
+  public void dequeueRequest(Sample taskMetric) {
     queueSize.decrement();
     taskMetric.stop(queueDelay);
   }
 
   @Override
-  public Timer.Sample requestBegin(String uri, Object request) {
+  public Sample requestBegin(String uri, Object request) {
     // Ignore parameters at the moment; need to carefully figure out what can be labelled or not
     processingPending.increment();
     return Timer.start();
   }
 
   @Override
-  public void requestEnd(Timer.Sample requestMetric) {
+  public void requestEnd(Sample requestMetric) {
     // Ignoring request-alone metrics at the moment
   }
 
   @Override
-  public void responseBegin(Timer.Sample requestMetric, Object response) {
+  public void responseBegin(Sample requestMetric, Object response) {
     // Ignoring response-alone metrics at the moment
   }
 
   @Override
-  public void requestReset(Timer.Sample requestMetric) {
+  public void requestReset(Sample requestMetric) {
     processingPending.decrement();
     requestMetric.stop(processingTime);
     resetCount.increment();
   }
 
   @Override
-  public void responseEnd(Timer.Sample requestMetric) {
+  public void responseEnd(Sample requestMetric) {
     processingPending.decrement();
     requestMetric.stop(processingTime);
   }
