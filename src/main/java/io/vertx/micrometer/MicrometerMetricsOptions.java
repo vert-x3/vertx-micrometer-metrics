@@ -60,9 +60,9 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   public static final MetricsNaming DEFAULT_METRICS_NAMING = MetricsNaming.v4Names();
 
   /**
-   * Whether a meter cache should be enabled by default = false.
+   * Whether a meter cache should be enabled by default = true.
    */
-  public static final boolean DEFAULT_METER_CACHED_ENABLED = false;
+  public static final boolean DEFAULT_METER_CACHED_ENABLED = true;
 
   private Set<String> disabledMetricsCategories;
   private String registryName;
@@ -504,9 +504,9 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   }
 
   /**
-   * Whether a meter cache should be enabled. Defaults to {@code false}.
+   * Whether a meter cache should be enabled. Defaults to {@code true}.
    *
-   * @param meterCacheEnabled {@code true} to enable a meter cache,{@code false}otherwise. Defaults to {@code false}.
+   * @param meterCacheEnabled {@code true} to enable a meter cache, {@code false} otherwise. Defaults to {@code true}.
    * @return a reference to this, so the API can be used fluently
    */
   public MicrometerMetricsOptions setMeterCacheEnabled(boolean meterCacheEnabled) {

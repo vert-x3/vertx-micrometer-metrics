@@ -311,8 +311,4 @@ public class MicrometerMetricsExamples {
         })
         .setEnabled(true)));
   }
-
-  public void enableMeterCache(MicrometerMetricsOptions options) {
-    options.setMeterCacheEnabled(true);
-  }
 }

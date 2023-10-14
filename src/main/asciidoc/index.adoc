@@ -227,27 +227,6 @@ In this example, metrics are reported both for JMX and Graphite:
 
 Please refer to {@link io.vertx.micrometer.MicrometerMetricsOptions} for an exhaustive list of options.
 
-=== Improving performance with a meter cache
-
-Many events require dynamic look-up of meters in Micrometer's registry.
-For example, the `vertx_http_server_requests_total` counter is built with some tags which values are not known until the HTTP server response has been sent (like the HTTP status code).
-
-But dynamic look-up comes with a cost which can be non-negligible under load.
-
-To reduce this cost, Vert.x Micrometer Metrics can use a meter cache, which is disabled by default.
-To enable it, use {@link io.vertx.micrometer.MicrometerMetricsOptions#setMeterCacheEnabled}:
-
-[source,$lang]
-----
-{@link examples.MicrometerMetricsExamples#enableMeterCache}
-----
-
-[CAUTION]
-====
-Don't use enable the meter cache if you modify the registry config after the application has started.
-For example, if you add a new filter to the registry, Vert.x Micrometer Metrics may use a cached meter which is no longer valid.
-====
-
 === Averages and quantiles in Prometheus
 
 By default, when using the Prometheus registry, histogram-kind metrics will not contain averages or quantile stats.
