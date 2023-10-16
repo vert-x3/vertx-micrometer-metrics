@@ -55,6 +55,11 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   public static final boolean DEFAULT_JVM_METRICS_ENABLED = false;
 
   /**
+   * Whether Netty metrics should be collected by default = false.
+   */
+  public static final boolean DEFAULT_NETTY_METRICS_ENABLED = false;
+
+  /**
    * Default metrics naming = Vert.x 4 naming
    */
   public static final MetricsNaming DEFAULT_METRICS_NAMING = MetricsNaming.v4Names();
@@ -73,6 +78,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private VertxPrometheusOptions prometheusOptions;
   private VertxJmxMetricsOptions jmxMetricsOptions;
   private boolean jvmMetricsEnabled;
+  private boolean nettyMetricsEnabled;
   private MetricsNaming metricsNaming;
   private Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider;
   private Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
@@ -87,6 +93,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     labels = EnumSet.copyOf(DEFAULT_LABELS);
     labelMatches = new ArrayList<>();
     jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
+    nettyMetricsEnabled = DEFAULT_NETTY_METRICS_ENABLED;
     metricsNaming = DEFAULT_METRICS_NAMING;
     serverRequestTagsProvider = null;
     clientRequestTagsProvider = null;
@@ -113,6 +120,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
       jmxMetricsOptions = new VertxJmxMetricsOptions(other.jmxMetricsOptions);
     }
     jvmMetricsEnabled = other.jvmMetricsEnabled;
+    nettyMetricsEnabled = other.nettyMetricsEnabled;
     metricsNaming = other.metricsNaming;
     serverRequestTagsProvider = other.serverRequestTagsProvider;
     clientRequestTagsProvider = other.clientRequestTagsProvider;
@@ -404,6 +412,24 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions setJvmMetricsEnabled(boolean jvmMetricsEnabled) {
     this.jvmMetricsEnabled = jvmMetricsEnabled;
+    return this;
+  }
+
+  /**
+   * @return {@code true} if Netty metrics should be collected, {@code false} otherwise
+   */
+  public boolean isNettyMetricsEnabled() {
+    return nettyMetricsEnabled;
+  }
+
+  /**
+   * Whether Netty metrics should be collected. Defaults to {@code false}.
+   *
+   * @param nettyMetricsEnabled {@code true} to collect Netty metrics, {@code false} otherwise. Defaults to {@code false}.
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MicrometerMetricsOptions setNettyMetricsEnabled(boolean nettyMetricsEnabled) {
+    this.nettyMetricsEnabled = nettyMetricsEnabled;
     return this;
   }
 

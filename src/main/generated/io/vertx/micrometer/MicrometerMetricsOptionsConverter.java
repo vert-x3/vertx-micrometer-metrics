@@ -88,6 +88,11 @@ public class MicrometerMetricsOptionsConverter {
             obj.setJvmMetricsEnabled((Boolean)member.getValue());
           }
           break;
+        case "nettyMetricsEnabled":
+          if (member.getValue() instanceof Boolean) {
+            obj.setNettyMetricsEnabled((Boolean)member.getValue());
+          }
+          break;
         case "metricsNaming":
           if (member.getValue() instanceof JsonObject) {
             obj.setMetricsNaming(new io.vertx.micrometer.MetricsNaming((io.vertx.core.json.JsonObject)member.getValue()));
@@ -131,6 +136,7 @@ public class MicrometerMetricsOptionsConverter {
       json.put("jmxMetricsOptions", obj.getJmxMetricsOptions().toJson());
     }
     json.put("jvmMetricsEnabled", obj.isJvmMetricsEnabled());
+    json.put("nettyMetricsEnabled", obj.isNettyMetricsEnabled());
     if (obj.getMetricsNaming() != null) {
       json.put("metricsNaming", obj.getMetricsNaming().toJson());
     }

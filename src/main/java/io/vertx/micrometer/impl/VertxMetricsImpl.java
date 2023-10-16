@@ -19,11 +19,17 @@ package io.vertx.micrometer.impl;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.instrument.binder.jvm.*;
+import io.micrometer.core.instrument.binder.netty4.NettyAllocatorMetrics;
+import io.micrometer.core.instrument.binder.netty4.NettyEventExecutorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.netty.buffer.ByteBufAllocatorMetricProvider;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.impl.VertxByteBufAllocator;
 import io.vertx.core.datagram.DatagramSocketOptions;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
@@ -51,6 +57,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final String registryName;
   private final Set<String> disabledCategories;
   private final boolean bindJvmMetrics;
+  private final boolean bindNettyMetrics;
   private final List<MeterBinder> meterBinders;
   private final Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider;
   private final Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
@@ -65,6 +72,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       disabledCategories = Collections.emptySet();
     }
     bindJvmMetrics = options.isJvmMetricsEnabled();
+    bindNettyMetrics = options.isNettyMetricsEnabled();
     meterBinders = new CopyOnWriteArrayList<>();
     serverRequestTagsProvider = options.getServerRequestTagsProvider();
     clientRequestTagsProvider = options.getClientRequestTagsProvider();
@@ -83,11 +91,28 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       addMeterBinder(new ProcessorMetrics());
       addMeterBinder(new UptimeMetrics());
     }
+    if (bindNettyMetrics) {
+      if (VertxByteBufAllocator.UNPOOLED_ALLOCATOR instanceof ByteBufAllocatorMetricProvider) {
+        addMeterBinder(new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.UNPOOLED_ALLOCATOR));
+      }
+      if (VertxByteBufAllocator.POOLED_ALLOCATOR instanceof ByteBufAllocatorMetricProvider) {
+        addMeterBinder(new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.POOLED_ALLOCATOR));
+      }
+    }
   }
 
   private void addMeterBinder(MeterBinder meterBinder) {
     meterBinders.add(meterBinder);
     meterBinder.bindTo(registry);
+  }
+
+  @Override
+  public void vertxCreated(Vertx vertx) {
+    if (bindNettyMetrics) {
+      VertxInternal vi = (VertxInternal) vertx;
+      addMeterBinder(new NettyEventExecutorMetrics(vi.getAcceptorEventLoopGroup()));
+      addMeterBinder(new NettyEventExecutorMetrics(vi.getEventLoopGroup()));
+    }
   }
 
   @Override
