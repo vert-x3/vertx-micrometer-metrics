@@ -19,6 +19,7 @@ import io.micrometer.core.instrument.Counter;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
+import io.vertx.micrometer.impl.VertxEventBusMetrics.HandlerMetric;
 import io.vertx.micrometer.impl.tags.Labels;
 import io.vertx.micrometer.impl.tags.TagsWrapper;
 
@@ -32,7 +33,7 @@ import static java.util.function.UnaryOperator.identity;
 /**
  * @author Joel Takvorian
  */
-class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<VertxEventBusMetrics.Handler> {
+class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<HandlerMetric> {
 
   VertxEventBusMetrics(AbstractMetrics parent) {
     super(parent, EVENT_BUS);
@@ -43,45 +44,45 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
   }
 
   @Override
-  public Handler handlerRegistered(String address) {
+  public HandlerMetric handlerRegistered(String address) {
     if (isNotInternal(address)) {
       TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
-      Handler handler = new Handler(tags);
-      handler.handlers.increment();
-      return handler;
+      HandlerMetric handlerMetric = new HandlerMetric(tags);
+      handlerMetric.handlers.increment();
+      return handlerMetric;
     }
     return null;
   }
 
   @Override
-  public void handlerUnregistered(Handler handler) {
-    if (handler != null) {
-      handler.handlers.decrement();
+  public void handlerUnregistered(HandlerMetric handlerMetric) {
+    if (handlerMetric != null) {
+      handlerMetric.handlers.decrement();
     }
   }
 
   @Override
-  public void messageDelivered(Handler handler, boolean local) {
-    if (handler != null) {
+  public void messageDelivered(HandlerMetric handlerMetric, boolean local) {
+    if (handlerMetric != null) {
       if (local) {
-        handler.ebPendingLocal.decrement();
-        handler.ebProcessedLocal.increment();
+        handlerMetric.ebPendingLocal.decrement();
+        handlerMetric.ebProcessedLocal.increment();
       } else {
-        handler.ebPendingRemote.decrement();
-        handler.ebProcessedRemote.increment();
+        handlerMetric.ebPendingRemote.decrement();
+        handlerMetric.ebProcessedRemote.increment();
       }
     }
   }
 
   @Override
-  public void discardMessage(Handler handler, boolean local, Message<?> msg) {
-    if (handler != null) {
+  public void discardMessage(HandlerMetric handlerMetric, boolean local, Message<?> msg) {
+    if (handlerMetric != null) {
       if (local) {
-        handler.ebPendingLocal.decrement();
-        handler.ebDiscardedLocal.increment();
+        handlerMetric.ebPendingLocal.decrement();
+        handlerMetric.ebDiscardedLocal.increment();
       } else {
-        handler.ebPendingRemote.decrement();
-        handler.ebDiscardedRemote.increment();
+        handlerMetric.ebPendingRemote.decrement();
+        handlerMetric.ebDiscardedRemote.increment();
       }
     }
   }
@@ -141,7 +142,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     }
   }
 
-  class Handler {
+  class HandlerMetric {
 
     final LongAdder handlers;
     final LongAdder ebPendingLocal;
@@ -151,7 +152,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ve
     final Counter ebDiscardedLocal;
     final Counter ebDiscardedRemote;
 
-    Handler(TagsWrapper tags) {
+    HandlerMetric(TagsWrapper tags) {
       handlers = longGauge(names.getEbHandlers(), "Number of event bus handlers in use", tags.unwrap());
       TagsWrapper localTags = tags.and(toTag(EB_SIDE, Labels::side, true));
       ebPendingLocal = longGauge(names.getEbPending(), "Number of messages not processed yet", localTags.unwrap());
