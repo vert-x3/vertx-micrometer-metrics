@@ -16,7 +16,10 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
@@ -44,7 +47,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
 
   VertxHttpClientMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider, String localAddress) {
     super(parent, HTTP_CLIENT, localAddress);
-    this.customTagsProvider = customTagsProvider == null ? r -> Tags.empty() : customTagsProvider;
+    this.customTagsProvider = customTagsProvider;
   }
 
   @Override
@@ -92,9 +95,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
 
     @Override
     public RequestMetric requestBegin(String uri, HttpRequest request) {
-      TagsWrapper tags = endPointTags
-        .and(toTag(HTTP_PATH, HttpRequest::uri, request), toTag(HTTP_METHOD, r -> r.method().toString(), request))
-        .and(customTagsProvider.apply(request));
+      TagsWrapper tags = endPointTags.and(toTag(HTTP_PATH, HttpRequest::uri, request), toTag(HTTP_METHOD, r -> r.method().toString(), request));
+      if (customTagsProvider != null) {
+        tags = tags.and(customTagsProvider.apply(request));
+      }
       RequestMetric requestMetric = new RequestMetric(tags);
       requestMetric.requests.increment();
       requestMetric.requestCount.increment();

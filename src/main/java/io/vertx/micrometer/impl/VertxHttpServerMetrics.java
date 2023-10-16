@@ -15,7 +15,10 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.ServerWebSocket;
@@ -44,15 +47,16 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
 
   VertxHttpServerMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider, SocketAddress localAddress) {
     super(parent, HTTP_SERVER, localAddress);
-    this.customTagsProvider = customTagsProvider == null ? r -> Tags.empty() : customTagsProvider;
+    this.customTagsProvider = customTagsProvider;
   }
 
 
   @Override
   public RequestMetric requestBegin(NetServerSocketMetric socketMetric, HttpRequest request) {
-    TagsWrapper tags = socketMetric.tags
-      .and(toTag(HTTP_PATH, HttpRequest::uri, request), toTag(HTTP_METHOD, r -> r.method().toString(), request))
-      .and(customTagsProvider.apply(request));
+    TagsWrapper tags = socketMetric.tags.and(toTag(HTTP_PATH, HttpRequest::uri, request), toTag(HTTP_METHOD, r -> r.method().toString(), request));
+    if (customTagsProvider != null) {
+      tags = tags.and(customTagsProvider.apply(request));
+    }
     RequestMetric requestMetric = new RequestMetric(tags);
     requestMetric.requests.increment();
     return requestMetric;
