@@ -18,19 +18,39 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Meter;
+import io.netty.util.concurrent.FastThreadLocal;
 
-public interface MeterCache {
+import java.util.HashMap;
+import java.util.Map;
 
-  MeterCache DISABLED = new MeterCache() {
-  };
+public class MeterCache {
 
-  default <T> T get(Meter.Id id) {
-    return null;
+  private final FastThreadLocal<Map<Meter.Id, Object>> threadLocal;
+
+  public MeterCache() {
+    threadLocal = new FastThreadLocal<Map<Meter.Id, Object>>() {
+      @Override
+      protected Map<Meter.Id, Object> initialValue() {
+        return new HashMap<>();
+      }
+
+      @Override
+      protected void onRemoval(Map<Meter.Id, Object> value) {
+        value.clear();
+      }
+    };
   }
 
-  default void put(Meter.Id id, Object value) {
+  @SuppressWarnings("unchecked")
+  public <T> T get(Meter.Id id) {
+    return (T) threadLocal.get().get(id);
   }
 
-  default void close() {
+  public void put(Meter.Id id, Object value) {
+    threadLocal.get().put(id, value);
+  }
+
+  public void close() {
+    threadLocal.remove();
   }
 }

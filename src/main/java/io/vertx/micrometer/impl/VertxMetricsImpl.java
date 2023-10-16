@@ -157,6 +157,8 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       jvmGcMetrics.close();
     }
     BackendRegistries.stop(registryName);
-    meterCache.close();
+    if (meterCache != null) {
+      meterCache.close();
+    }
   }
 }

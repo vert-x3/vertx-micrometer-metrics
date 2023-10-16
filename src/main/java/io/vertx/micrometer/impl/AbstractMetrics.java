@@ -82,12 +82,17 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
 
   Counter counter(String name, String description, Tags tags) {
     Meter.Id id = new Meter.Id(name, tags, null, description, COUNTER);
-    Counter c = meterCache.get(id);
-    if (c != null) {
-      return c;
+    Counter c;
+    if (meterCache != null) {
+      c = meterCache.get(id);
+      if (c != null) {
+        return c;
+      }
     }
     c = Counter.builder(name).description(description).tags(tags).register(registry);
-    meterCache.put(id, c);
+    if (meterCache != null) {
+      meterCache.put(id, c);
+    }
     return c;
   }
 
@@ -97,34 +102,49 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
 
   LongAdder longGauge(String name, String description, Tags tags, ToDoubleFunction<LongAdder> func) {
     Meter.Id id = new Meter.Id(name, tags, null, description, GAUGE);
-    LongAdder la = meterCache.get(id);
-    if (la != null) {
-      return la;
+    LongAdder la;
+    if (meterCache != null) {
+      la = meterCache.get(id);
+      if (la != null) {
+        return la;
+      }
     }
     la = longGauges.builder(name, func).description(description).tags(tags).register(registry);
-    meterCache.put(id, la);
+    if (meterCache != null) {
+      meterCache.put(id, la);
+    }
     return la;
   }
 
   DistributionSummary distributionSummary(String name, String description, Tags tags) {
     Meter.Id id = new Meter.Id(name, tags, null, description, DISTRIBUTION_SUMMARY);
-    DistributionSummary ds = meterCache.get(id);
-    if (ds != null) {
-      return ds;
+    DistributionSummary ds;
+    if (meterCache != null) {
+      ds = meterCache.get(id);
+      if (ds != null) {
+        return ds;
+      }
     }
     ds = DistributionSummary.builder(name).description(description).tags(tags).register(registry);
-    meterCache.put(id, ds);
+    if (meterCache != null) {
+      meterCache.put(id, ds);
+    }
     return ds;
   }
 
   Timer timer(String name, String description, Tags tags) {
     Meter.Id id = new Meter.Id(name, tags, null, description, TIMER);
-    Timer t = meterCache.get(id);
-    if (t != null) {
-      return t;
+    Timer t;
+    if (meterCache != null) {
+      t = meterCache.get(id);
+      if (t != null) {
+        return t;
+      }
     }
     t = Timer.builder(name).description(description).tags(tags).register(registry);
-    meterCache.put(id, t);
+    if (meterCache != null) {
+      meterCache.put(id, t);
+    }
     return t;
   }
 
