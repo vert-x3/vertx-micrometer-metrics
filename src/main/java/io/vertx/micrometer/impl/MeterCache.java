@@ -23,11 +23,11 @@ import io.netty.util.concurrent.FastThreadLocal;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MeterCache {
+class MeterCache {
 
   private final FastThreadLocal<Map<Meter.Id, Object>> threadLocal;
 
-  public MeterCache() {
+  MeterCache() {
     threadLocal = new FastThreadLocal<Map<Meter.Id, Object>>() {
       @Override
       protected Map<Meter.Id, Object> initialValue() {
@@ -42,15 +42,15 @@ public class MeterCache {
   }
 
   @SuppressWarnings("unchecked")
-  public <T> T get(Meter.Id id) {
+  <T> T get(Meter.Id id) {
     return (T) threadLocal.get().get(id);
   }
 
-  public void put(Meter.Id id, Object value) {
+  void put(Meter.Id id, Object value) {
     threadLocal.get().put(id, value);
   }
 
-  public void close() {
+  void close() {
     threadLocal.remove();
   }
 }
