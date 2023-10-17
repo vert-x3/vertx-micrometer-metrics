@@ -17,11 +17,10 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.MeterBinder;
+import io.micrometer.core.instrument.binder.jvm.*;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.vertx.core.datagram.DatagramSocketOptions;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
@@ -35,10 +34,8 @@ import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
 import io.vertx.micrometer.impl.meters.LongGauges;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
 import static io.vertx.core.metrics.impl.DummyVertxMetrics.*;
@@ -53,7 +50,8 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final BackendRegistry backendRegistry;
   private final String registryName;
   private final Set<String> disabledCategories;
-  private final JvmGcMetrics jvmGcMetrics;
+  private final boolean bindJvmMetrics;
+  private final List<MeterBinder> meterBinders;
   private final Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider;
   private final Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
 
@@ -66,20 +64,30 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     } else {
       disabledCategories = Collections.emptySet();
     }
-    jvmGcMetrics = options.isJvmMetricsEnabled() ? new JvmGcMetrics() : null;
+    bindJvmMetrics = options.isJvmMetricsEnabled();
+    meterBinders = new CopyOnWriteArrayList<>();
     serverRequestTagsProvider = options.getServerRequestTagsProvider();
     clientRequestTagsProvider = options.getClientRequestTagsProvider();
   }
 
   void init() {
     backendRegistry.init();
-    if (jvmGcMetrics != null) {
-      new ClassLoaderMetrics().bindTo(registry);
-      new JvmMemoryMetrics().bindTo(registry);
-      jvmGcMetrics.bindTo(registry);
-      new ProcessorMetrics().bindTo(registry);
-      new JvmThreadMetrics().bindTo(registry);
+    if (bindJvmMetrics) {
+      addMeterBinder(new ClassLoaderMetrics());
+      addMeterBinder(new JvmCompilationMetrics());
+      addMeterBinder(new JvmGcMetrics());
+      addMeterBinder(new JvmHeapPressureMetrics());
+      addMeterBinder(new JvmInfoMetrics());
+      addMeterBinder(new JvmMemoryMetrics());
+      addMeterBinder(new JvmThreadMetrics());
+      addMeterBinder(new ProcessorMetrics());
+      addMeterBinder(new UptimeMetrics());
     }
+  }
+
+  private void addMeterBinder(MeterBinder meterBinder) {
+    meterBinders.add(meterBinder);
+    meterBinder.bindTo(registry);
   }
 
   @Override
@@ -153,8 +161,14 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
 
   @Override
   public void close() {
-    if (jvmGcMetrics != null) {
-      jvmGcMetrics.close();
+    for (MeterBinder meterBinder : meterBinders) {
+      if (meterBinder instanceof AutoCloseable) {
+        AutoCloseable closeable = (AutoCloseable) meterBinder;
+        try {
+          closeable.close();
+        } catch (Exception ignored) {
+        }
+      }
     }
     BackendRegistries.stop(registryName);
     if (meterCache != null) {
