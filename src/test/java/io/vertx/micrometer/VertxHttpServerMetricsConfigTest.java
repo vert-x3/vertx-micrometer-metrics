@@ -1,3 +1,20 @@
+/*
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.Tag;
@@ -51,12 +68,12 @@ public class VertxHttpServerMetricsConfigTest extends MicrometerMetricsTestBase 
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server."));
     assertThat(datapoints).extracting(Datapoint::id).contains(
-      "vertx.http.server.requests[code=200,method=POST,route=,user=alice]$COUNT",
+      "vertx.http.server.requests[code=200,method=POST,user=alice]$COUNT",
       "vertx.http.server.active.requests[method=POST,user=alice]$VALUE",
-      "vertx.http.server.response.time[code=200,method=POST,route=,user=alice]$COUNT",
-      "vertx.http.server.requests[code=200,method=POST,route=,user=bob]$COUNT",
+      "vertx.http.server.response.time[code=200,method=POST,user=alice]$COUNT",
+      "vertx.http.server.requests[code=200,method=POST,user=bob]$COUNT",
       "vertx.http.server.active.requests[method=POST,user=bob]$VALUE",
-      "vertx.http.server.response.time[code=200,method=POST,route=,user=bob]$COUNT");
+      "vertx.http.server.response.time[code=200,method=POST,user=bob]$COUNT");
   }
 
   private void prepareServer(TestContext ctx) {

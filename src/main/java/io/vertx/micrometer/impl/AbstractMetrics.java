@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Red Hat, Inc.
+ * Copyright 2023 Red Hat, Inc.
  *
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
@@ -16,18 +16,20 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.*;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.impl.meters.Counters;
-import io.vertx.micrometer.impl.meters.Gauges;
-import io.vertx.micrometer.impl.meters.Summaries;
-import io.vertx.micrometer.impl.meters.Timers;
+import io.vertx.micrometer.MetricsNaming;
+import io.vertx.micrometer.impl.meters.LongGauges;
+import io.vertx.micrometer.impl.tags.IgnoredTag;
 
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
+
+import static io.micrometer.core.instrument.Meter.Type.*;
 
 /**
  * Abstract class for metrics container.
@@ -35,26 +37,34 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Joel Takvorian
  */
 public abstract class AbstractMetrics implements MicrometerMetrics {
+
   protected final MeterRegistry registry;
+  protected final MetricsNaming names;
   protected final String category;
-  protected final ConcurrentMap<Meter.Id, Object> gaugesTable;
+  protected final LongGauges longGauges;
+  protected final EnumSet<Label> enabledLabels;
+  protected final MeterCache meterCache;
 
-  AbstractMetrics(MeterRegistry registry, ConcurrentMap<Meter.Id, Object> gaugesTable) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
     this.registry = registry;
-    this.gaugesTable = gaugesTable;
+    this.longGauges = longGauges;
     this.category = null;
+    this.enabledLabels = enabledLabels;
+    this.names = names.withBaseName(baseName());
+    this.meterCache = meterCache;
   }
 
-  AbstractMetrics(MeterRegistry registry, String category, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    this.registry = registry;
+  AbstractMetrics(AbstractMetrics parent, MetricsDomain domain) {
+    this(parent, domain == null ? null : domain.toCategory());
+  }
+
+  AbstractMetrics(AbstractMetrics parent, String category) {
+    this.registry = parent.registry;
+    this.longGauges = parent.longGauges;
+    this.enabledLabels = parent.enabledLabels;
+    this.meterCache = parent.meterCache;
     this.category = category;
-    this.gaugesTable = gaugesTable;
-  }
-
-  AbstractMetrics(MeterRegistry registry, MetricsDomain domain, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    this.registry = registry;
-    this.category = (domain == null) ? null : domain.toCategory();
-    this.gaugesTable = gaugesTable;
+    this.names = parent.names.withBaseName(baseName());
   }
 
   /**
@@ -70,23 +80,79 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
     return category == null ? null : "vertx." + category + ".";
   }
 
-  Counters counters(String name, String description, Label... keys) {
-    return new Counters(baseName() + name, description, registry, keys);
+  Counter counter(String name, String description, Tags tags) {
+    Meter.Id id = new Meter.Id(name, tags, null, description, COUNTER);
+    Counter c;
+    if (meterCache != null) {
+      c = meterCache.get(id);
+      if (c != null) {
+        return c;
+      }
+    }
+    c = Counter.builder(name).description(description).tags(tags).register(registry);
+    if (meterCache != null) {
+      meterCache.put(id, c);
+    }
+    return c;
   }
 
-  Gauges<LongAdder> longGauges(String name, String description, Label... keys) {
-    return new Gauges<>(gaugesTable, baseName() + name, description, LongAdder::new, LongAdder::doubleValue, registry, keys);
+  LongAdder longGauge(String name, String description, Tags tags) {
+    return longGauge(name, description, tags, LongAdder::doubleValue);
   }
 
-  Gauges<AtomicReference<Double>> doubleGauges(String name, String description, Label... keys) {
-    return new Gauges<>(gaugesTable, baseName() + name, description, () -> new AtomicReference<>(0d), AtomicReference::get, registry, keys);
+  LongAdder longGauge(String name, String description, Tags tags, ToDoubleFunction<LongAdder> func) {
+    Meter.Id id = new Meter.Id(name, tags, null, description, GAUGE);
+    LongAdder la;
+    if (meterCache != null) {
+      la = meterCache.get(id);
+      if (la != null) {
+        return la;
+      }
+    }
+    la = longGauges.builder(name, func).description(description).tags(tags).register(registry);
+    if (meterCache != null) {
+      meterCache.put(id, la);
+    }
+    return la;
   }
 
-  Summaries summaries(String name, String description, Label... keys) {
-    return new Summaries(baseName() + name, description, registry, keys);
+  DistributionSummary distributionSummary(String name, String description, Tags tags) {
+    Meter.Id id = new Meter.Id(name, tags, null, description, DISTRIBUTION_SUMMARY);
+    DistributionSummary ds;
+    if (meterCache != null) {
+      ds = meterCache.get(id);
+      if (ds != null) {
+        return ds;
+      }
+    }
+    ds = DistributionSummary.builder(name).description(description).tags(tags).register(registry);
+    if (meterCache != null) {
+      meterCache.put(id, ds);
+    }
+    return ds;
   }
 
-  Timers timers(String name, String description, Label... keys) {
-    return new Timers(baseName() + name, description, registry, keys);
+  Timer timer(String name, String description, Tags tags) {
+    Meter.Id id = new Meter.Id(name, tags, null, description, TIMER);
+    Timer t;
+    if (meterCache != null) {
+      t = meterCache.get(id);
+      if (t != null) {
+        return t;
+      }
+    }
+    t = Timer.builder(name).description(description).tags(tags).register(registry);
+    if (meterCache != null) {
+      meterCache.put(id, t);
+    }
+    return t;
+  }
+
+  <U> Tag toTag(Label label, Function<U, String> func, U u) {
+    return enabledLabels.contains(label) ? Tag.of(label.toString(), func.apply(u)) : IgnoredTag.INSTANCE;
+  }
+
+  <U, V> Tag toTag(Label label, BiFunction<U, V, String> func, U u, V v) {
+    return enabledLabels.contains(label) ? Tag.of(label.toString(), func.apply(u, v)) : IgnoredTag.INSTANCE;
   }
 }

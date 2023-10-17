@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Red Hat, Inc. and/or its affiliates
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,58 +16,53 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.DatagramSocketMetrics;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.Counters;
-import io.vertx.micrometer.impl.meters.Summaries;
+import io.vertx.micrometer.impl.tags.Labels;
+import io.vertx.micrometer.impl.tags.TagsWrapper;
 
-import java.util.concurrent.ConcurrentMap;
+import static io.vertx.micrometer.Label.CLASS_NAME;
+import static io.vertx.micrometer.Label.LOCAL;
+import static io.vertx.micrometer.MetricsDomain.DATAGRAM_SOCKET;
+import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
  */
 class VertxDatagramSocketMetrics extends AbstractMetrics implements DatagramSocketMetrics {
-  private final Summaries bytesReceived;
-  private final Summaries bytesSent;
-  private final Counters errorCount;
 
-  private volatile String localAddress;
+  private final DistributionSummary bytesWritten;
+  private volatile DistributionSummary bytesRead;
 
-  VertxDatagramSocketMetrics(MeterRegistry registry, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    super(registry, MetricsDomain.DATAGRAM_SOCKET, gaugesTable);
-    bytesReceived = summaries(names.getDatagramBytesRead(), "Total number of datagram bytes received", Label.LOCAL);
-    bytesSent = summaries(names.getDatagramBytesWritten(), "Total number of datagram bytes sent");
-    errorCount = counters(names.getDatagramErrorCount(), "Total number of datagram errors", Label.CLASS_NAME);
+  VertxDatagramSocketMetrics(AbstractMetrics parent) {
+    super(parent, DATAGRAM_SOCKET);
+    bytesWritten = distributionSummary(names.getDatagramBytesWritten(), "Total number of datagram bytes sent", Tags.empty());
   }
 
   @Override
   public void listening(String localName, SocketAddress localAddress) {
-    this.localAddress = Labels.address(localAddress, localName);
+    TagsWrapper tags = of(toTag(LOCAL, Labels::address, localAddress, localName));
+    bytesRead = distributionSummary(names.getDatagramBytesRead(), "Total number of datagram bytes received", tags.unwrap());
   }
 
   @Override
   public void bytesRead(Void socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
-    if (localAddress != null) {
-      bytesReceived.get(localAddress).record(numberOfBytes);
+    if (bytesRead != null) {
+      bytesRead.record(numberOfBytes);
     }
   }
 
   @Override
   public void bytesWritten(Void socketMetric, SocketAddress remoteAddress, long numberOfBytes) {
-    bytesSent.get().record(numberOfBytes);
+    bytesWritten.record(numberOfBytes);
   }
 
   @Override
   public void exceptionOccurred(Void socketMetric, SocketAddress remoteAddress, Throwable t) {
-    errorCount.get(t.getClass().getSimpleName()).increment();
-  }
-
-  @Override
-  public void close() {
+    TagsWrapper tags = of(toTag(CLASS_NAME, Class::getSimpleName, t.getClass()));
+    counter(names.getDatagramErrorCount(), "Total number of datagram errors", tags.unwrap())
+      .increment();
   }
 }

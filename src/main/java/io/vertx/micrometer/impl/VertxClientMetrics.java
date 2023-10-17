@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 The original author or authors
+ * Copyright (c) 2011-2023 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,95 +16,80 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.Counters;
-import io.vertx.micrometer.impl.meters.Gauges;
-import io.vertx.micrometer.impl.meters.Timers;
+import io.vertx.micrometer.impl.tags.Labels;
+import io.vertx.micrometer.impl.tags.TagsWrapper;
 
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
+
+import static io.vertx.micrometer.Label.NAMESPACE;
+import static io.vertx.micrometer.Label.REMOTE;
+import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
  */
-class VertxClientMetrics extends AbstractMetrics {
-  private final Timers queueDelay;
-  private final Gauges<LongAdder> queueSize;
-  private final Timers processingTime;
-  private final Gauges<LongAdder> processingPending;
-  private final Counters resetCount;
+class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample, Sample, Object, Object> {
 
-  VertxClientMetrics(MeterRegistry registry, String type, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    super(registry, type, gaugesTable);
-    queueDelay = timers(names.getClientQueueTime(), "Time spent in queue before being processed", Label.REMOTE, Label.NAMESPACE);
-    queueSize = longGauges(names.getClientQueuePending(), "Number of pending elements in queue", Label.REMOTE, Label.NAMESPACE);
-    processingTime = timers(names.getClientProcessingTime(), "Processing time, from request start to response end", Label.REMOTE, Label.NAMESPACE);
-    processingPending = longGauges(names.getClientProcessingPending(), "Number of elements being processed", Label.REMOTE, Label.NAMESPACE);
-    resetCount = counters(names.getClientResetsCount(), "Total number of resets", Label.REMOTE, Label.NAMESPACE);
+  final Timer queueDelay;
+  final LongAdder queueSize;
+  final Timer processingTime;
+  final LongAdder processingPending;
+  final Counter resetCount;
+
+  VertxClientMetrics(AbstractMetrics parent, SocketAddress remoteAddress, String type, String namespace) {
+    super(parent, type);
+    TagsWrapper tags = of(toTag(REMOTE, Labels::address, remoteAddress), toTag(NAMESPACE, s -> s == null ? "" : s, namespace));
+    queueDelay = timer(names.getClientQueueTime(), "Time spent in queue before being processed", tags.unwrap());
+    queueSize = longGauge(names.getClientQueuePending(), "Number of pending elements in queue", tags.unwrap());
+    processingTime = timer(names.getClientProcessingTime(), "Processing time, from request start to response end", tags.unwrap());
+    processingPending = longGauge(names.getClientProcessingPending(), "Number of elements being processed", tags.unwrap());
+    resetCount = counter(names.getClientResetsCount(), "Total number of resets", tags.unwrap());
   }
 
-  ClientMetrics forInstance(SocketAddress remoteAddress, String namespace) {
-    return new Instance(remoteAddress, namespace);
+  @Override
+  public Sample enqueueRequest() {
+    queueSize.increment();
+    return Timer.start();
   }
 
-  class Instance implements ClientMetrics<Timers.EventTiming, Timers.EventTiming, Object, Object> {
-    private final String remote;
-    private final String namespace;
+  @Override
+  public void dequeueRequest(Sample taskMetric) {
+    queueSize.decrement();
+    taskMetric.stop(queueDelay);
+  }
 
-    Instance(SocketAddress remoteAddress, String namespace) {
-      this.remote = remoteAddress == null ? "" : remoteAddress.toString();
-      this.namespace = namespace == null ? "" : namespace;
-    }
+  @Override
+  public Sample requestBegin(String uri, Object request) {
+    // Ignore parameters at the moment; need to carefully figure out what can be labelled or not
+    processingPending.increment();
+    return Timer.start();
+  }
 
-    @Override
-    public Timers.EventTiming enqueueRequest() {
-      queueSize.get(remote, namespace).increment();
-      return queueDelay.start();
-    }
+  @Override
+  public void requestEnd(Sample requestMetric) {
+    // Ignoring request-alone metrics at the moment
+  }
 
-    @Override
-    public void dequeueRequest(Timers.EventTiming taskMetric) {
-      queueSize.get(remote, namespace).decrement();
-      taskMetric.end(remote, namespace);
-    }
+  @Override
+  public void responseBegin(Sample requestMetric, Object response) {
+    // Ignoring response-alone metrics at the moment
+  }
 
-    @Override
-    public Timers.EventTiming requestBegin(String uri, Object request) {
-      // Ignore parameters at the moment; need to carefully figure out what can be labelled or not
-      processingPending.get(remote, namespace).increment();
-      return processingTime.start();
-    }
+  @Override
+  public void requestReset(Sample requestMetric) {
+    processingPending.decrement();
+    requestMetric.stop(processingTime);
+    resetCount.increment();
+  }
 
-    @Override
-    public void requestEnd(Timers.EventTiming requestMetric) {
-      // Ignoring request-alone metrics at the moment
-    }
-
-    @Override
-    public void responseBegin(Timers.EventTiming requestMetric, Object response) {
-      // Ignoring response-alone metrics at the moment
-    }
-
-    @Override
-    public void requestReset(Timers.EventTiming requestMetric) {
-      processingPending.get(remote, namespace).decrement();
-      requestMetric.end(remote, namespace);
-      resetCount.get(remote, namespace).increment();
-    }
-
-    @Override
-    public void responseEnd(Timers.EventTiming requestMetric) {
-      processingPending.get(remote, namespace).decrement();
-      requestMetric.end(remote, namespace);
-    }
-
-    @Override
-    public void close() {
-    }
+  @Override
+  public void responseEnd(Sample requestMetric) {
+    processingPending.decrement();
+    requestMetric.stop(processingTime);
   }
 }

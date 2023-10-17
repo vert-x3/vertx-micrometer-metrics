@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,26 +18,15 @@ package io.vertx.micrometer.backends;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.Match;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxInfluxDbOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.*;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-
-import static java.util.stream.Collectors.*;
 
 /**
  * {@link BackendRegistries} is responsible for managing registries related to particular micrometer backends (influxdb, prometheus...)
@@ -79,7 +68,7 @@ public final class BackendRegistries {
         // No backend setup, use global registry
         reg = NoopBackendRegistry.INSTANCE;
       }
-      registerMatchers(reg.getMeterRegistry(), options.getLabels(), options.getLabelMatches());
+      registerMatchers(reg.getMeterRegistry(), options.getLabelMatches());
       return reg;
     });
   }
@@ -119,13 +108,7 @@ public final class BackendRegistries {
     }
   }
 
-  public static void registerMatchers(MeterRegistry registry, Set<Label> enabledLabels, List<Match> matches) {
-    Set<String> ignored = EnumSet.complementOf(EnumSet.copyOf(enabledLabels)).stream()
-      .map(Label::toString)
-      .collect(toSet());
-    if (!ignored.isEmpty()) {
-      registry.config().meterFilter(ignoreTags(ignored));
-    }
+  public static void registerMatchers(MeterRegistry registry, List<Match> matches) {
     matches.forEach(m -> {
       switch (m.getType()) {
         case EQUALS:
@@ -184,23 +167,6 @@ public final class BackendRegistries {
           break;
       }
     });
-  }
-
-  private static MeterFilter ignoreTags(Set<String> ignored) {
-    return new MeterFilter() {
-      @Override
-      public Meter.Id map(Meter.Id id) {
-        List<Tag> tags = new ArrayList<>();
-        int count = 0;
-        for (Tag tag : id.getTagsAsIterable()) {
-          if (!ignored.contains(tag.getKey())) {
-            tags.add(tag);
-          }
-          count++;
-        }
-        return tags.size() == count ? id : id.replaceTags(tags);
-      }
-    };
   }
 
   private static MeterFilter replaceTagValues(MetricsDomain domain, String tagKey, Function<String, String> replacement) {

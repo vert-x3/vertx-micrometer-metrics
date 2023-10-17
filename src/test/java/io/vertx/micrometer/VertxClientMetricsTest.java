@@ -1,3 +1,20 @@
+/*
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.vertx.micrometer;
 
 import io.vertx.core.Vertx;
@@ -31,16 +48,16 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
 
     FakeClient client = new FakeClient(vertx, "somewhere", "my namespace");
 
-    List<Datapoint> datapoints = listDatapoints(MicrometerMetricsTestBase.ALL);
-    assertThat(datapoints).isEmpty();
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.fake"));
+    assertThat(datapoints).size().isEqualTo(9);
 
     client.enqueue(10);
-    datapoints = listDatapoints(MicrometerMetricsTestBase.ALL);
-    assertThat(datapoints).containsOnly(
+    datapoints = listDatapoints(startsWith("vertx.fake"));
+    assertThat(datapoints).contains(
       dp("vertx.fake.queue.pending[client_namespace=my namespace,remote=somewhere]$VALUE", 10));
 
     client.dequeue(8);
-    datapoints = listDatapoints(MicrometerMetricsTestBase.ALL);
+    datapoints = listDatapoints(startsWith("vertx.fake"));
     assertThat(datapoints).contains(
       dp("vertx.fake.queue.pending[client_namespace=my namespace,remote=somewhere]$VALUE", 2),
       dp("vertx.fake.queue.time[client_namespace=my namespace,remote=somewhere]$COUNT", 8));
@@ -52,22 +69,22 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
 
     FakeClient client = new FakeClient(vertx, "somewhere", "my namespace");
 
-    List<Datapoint> datapoints = listDatapoints(MicrometerMetricsTestBase.ALL);
-    assertThat(datapoints).isEmpty();
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.fake"));
+    assertThat(datapoints).size().isEqualTo(9);
 
     client.process(6);
-    datapoints = listDatapoints(MicrometerMetricsTestBase.ALL);
-    assertThat(datapoints).containsOnly(
+    datapoints = listDatapoints(startsWith("vertx.fake"));
+    assertThat(datapoints).contains(
       dp("vertx.fake.processing.pending[client_namespace=my namespace,remote=somewhere]$VALUE", 6));
 
     client.processed(2);
-    datapoints = listDatapoints(MicrometerMetricsTestBase.ALL);
+    datapoints = listDatapoints(startsWith("vertx.fake"));
     assertThat(datapoints).contains(
       dp("vertx.fake.processing.pending[client_namespace=my namespace,remote=somewhere]$VALUE", 4),
       dp("vertx.fake.processing.time[client_namespace=my namespace,remote=somewhere]$COUNT", 2));
 
     client.reset(2);
-    datapoints = listDatapoints(MicrometerMetricsTestBase.ALL);
+    datapoints = listDatapoints(startsWith("vertx.fake"));
     assertThat(datapoints).contains(
       dp("vertx.fake.processing.pending[client_namespace=my namespace,remote=somewhere]$VALUE", 2),
       dp("vertx.fake.processing.time[client_namespace=my namespace,remote=somewhere]$COUNT", 4),
@@ -83,7 +100,7 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
     FakeClient client = new FakeClient(vertx, "somewhere", "my namespace");
     client.enqueue(4);
     client.dequeue(1);
-    List<Datapoint> datapoints = listDatapoints(MicrometerMetricsTestBase.ALL);
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.fake"));
     assertThat(datapoints).isEmpty();
   }
 

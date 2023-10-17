@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 The original author or authors
+ * Copyright (c) 2011-2023 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,152 +15,153 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Counter;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.Counters;
-import io.vertx.micrometer.impl.meters.Gauges;
-import io.vertx.micrometer.impl.meters.Summaries;
+import io.vertx.micrometer.impl.VertxEventBusMetrics.HandlerMetric;
+import io.vertx.micrometer.impl.tags.Labels;
+import io.vertx.micrometer.impl.tags.TagsWrapper;
 
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
+
+import static io.vertx.micrometer.Label.*;
+import static io.vertx.micrometer.MetricsDomain.EVENT_BUS;
+import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
+import static java.util.function.UnaryOperator.identity;
 
 /**
  * @author Joel Takvorian
  */
-class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<VertxEventBusMetrics.Handler> {
-  private final static Handler IGNORED = new Handler(null);
+class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<HandlerMetric> {
 
-  private final Gauges<LongAdder> handlers;
-  private final Gauges<LongAdder> pending;
-  private final Counters processed;
-  private final Counters published;
-  private final Counters sent;
-  private final Counters received;
-  private final Counters delivered;
-  private final Counters discarded;
-  private final Counters replyFailures;
-  private final Summaries bytesRead;
-  private final Summaries bytesWritten;
-
-  VertxEventBusMetrics(MeterRegistry registry, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    super(registry, MetricsDomain.EVENT_BUS, gaugesTable);
-    handlers = longGauges(names.getEbHandlers(), "Number of event bus handlers in use", Label.EB_ADDRESS);
-    pending = longGauges(names.getEbPending(), "Number of messages not processed yet", Label.EB_ADDRESS, Label.EB_SIDE);
-    processed = counters(names.getEbProcessed(), "Number of processed messages", Label.EB_ADDRESS, Label.EB_SIDE);
-    published = counters(names.getEbPublished(), "Number of messages published (publish / subscribe)", Label.EB_ADDRESS, Label.EB_SIDE);
-    sent = counters(names.getEbSent(), "Number of messages sent (point-to-point)", Label.EB_ADDRESS, Label.EB_SIDE);
-    received = counters(names.getEbReceived(), "Number of messages received", Label.EB_ADDRESS, Label.EB_SIDE);
-    delivered = counters(names.getEbDelivered(), "Number of messages delivered to handlers", Label.EB_ADDRESS, Label.EB_SIDE);
-    discarded = counters(names.getEbDiscarded(), "Number of discarded messages", Label.EB_ADDRESS, Label.EB_SIDE);
-    replyFailures = counters(names.getEbReplyFailures(), "Number of message reply failures", Label.EB_ADDRESS, Label.EB_FAILURE);
-    bytesRead = summaries(names.getEbBytesRead(), "Number of bytes received while reading messages from event bus cluster peers", Label.EB_ADDRESS);
-    bytesWritten = summaries(names.getEbBytesWritten(), "Number of bytes sent while sending messages to event bus cluster peers", Label.EB_ADDRESS);
+  VertxEventBusMetrics(AbstractMetrics parent) {
+    super(parent, EVENT_BUS);
   }
 
-  private static boolean isInternal(String address) {
-    return address.startsWith("__vertx.");
+  private static boolean isNotInternal(String address) {
+    return !address.startsWith("__vertx.");
   }
 
   @Override
-  public Handler handlerRegistered(String address) {
-    if (isInternal(address)) {
-      // Ignore internal metrics
-      return IGNORED;
+  public HandlerMetric handlerRegistered(String address) {
+    if (isNotInternal(address)) {
+      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
+      HandlerMetric handlerMetric = new HandlerMetric(tags);
+      handlerMetric.handlers.increment();
+      return handlerMetric;
     }
-    handlers.get(address).increment();
-    return new Handler(address);
+    return null;
   }
 
   @Override
-  public void handlerUnregistered(Handler handler) {
-    if (isValid(handler)) {
-      handlers.get(handler.address).decrement();
+  public void handlerUnregistered(HandlerMetric handlerMetric) {
+    if (handlerMetric != null) {
+      handlerMetric.handlers.decrement();
     }
   }
 
   @Override
-  public void scheduleMessage(Handler handler, boolean b) {
-  }
-
-  @Override
-  public void messageDelivered(Handler handler, boolean local) {
-    if (isValid(handler)) {
-      pending.get(handler.address, Labels.getSide(local)).decrement();
-      processed.get(handler.address, Labels.getSide(local)).increment();
+  public void messageDelivered(HandlerMetric handlerMetric, boolean local) {
+    if (handlerMetric != null) {
+      if (local) {
+        handlerMetric.ebPendingLocal.decrement();
+        handlerMetric.ebProcessedLocal.increment();
+      } else {
+        handlerMetric.ebPendingRemote.decrement();
+        handlerMetric.ebProcessedRemote.increment();
+      }
     }
   }
 
   @Override
-  public void discardMessage(Handler handler, boolean local, Message<?> msg) {
-    if (isValid(handler)) {
-      pending.get(handler.address, Labels.getSide(local)).decrement();
-      discarded.get(handler.address, Labels.getSide(local)).increment();
+  public void discardMessage(HandlerMetric handlerMetric, boolean local, Message<?> msg) {
+    if (handlerMetric != null) {
+      if (local) {
+        handlerMetric.ebPendingLocal.decrement();
+        handlerMetric.ebDiscardedLocal.increment();
+      } else {
+        handlerMetric.ebPendingRemote.decrement();
+        handlerMetric.ebDiscardedRemote.increment();
+      }
     }
   }
 
   @Override
   public void messageSent(String address, boolean publish, boolean local, boolean remote) {
-    if (!isInternal(address)) {
+    if (isNotInternal(address)) {
+      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_SIDE, Labels::side, local));
       if (publish) {
-        published.get(address, Labels.getSide(local)).increment();
+        counter(names.getEbPublished(), "Number of messages published (publish / subscribe)", tags.unwrap())
+          .increment();
       } else {
-        sent.get(address, Labels.getSide(local)).increment();
+        counter(names.getEbSent(), "Number of messages sent (point-to-point)", tags.unwrap())
+          .increment();
       }
     }
   }
 
   @Override
   public void messageReceived(String address, boolean publish, boolean local, int handlers) {
-    if (!isInternal(address)) {
-      String origin = Labels.getSide(local);
-      pending.get(address, origin).add(handlers);
-      received.get(address, origin).increment();
+    if (isNotInternal(address)) {
+      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_SIDE, Labels::side, local));
+      counter(names.getEbReceived(), "Number of messages received", tags.unwrap())
+        .increment();
       if (handlers > 0) {
-        delivered.get(address, origin).increment();
+        longGauge(names.getEbPending(), "Number of messages not processed yet", tags.unwrap())
+          .add(handlers);
+        counter(names.getEbDelivered(), "Number of messages delivered to handlers", tags.unwrap())
+          .increment();
       }
     }
   }
 
   @Override
   public void messageWritten(String address, int numberOfBytes) {
-    if (!isInternal(address)) {
-      bytesWritten.get(address).record(numberOfBytes);
+    if (isNotInternal(address)) {
+      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
+      distributionSummary(names.getEbBytesWritten(), "Number of bytes sent while sending messages to event bus cluster peers", tags.unwrap())
+        .record(numberOfBytes);
     }
   }
 
   @Override
   public void messageRead(String address, int numberOfBytes) {
-    if (!isInternal(address)) {
-      bytesRead.get(address).record(numberOfBytes);
+    if (isNotInternal(address)) {
+      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
+      distributionSummary(names.getEbBytesRead(), "Number of bytes received while reading messages from event bus cluster peers", tags.unwrap())
+        .record(numberOfBytes);
     }
   }
 
   @Override
   public void replyFailure(String address, ReplyFailure failure) {
-    if (!isInternal(address)) {
-      replyFailures.get(address, failure.name()).increment();
+    if (isNotInternal(address)) {
+      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_FAILURE, ReplyFailure::name, failure));
+      counter(names.getEbReplyFailures(), "Number of message reply failures", tags.unwrap()).increment();
     }
   }
 
-  @Override
-  public void close() {
-  }
+  class HandlerMetric {
 
-  private static boolean isValid(Handler handler) {
-    return handler != null && handler.address != null;
-  }
+    final LongAdder handlers;
+    final LongAdder ebPendingLocal;
+    final Counter ebProcessedLocal;
+    final LongAdder ebPendingRemote;
+    final Counter ebProcessedRemote;
+    final Counter ebDiscardedLocal;
+    final Counter ebDiscardedRemote;
 
-  static class Handler {
-    private final String address;
-
-    Handler(String address) {
-      this.address = address;
+    HandlerMetric(TagsWrapper tags) {
+      handlers = longGauge(names.getEbHandlers(), "Number of event bus handlers in use", tags.unwrap());
+      TagsWrapper localTags = tags.and(toTag(EB_SIDE, Labels::side, true));
+      ebPendingLocal = longGauge(names.getEbPending(), "Number of messages not processed yet", localTags.unwrap());
+      ebProcessedLocal = counter(names.getEbProcessed(), "Number of processed messages", localTags.unwrap());
+      ebDiscardedLocal = counter(names.getEbDiscarded(), "Number of discarded messages", localTags.unwrap());
+      TagsWrapper remoteTags = tags.and(toTag(EB_SIDE, Labels::side, false));
+      ebPendingRemote = longGauge(names.getEbPending(), "Number of messages not processed yet", remoteTags.unwrap());
+      ebProcessedRemote = counter(names.getEbProcessed(), "Number of processed messages", remoteTags.unwrap());
+      ebDiscardedRemote = counter(names.getEbDiscarded(), "Number of discarded messages", remoteTags.unwrap());
     }
   }
 }

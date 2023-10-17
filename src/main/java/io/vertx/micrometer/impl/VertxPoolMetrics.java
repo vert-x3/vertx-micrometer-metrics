@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 The original author or authors
+ * Copyright (c) 2011-2023 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,106 +16,69 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.spi.metrics.PoolMetrics;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.impl.meters.Counters;
-import io.vertx.micrometer.impl.meters.Gauges;
-import io.vertx.micrometer.impl.meters.Timers;
+import io.vertx.micrometer.impl.tags.TagsWrapper;
 
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
+
+import static io.vertx.micrometer.Label.POOL_NAME;
+import static io.vertx.micrometer.Label.POOL_TYPE;
+import static io.vertx.micrometer.MetricsDomain.NAMED_POOLS;
+import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
+import static java.util.function.Function.identity;
 
 /**
  * @author Joel Takvorian
  */
-class VertxPoolMetrics extends AbstractMetrics {
-  private final Timers queueDelay;
-  private final Gauges<LongAdder> queueSize;
-  private final Timers usage;
-  private final Gauges<LongAdder> inUse;
-  private final Gauges<AtomicReference<Double>> usageRatio;
-  private final Counters completed;
+class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample> {
 
-  VertxPoolMetrics(MeterRegistry registry, MetricsNaming names, ConcurrentMap<Meter.Id, Object> gaugesTable) {
-    super(registry, MetricsDomain.NAMED_POOLS, gaugesTable);
-    queueDelay = timers(names.getPoolQueueTime(), "Time spent in queue before being processed", Label.POOL_TYPE, Label.POOL_NAME);
-    queueSize = longGauges(names.getPoolQueuePending(), "Number of pending elements in queue", Label.POOL_TYPE, Label.POOL_NAME);
-    usage = timers(names.getPoolUsage(), "Time using a resource", Label.POOL_TYPE, Label.POOL_NAME);
-    inUse = longGauges(names.getPoolInUse(), "Number of resources used", Label.POOL_TYPE, Label.POOL_NAME);
-    usageRatio = doubleGauges(names.getPoolUsageRatio(), "Pool usage ratio, only present if maximum pool size could be determined", Label.POOL_TYPE, Label.POOL_NAME);
-    completed = counters(names.getPoolCompleted(), "Number of elements done with the resource", Label.POOL_TYPE, Label.POOL_NAME);
+  final Timer queueDelay;
+  final LongAdder queueSize;
+  final Timer usage;
+  final LongAdder inUse;
+  final LongAdder usageRatio;
+  final Counter completed;
+
+  VertxPoolMetrics(AbstractMetrics parent, String poolType, String poolName, int maxPoolSize) {
+    super(parent, NAMED_POOLS);
+    TagsWrapper tags = of(toTag(POOL_TYPE, identity(), poolType), toTag(POOL_NAME, identity(), poolName));
+    queueDelay = timer(names.getPoolQueueTime(), "Time spent in queue before being processed", tags.unwrap());
+    queueSize = longGauge(names.getPoolQueuePending(), "Number of pending elements in queue", tags.unwrap());
+    usage = timer(names.getPoolUsage(), "Time using a resource", tags.unwrap());
+    inUse = longGauge(names.getPoolInUse(), "Number of resources used", tags.unwrap());
+    usageRatio = longGauge(names.getPoolUsageRatio(), "Pool usage ratio, only present if maximum pool size could be determined", tags.unwrap(), value -> maxPoolSize > 0 ? value.doubleValue() / maxPoolSize : Double.NaN);
+    completed = counter(names.getPoolCompleted(), "Number of elements done with the resource", tags.unwrap());
   }
 
-  PoolMetrics forInstance(String poolType, String poolName, int maxPoolSize) {
-    return new Instance(poolType, poolName, maxPoolSize);
+  @Override
+  public Sample submitted() {
+    queueSize.increment();
+    return Timer.start();
   }
 
-  class Instance implements MicrometerMetrics, PoolMetrics<Timers.EventTiming> {
-    private final String poolType;
-    private final String poolName;
-    private final int maxPoolSize;
+  @Override
+  public void rejected(Sample submitted) {
+    queueSize.decrement();
+    submitted.stop(queueDelay);
+  }
 
-    Instance(String poolType, String poolName, int maxPoolSize) {
-      this.poolType = poolType;
-      this.poolName = poolName;
-      this.maxPoolSize = maxPoolSize;
-    }
+  @Override
+  public Sample begin(Sample submitted) {
+    queueSize.decrement();
+    submitted.stop(queueDelay);
+    inUse.increment();
+    usageRatio.increment();
+    return Timer.start();
+  }
 
-    @Override
-    public Timers.EventTiming submitted() {
-      queueSize.get(poolType, poolName).increment();
-      return queueDelay.start();
-    }
-
-    @Override
-    public void rejected(Timers.EventTiming submitted) {
-      queueSize.get(poolType, poolName).decrement();
-      submitted.end(poolType, poolName);
-    }
-
-    @Override
-    public Timers.EventTiming begin(Timers.EventTiming submitted) {
-      queueSize.get(poolType, poolName).decrement();
-      submitted.end(poolType, poolName);
-      LongAdder l = inUse.get(poolType, poolName);
-      l.increment();
-      checkRatio(l.longValue());
-      return usage.start();
-    }
-
-    @Override
-    public void end(Timers.EventTiming timer, boolean succeeded) {
-      LongAdder l = inUse.get(poolType, poolName);
-      l.decrement();
-      checkRatio(l.longValue());
-      timer.end(poolType, poolName);
-      completed.get(poolType, poolName).increment();
-    }
-
-    @Override
-    public void close() {
-    }
-
-    private void checkRatio(long inUse) {
-      if (maxPoolSize > 0) {
-        usageRatio.get(poolType, poolName)
-          .set((double)inUse / maxPoolSize);
-      }
-    }
-
-    @Override
-    public MeterRegistry registry() {
-      return registry;
-    }
-
-    @Override
-    public String baseName() {
-      return VertxPoolMetrics.this.baseName();
-    }
+  @Override
+  public void end(Sample timer, boolean succeeded) {
+    inUse.decrement();
+    usageRatio.decrement();
+    timer.stop(usage);
+    completed.increment();
   }
 }

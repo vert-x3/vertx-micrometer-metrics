@@ -1,3 +1,20 @@
+/*
+ * Copyright 2023 Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.vertx.micrometer;
 
 import io.vertx.core.AbstractVerticle;
@@ -76,17 +93,20 @@ public class VertxEventBusMetricsTest extends MicrometerMetricsTestBase {
     waitForValue(context, "vertx.eventbus.processed[address=testSubject,side=local]$COUNT",
       value -> value.intValue() == 8 * instances);
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
-    assertThat(datapoints).hasSize(10).contains(
+    assertThat(datapoints).hasSize(13).contains(
       dp("vertx.eventbus.handlers[address=testSubject]$VALUE", instances),
-      dp("vertx.eventbus.pending[address=no handler,side=local]$VALUE", 0),
       dp("vertx.eventbus.pending[address=testSubject,side=local]$VALUE", 0),
+      dp("vertx.eventbus.pending[address=testSubject,side=remote]$VALUE", 0),
       dp("vertx.eventbus.sent[address=no handler,side=local]$COUNT", 2),
       dp("vertx.eventbus.published[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.received[address=no handler,side=local]$COUNT", 2),
       dp("vertx.eventbus.received[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.delivered[address=testSubject,side=local]$COUNT", 8),
       dp("vertx.eventbus.reply.failures[address=no handler,failure=NO_HANDLERS]$COUNT", 2),
-      dp("vertx.eventbus.processed[address=testSubject,side=local]$COUNT", 8d * instances));
+      dp("vertx.eventbus.processed[address=testSubject,side=local]$COUNT", 8d * instances),
+      dp("vertx.eventbus.processed[address=testSubject,side=remote]$COUNT", 0),
+      dp("vertx.eventbus.discarded[address=testSubject,side=local]$COUNT", 0),
+      dp("vertx.eventbus.discarded[address=testSubject,side=remote]$COUNT", 0));
   }
 
   @Test
@@ -106,7 +126,7 @@ public class VertxEventBusMetricsTest extends MicrometerMetricsTestBase {
 
     waitForValue(context, "vertx.eventbus.discarded[side=local]$COUNT", value -> value.intValue() == 1);
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus"));
-    assertThat(datapoints).contains(dp("vertx.eventbus.pending[side=local]$VALUE", 10));
+    assertThat(datapoints).contains(dp("vertx.eventbus.pending[side=local]$VALUE", 10D));
 
     // Unregister => discard all remaining
     consumer.unregister();
