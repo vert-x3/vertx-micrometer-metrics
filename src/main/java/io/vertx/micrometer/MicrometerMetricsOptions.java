@@ -158,12 +158,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     return this;
   }
 
-  @Override
-  public MicrometerMetricsOptions setFactory(VertxMetricsFactory factory) {
-    super.setFactory(factory);
-    return this;
-  }
-
   /**
    * @return the disabled metrics types.
    */
