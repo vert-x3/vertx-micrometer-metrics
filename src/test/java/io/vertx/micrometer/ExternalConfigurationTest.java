@@ -98,6 +98,26 @@ public class ExternalConfigurationTest {
     );
   }
 
+  @Test
+  public void testNettyMetricsEnabled(TestContext context) throws Exception {
+    VertxPrometheusOptions prometheusOptions = new VertxPrometheusOptions()
+      .setEnabled(true)
+      .setStartEmbeddedServer(true)
+      .setEmbeddedServerOptions(new HttpServerOptions().setPort(9999));
+    MicrometerMetricsOptions metricsOptions = new MicrometerMetricsOptions()
+      .setEnabled(true)
+      .setNettyMetricsEnabled(true)
+      .setPrometheusOptions(prometheusOptions);
+
+    startVertx(context, metricsOptions);
+
+    Set<String> metrics = PrometheusTestHelper.getMetricNames(vertx, context, 9999, "localhost", "/metrics", 3000);
+    assertThat(metrics).contains(
+      "netty_allocator_pooled_arenas", // from NettyAllocatorMetrics
+      "netty_eventexecutor_tasks_pending" // from NettyEventExecutorMetrics
+    );
+  }
+
   private void startVertx(TestContext context, MicrometerMetricsOptions metricsOptions) throws Exception {
     JsonObject json = new JsonObject()
       .put("metricsOptions", metricsOptions.toJson());

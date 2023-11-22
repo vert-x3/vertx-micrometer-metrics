@@ -16,11 +16,7 @@
 package examples;
 
 import io.micrometer.core.instrument.*;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.DiskSpaceMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
@@ -39,6 +35,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.regex.Matcher;
@@ -174,14 +171,18 @@ public class MicrometerMetricsExamples {
     });
   }
 
-  public void instrumentJVM() {
-    MeterRegistry registry = BackendRegistries.getDefaultNow();
+  public void instrumentJVM(MicrometerMetricsOptions metricsOptions) {
+    metricsOptions.setJvmMetricsEnabled(true);
+  }
 
-    new ClassLoaderMetrics().bindTo(registry);
-    new JvmMemoryMetrics().bindTo(registry);
-    new JvmGcMetrics().bindTo(registry);
-    new ProcessorMetrics().bindTo(registry);
-    new JvmThreadMetrics().bindTo(registry);
+  public void instrumentNetty(MicrometerMetricsOptions metricsOptions) {
+    metricsOptions.setNettyMetricsEnabled(true);
+  }
+
+  public void anyInstrumentation() {
+    MeterRegistry registry = BackendRegistries.getDefaultNow();
+    DiskSpaceMetrics metrics = new DiskSpaceMetrics(new File("/opt/myapp/data"));
+    metrics.bindTo(registry);
   }
 
   public void setupWithMatcherForFiltering() {
