@@ -17,6 +17,7 @@
 package io.vertx.micrometer;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.JsonGen;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 
@@ -25,7 +26,8 @@ import io.vertx.core.json.JsonObject;
  *
  * @author Joel Takvorian
  */
-@DataObject(generateConverter = true, inheritConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class VertxPrometheusOptions {
 
   /**

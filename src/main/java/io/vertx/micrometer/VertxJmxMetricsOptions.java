@@ -18,6 +18,7 @@ package io.vertx.micrometer;
 
 import io.micrometer.jmx.JmxConfig;
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Duration;
@@ -27,7 +28,8 @@ import java.time.Duration;
  *
  * @author Joel Takvorian
  */
-@DataObject(generateConverter = true, inheritConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class VertxJmxMetricsOptions {
 
   /**
