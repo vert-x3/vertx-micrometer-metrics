@@ -17,6 +17,7 @@
 package io.vertx.micrometer;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -24,7 +25,8 @@ import io.vertx.core.json.JsonObject;
  *
  * @author Joel Takvorian
  */
-@DataObject(generateConverter = true, inheritConverter = true)
+@DataObject
+@JsonGen(publicConverter = false, inheritConverter = true)
 public class MetricsNaming {
   private String clientQueueTime;
   private String clientQueuePending;
