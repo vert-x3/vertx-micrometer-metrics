@@ -18,7 +18,7 @@ package io.vertx.micrometer;
 
 import io.micrometer.jmx.JmxConfig;
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.annotations.JsonGen;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Duration;

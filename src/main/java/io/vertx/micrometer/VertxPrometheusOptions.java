@@ -17,7 +17,7 @@
 package io.vertx.micrometer;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.annotations.JsonGen;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 
