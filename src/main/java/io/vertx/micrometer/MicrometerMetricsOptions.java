@@ -38,7 +38,7 @@ import java.util.function.Function;
  * @author Joel Takvorian
  */
 @DataObject
-@JsonGen(publicConverter = false)
+@JsonGen(publicConverter = false, inheritConverter = true)
 public class MicrometerMetricsOptions extends MetricsOptions {
 
   /**

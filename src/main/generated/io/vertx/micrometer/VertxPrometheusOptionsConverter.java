@@ -17,7 +17,7 @@ public class VertxPrometheusOptionsConverter {
   private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
   private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, VertxPrometheusOptions obj) {
+   static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, VertxPrometheusOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "embeddedServerEndpoint":
@@ -49,11 +49,11 @@ public class VertxPrometheusOptionsConverter {
     }
   }
 
-  public static void toJson(VertxPrometheusOptions obj, JsonObject json) {
+   static void toJson(VertxPrometheusOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(VertxPrometheusOptions obj, java.util.Map<String, Object> json) {
+   static void toJson(VertxPrometheusOptions obj, java.util.Map<String, Object> json) {
     if (obj.getEmbeddedServerEndpoint() != null) {
       json.put("embeddedServerEndpoint", obj.getEmbeddedServerEndpoint());
     }
