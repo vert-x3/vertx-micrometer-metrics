@@ -62,8 +62,8 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider;
   private final Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
 
-  public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, LongGauges longGauges, MeterCache meterCache) {
-    super(backendRegistry.getMeterRegistry(), options.getMetricsNaming(), longGauges, EnumSet.copyOf(options.getLabels()), meterCache);
+  public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, LongGauges longGauges) {
+    super(backendRegistry.getMeterRegistry(), options.getMetricsNaming(), longGauges, EnumSet.copyOf(options.getLabels()), options.isMeterCacheEnabled());
     this.backendRegistry = backendRegistry;
     registryName = options.getRegistryName();
     if (options.getDisabledMetricsCategories() != null) {
@@ -196,8 +196,5 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       }
     }
     BackendRegistries.stop(registryName);
-    if (meterCache != null) {
-      meterCache.close();
-    }
   }
 }

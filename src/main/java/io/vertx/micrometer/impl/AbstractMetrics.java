@@ -29,8 +29,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
-import static io.micrometer.core.instrument.Meter.Type.*;
-
 /**
  * Abstract class for metrics container.
  *
@@ -40,18 +38,16 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
 
   protected final MeterRegistry registry;
   protected final MetricsNaming names;
-  protected final String category;
-  protected final LongGauges longGauges;
-  protected final EnumSet<Label> enabledLabels;
-  protected final MeterCache meterCache;
+  private final String category;
+  private final EnumSet<Label> enabledLabels;
+  private final MeterCache meterCache;
 
-  AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, MeterCache meterCache) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, boolean meterCacheEnabled) {
     this.registry = registry;
-    this.longGauges = longGauges;
     this.category = null;
     this.enabledLabels = enabledLabels;
-    this.names = names.withBaseName(baseName());
-    this.meterCache = meterCache;
+    this.names = names;
+    this.meterCache = new MeterCache(meterCacheEnabled, registry, longGauges);
   }
 
   AbstractMetrics(AbstractMetrics parent, MetricsDomain domain) {
@@ -60,7 +56,6 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
 
   AbstractMetrics(AbstractMetrics parent, String category) {
     this.registry = parent.registry;
-    this.longGauges = parent.longGauges;
     this.enabledLabels = parent.enabledLabels;
     this.meterCache = parent.meterCache;
     this.category = category;
@@ -75,25 +70,14 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
     return registry;
   }
 
+  // Method is final because it is invoked from the constructor
   @Override
-  public String baseName() {
+  public final String baseName() {
     return category == null ? null : "vertx." + category + ".";
   }
 
   Counter counter(String name, String description, Tags tags) {
-    Meter.Id id = new Meter.Id(name, tags, null, description, COUNTER);
-    Counter c;
-    if (meterCache != null) {
-      c = meterCache.get(id);
-      if (c != null) {
-        return c;
-      }
-    }
-    c = Counter.builder(name).description(description).tags(tags).register(registry);
-    if (meterCache != null) {
-      meterCache.put(id, c);
-    }
-    return c;
+    return meterCache.getOrCreateCounter(name, description, tags);
   }
 
   LongAdder longGauge(String name, String description, Tags tags) {
@@ -101,51 +85,15 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
   }
 
   LongAdder longGauge(String name, String description, Tags tags, ToDoubleFunction<LongAdder> func) {
-    Meter.Id id = new Meter.Id(name, tags, null, description, GAUGE);
-    LongAdder la;
-    if (meterCache != null) {
-      la = meterCache.get(id);
-      if (la != null) {
-        return la;
-      }
-    }
-    la = longGauges.builder(name, func).description(description).tags(tags).register(registry);
-    if (meterCache != null) {
-      meterCache.put(id, la);
-    }
-    return la;
+    return meterCache.getOrCreateLongGauge(name, description, tags, func);
   }
 
   DistributionSummary distributionSummary(String name, String description, Tags tags) {
-    Meter.Id id = new Meter.Id(name, tags, null, description, DISTRIBUTION_SUMMARY);
-    DistributionSummary ds;
-    if (meterCache != null) {
-      ds = meterCache.get(id);
-      if (ds != null) {
-        return ds;
-      }
-    }
-    ds = DistributionSummary.builder(name).description(description).tags(tags).register(registry);
-    if (meterCache != null) {
-      meterCache.put(id, ds);
-    }
-    return ds;
+    return meterCache.getOrCreateDistributionSummary(name, description, tags);
   }
 
   Timer timer(String name, String description, Tags tags) {
-    Meter.Id id = new Meter.Id(name, tags, null, description, TIMER);
-    Timer t;
-    if (meterCache != null) {
-      t = meterCache.get(id);
-      if (t != null) {
-        return t;
-      }
-    }
-    t = Timer.builder(name).description(description).tags(tags).register(registry);
-    if (meterCache != null) {
-      meterCache.put(id, t);
-    }
-    return t;
+    return meterCache.getOrCreateTimer(name, description, tags);
   }
 
   <U> Tag toTag(Label label, Function<U, String> func, U u) {
