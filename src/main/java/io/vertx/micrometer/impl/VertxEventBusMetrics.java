@@ -16,27 +16,56 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Meter.MeterProvider;
+import io.micrometer.core.instrument.Tags;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.spi.metrics.EventBusMetrics;
 import io.vertx.micrometer.impl.VertxEventBusMetrics.HandlerMetric;
 import io.vertx.micrometer.impl.tags.Labels;
-import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
 import static io.vertx.micrometer.MetricsDomain.EVENT_BUS;
-import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
-import static java.util.function.UnaryOperator.identity;
 
 /**
  * @author Joel Takvorian
  */
 class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<HandlerMetric> {
 
+  private final MeterProvider<Counter> ebPublished;
+  private final MeterProvider<Counter> ebSent;
+  private final MeterProvider<Counter> ebReceived;
+  private final MeterProvider<Counter> ebDelivered;
+  private final MeterProvider<DistributionSummary> ebBytesWritten;
+  private final MeterProvider<DistributionSummary> ebBytesRead;
+  private final MeterProvider<Counter> ebReplyFailures;
+
   VertxEventBusMetrics(AbstractMetrics parent) {
     super(parent, EVENT_BUS);
+    ebPublished = Counter.builder(names.getEbPublished())
+      .description("Number of messages published (publish / subscribe)")
+      .withRegistry(registry);
+    ebSent = Counter.builder(names.getEbSent())
+      .description("Number of messages sent (point-to-point)")
+      .withRegistry(registry);
+    ebReceived = Counter.builder(names.getEbReceived())
+      .description("Number of messages received")
+      .withRegistry(registry);
+    ebDelivered = Counter.builder(names.getEbDelivered())
+      .description("Number of messages delivered to handlers")
+      .withRegistry(registry);
+    ebBytesWritten = DistributionSummary.builder(names.getEbBytesWritten())
+      .description("Number of bytes sent while sending messages to event bus cluster peers")
+      .withRegistry(registry);
+    ebBytesRead = DistributionSummary.builder(names.getEbBytesRead())
+      .description("Number of bytes received while reading messages from event bus cluster peers")
+      .withRegistry(registry);
+    ebReplyFailures = Counter.builder(names.getEbReplyFailures())
+      .description("Number of message reply failures")
+      .withRegistry(registry);
   }
 
   private static boolean isNotInternal(String address) {
@@ -46,8 +75,7 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ha
   @Override
   public HandlerMetric handlerRegistered(String address) {
     if (isNotInternal(address)) {
-      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
-      HandlerMetric handlerMetric = new HandlerMetric(tags);
+      HandlerMetric handlerMetric = new HandlerMetric(address);
       handlerMetric.handlers.increment();
       return handlerMetric;
     }
@@ -90,28 +118,38 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ha
   @Override
   public void messageSent(String address, boolean publish, boolean local, boolean remote) {
     if (isNotInternal(address)) {
-      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_SIDE, Labels::side, local));
+      Tags tags = addressAndSide(address, local);
       if (publish) {
-        counter(names.getEbPublished(), "Number of messages published (publish / subscribe)", tags.unwrap())
-          .increment();
+        ebPublished.withTags(tags).increment();
       } else {
-        counter(names.getEbSent(), "Number of messages sent (point-to-point)", tags.unwrap())
-          .increment();
+        ebSent.withTags(tags).increment();
       }
     }
+  }
+
+  private Tags addressAndSide(String address, boolean local) {
+    Tags tags = Tags.empty();
+    if (enabledLabels.contains(EB_ADDRESS)) {
+      tags = tags.and(EB_ADDRESS.toString(), address);
+    }
+    if (enabledLabels.contains(EB_SIDE)) {
+      tags = tags.and(Labels.side(local));
+    }
+    return tags;
   }
 
   @Override
   public void messageReceived(String address, boolean publish, boolean local, int handlers) {
     if (isNotInternal(address)) {
-      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_SIDE, Labels::side, local));
-      counter(names.getEbReceived(), "Number of messages received", tags.unwrap())
-        .increment();
+      Tags tags = addressAndSide(address, local);
+      ebReceived.withTags(tags).increment();
       if (handlers > 0) {
-        longGauge(names.getEbPending(), "Number of messages not processed yet", tags.unwrap())
+        longGaugeBuilder(names.getEbPending(), LongAdder::doubleValue)
+          .description("Number of messages not processed yet")
+          .tags(tags)
+          .register(registry)
           .add(handlers);
-        counter(names.getEbDelivered(), "Number of messages delivered to handlers", tags.unwrap())
-          .increment();
+        ebDelivered.withTags(tags).increment();
       }
     }
   }
@@ -119,27 +157,44 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ha
   @Override
   public void messageWritten(String address, int numberOfBytes) {
     if (isNotInternal(address)) {
-      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
-      distributionSummary(names.getEbBytesWritten(), "Number of bytes sent while sending messages to event bus cluster peers", tags.unwrap())
-        .record(numberOfBytes);
+      Tags tags = address(address);
+      ebBytesWritten.withTags(tags).record(numberOfBytes);
     }
+  }
+
+  private Tags address(String address) {
+    Tags tags = Tags.empty();
+    if (enabledLabels.contains(EB_ADDRESS)) {
+      tags = tags.and(EB_ADDRESS.toString(), address);
+    }
+    return tags;
   }
 
   @Override
   public void messageRead(String address, int numberOfBytes) {
     if (isNotInternal(address)) {
-      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address));
-      distributionSummary(names.getEbBytesRead(), "Number of bytes received while reading messages from event bus cluster peers", tags.unwrap())
-        .record(numberOfBytes);
+      Tags tags = address(address);
+      ebBytesRead.withTags(tags).record(numberOfBytes);
     }
   }
 
   @Override
   public void replyFailure(String address, ReplyFailure failure) {
     if (isNotInternal(address)) {
-      TagsWrapper tags = of(toTag(EB_ADDRESS, identity(), address), toTag(EB_FAILURE, ReplyFailure::name, failure));
-      counter(names.getEbReplyFailures(), "Number of message reply failures", tags.unwrap()).increment();
+      Tags tags = addressAndFailure(address, failure);
+      ebReplyFailures.withTags(tags).increment();
     }
+  }
+
+  private Tags addressAndFailure(String address, ReplyFailure replyFailure) {
+    Tags tags = Tags.empty();
+    if (enabledLabels.contains(EB_ADDRESS)) {
+      tags = tags.and(EB_ADDRESS.toString(), address);
+    }
+    if (enabledLabels.contains(EB_FAILURE)) {
+      tags = tags.and(EB_FAILURE.toString(), replyFailure.name());
+    }
+    return tags;
   }
 
   class HandlerMetric {
@@ -152,16 +207,44 @@ class VertxEventBusMetrics extends AbstractMetrics implements EventBusMetrics<Ha
     final Counter ebDiscardedLocal;
     final Counter ebDiscardedRemote;
 
-    HandlerMetric(TagsWrapper tags) {
-      handlers = longGauge(names.getEbHandlers(), "Number of event bus handlers in use", tags.unwrap());
-      TagsWrapper localTags = tags.and(toTag(EB_SIDE, Labels::side, true));
-      ebPendingLocal = longGauge(names.getEbPending(), "Number of messages not processed yet", localTags.unwrap());
-      ebProcessedLocal = counter(names.getEbProcessed(), "Number of processed messages", localTags.unwrap());
-      ebDiscardedLocal = counter(names.getEbDiscarded(), "Number of discarded messages", localTags.unwrap());
-      TagsWrapper remoteTags = tags.and(toTag(EB_SIDE, Labels::side, false));
-      ebPendingRemote = longGauge(names.getEbPending(), "Number of messages not processed yet", remoteTags.unwrap());
-      ebProcessedRemote = counter(names.getEbProcessed(), "Number of processed messages", remoteTags.unwrap());
-      ebDiscardedRemote = counter(names.getEbDiscarded(), "Number of discarded messages", remoteTags.unwrap());
+    HandlerMetric(String address) {
+      Tags tags = Tags.empty();
+      if (enabledLabels.contains(EB_ADDRESS)) {
+        tags = tags.and(EB_ADDRESS.toString(), address);
+      }
+      handlers = longGaugeBuilder(names.getEbHandlers(), LongAdder::doubleValue)
+        .description("Number of event bus handlers in use")
+        .tags(tags)
+        .register(registry);
+      Tags localTags = tags, remoteTags = tags;
+      if (enabledLabels.contains(EB_SIDE)) {
+        localTags = tags.and(Labels.side(true));
+        remoteTags = tags.and(Labels.side(false));
+      }
+      ebPendingLocal = longGaugeBuilder(names.getEbPending(), LongAdder::doubleValue)
+        .description("Number of messages not processed yet")
+        .tags(localTags)
+        .register(registry);
+      ebProcessedLocal = Counter.builder(names.getEbProcessed())
+        .description("Number of processed messages")
+        .tags(localTags)
+        .register(registry);
+      ebDiscardedLocal = Counter.builder(names.getEbDiscarded())
+        .description("Number of discarded messages")
+        .tags(localTags)
+        .register(registry);
+      ebPendingRemote = longGaugeBuilder(names.getEbPending(), LongAdder::doubleValue)
+        .description("Number of messages not processed yet")
+        .tags(remoteTags)
+        .register(registry);
+      ebProcessedRemote = Counter.builder(names.getEbProcessed())
+        .description("Number of processed messages")
+        .tags(remoteTags)
+        .register(registry);
+      ebDiscardedRemote = Counter.builder(names.getEbDiscarded())
+        .description("Number of discarded messages")
+        .tags(remoteTags)
+        .register(registry);
     }
   }
 }

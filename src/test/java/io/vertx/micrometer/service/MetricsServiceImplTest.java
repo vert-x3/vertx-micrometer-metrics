@@ -102,7 +102,6 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
       "vertx.http.server.bytes.read",
       "vertx.http.server.bytes.written",
       "vertx.http.server.request.bytes",
-      "vertx.http.server.request.resets",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
       "vertx.http.server.response.time",
@@ -116,7 +115,7 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("counter"))
-      .hasSize(14)
+      .hasSize(12)
       .flatExtracting(JsonObject::fieldNames)
       .contains("count");
 
@@ -154,7 +153,6 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
       "vertx.http.server.connections",
       "vertx.http.server.request.bytes",
       "vertx.http.server.requestCount",
-      "vertx.http.server.requestResetCount",
       "vertx.http.server.requests",
       "vertx.http.server.response.bytes",
       "vertx.http.server.responseTime"
@@ -177,7 +175,6 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
       "vertx.http.server.bytes.written",
       "vertx.http.server.request.bytes",
       "vertx.http.server.requests",
-      "vertx.http.server.request.resets",
       "vertx.http.server.response.bytes",
       "vertx.http.server.response.time"
       );

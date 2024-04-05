@@ -16,17 +16,15 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
+import io.vertx.micrometer.impl.meters.LongGaugeBuilder;
 import io.vertx.micrometer.impl.meters.LongGauges;
-import io.vertx.micrometer.impl.tags.IgnoredTag;
 
 import java.util.EnumSet;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
 /**
@@ -39,15 +37,15 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
   protected final MeterRegistry registry;
   protected final MetricsNaming names;
   private final String category;
-  private final EnumSet<Label> enabledLabels;
-  private final MeterCache meterCache;
+  protected final EnumSet<Label> enabledLabels;
+  private final LongGauges longGauges;
 
-  AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels, boolean meterCacheEnabled) {
+  AbstractMetrics(MeterRegistry registry, MetricsNaming names, LongGauges longGauges, EnumSet<Label> enabledLabels) {
     this.registry = registry;
     this.category = null;
     this.enabledLabels = enabledLabels;
     this.names = names;
-    this.meterCache = new MeterCache(meterCacheEnabled, registry, longGauges);
+    this.longGauges = longGauges;
   }
 
   AbstractMetrics(AbstractMetrics parent, MetricsDomain domain) {
@@ -57,7 +55,7 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
   AbstractMetrics(AbstractMetrics parent, String category) {
     this.registry = parent.registry;
     this.enabledLabels = parent.enabledLabels;
-    this.meterCache = parent.meterCache;
+    this.longGauges = parent.longGauges;
     this.category = category;
     this.names = parent.names.withBaseName(baseName());
   }
@@ -76,31 +74,7 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
     return category == null ? null : "vertx." + category + ".";
   }
 
-  Counter counter(String name, String description, Tags tags) {
-    return meterCache.getOrCreateCounter(name, description, tags);
-  }
-
-  LongAdder longGauge(String name, String description, Tags tags) {
-    return longGauge(name, description, tags, LongAdder::doubleValue);
-  }
-
-  LongAdder longGauge(String name, String description, Tags tags, ToDoubleFunction<LongAdder> func) {
-    return meterCache.getOrCreateLongGauge(name, description, tags, func);
-  }
-
-  DistributionSummary distributionSummary(String name, String description, Tags tags) {
-    return meterCache.getOrCreateDistributionSummary(name, description, tags);
-  }
-
-  Timer timer(String name, String description, Tags tags) {
-    return meterCache.getOrCreateTimer(name, description, tags);
-  }
-
-  <U> Tag toTag(Label label, Function<U, String> func, U u) {
-    return enabledLabels.contains(label) ? Tag.of(label.toString(), func.apply(u)) : IgnoredTag.INSTANCE;
-  }
-
-  <U, V> Tag toTag(Label label, BiFunction<U, V, String> func, U u, V v) {
-    return enabledLabels.contains(label) ? Tag.of(label.toString(), func.apply(u, v)) : IgnoredTag.INSTANCE;
+  LongGaugeBuilder longGaugeBuilder(String name, ToDoubleFunction<LongAdder> func) {
+    return longGauges.builder(name, func);
   }
 }

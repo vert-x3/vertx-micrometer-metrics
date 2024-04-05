@@ -16,10 +16,8 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.DistributionSummary;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Meter.MeterProvider;
 import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
@@ -30,7 +28,6 @@ import io.vertx.core.spi.observability.HttpResponse;
 import io.vertx.micrometer.impl.VertxHttpClientMetrics.RequestMetric;
 import io.vertx.micrometer.impl.VertxNetClientMetrics.NetClientSocketMetric;
 import io.vertx.micrometer.impl.tags.Labels;
-import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
@@ -44,21 +41,51 @@ import static io.vertx.micrometer.MetricsDomain.HTTP_CLIENT;
 class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClientMetrics<RequestMetric, LongAdder, NetClientSocketMetric, Sample> {
 
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
+  private final MeterProvider<Counter> requestCount;
+  private final MeterProvider<DistributionSummary> requestBytes;
+  private final MeterProvider<Timer> responseTime;
+  private final MeterProvider<Counter> responseCount;
+  private final MeterProvider<DistributionSummary> responseBytes;
 
   VertxHttpClientMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider, String localAddress) {
     super(parent, HTTP_CLIENT, localAddress);
     this.customTagsProvider = customTagsProvider;
+    requestCount = Counter.builder(names.getHttpRequestsCount())
+      .description("Number of requests sent")
+      .withRegistry(registry);
+    requestBytes = DistributionSummary.builder(names.getHttpRequestBytes())
+      .description("Size of requests in bytes")
+      .withRegistry(registry);
+    responseTime = Timer.builder(names.getHttpResponseTime())
+      .description("Response time")
+      .withRegistry(registry);
+    responseCount = Counter.builder(names.getHttpResponsesCount())
+      .description("Response count with codes")
+      .withRegistry(registry);
+    responseBytes = DistributionSummary.builder(names.getHttpResponseBytes())
+      .description("Size of responses in bytes")
+      .withRegistry(registry);
   }
 
   @Override
   public ClientMetrics<RequestMetric, Sample, HttpRequest, HttpResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
-    TagsWrapper endPointTags = local.and(toTag(REMOTE, Labels::address, remoteAddress));
+    Tags endPointTags = local;
+    if (enabledLabels.contains(REMOTE)) {
+      endPointTags = endPointTags.and(REMOTE.toString(), Labels.address(remoteAddress));
+    }
     return new EndpointMetrics(endPointTags);
   }
 
   @Override
   public LongAdder connected(WebSocket webSocket) {
-    LongAdder wsConnections = longGauge(names.getHttpActiveWsConnections(), "Number of websockets currently opened", local.and(toTag(REMOTE, Labels::address, webSocket.remoteAddress())).unwrap());
+    Tags tags = local;
+    if (enabledLabels.contains(REMOTE)) {
+      tags = tags.and(REMOTE.toString(), Labels.address(webSocket.remoteAddress()));
+    }
+    LongAdder wsConnections = longGaugeBuilder(names.getHttpActiveWsConnections(), LongAdder::doubleValue)
+      .description("Number of websockets currently opened")
+      .tags(tags)
+      .register(registry);
     wsConnections.increment();
     return wsConnections;
   }
@@ -70,15 +97,21 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
 
   class EndpointMetrics implements ClientMetrics<RequestMetric, Sample, HttpRequest, HttpResponse> {
 
-    final TagsWrapper endPointTags;
+    final Tags endPointTags;
 
     final Timer queueDelay;
     final LongAdder queueSize;
 
-    EndpointMetrics(TagsWrapper endPointTags) {
+    EndpointMetrics(Tags endPointTags) {
       this.endPointTags = endPointTags;
-      queueDelay = timer(names.getHttpQueueTime(), "Time spent in queue before being processed", endPointTags.unwrap());
-      queueSize = longGauge(names.getHttpQueuePending(), "Number of pending elements in queue", endPointTags.unwrap());
+      queueDelay = Timer.builder(names.getHttpQueueTime())
+        .description("Time spent in queue before being processed")
+        .tags(endPointTags)
+        .register(registry);
+      queueSize = longGaugeBuilder(names.getHttpQueuePending(), LongAdder::doubleValue)
+        .description("Number of pending elements in queue")
+        .tags(endPointTags)
+        .register(registry);
     }
 
     @Override
@@ -95,19 +128,25 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
 
     @Override
     public RequestMetric requestBegin(String uri, HttpRequest request) {
-      TagsWrapper tags = endPointTags.and(toTag(HTTP_PATH, HttpRequest::uri, request), toTag(HTTP_METHOD, r -> r.method().toString(), request));
+      Tags tags = endPointTags;
+      if (enabledLabels.contains(HTTP_PATH)) {
+        tags = tags.and(HTTP_PATH.toString(), request.uri());
+      }
+      if (enabledLabels.contains(HTTP_METHOD)) {
+        tags = tags.and(HTTP_METHOD.toString(), request.method().toString());
+      }
       if (customTagsProvider != null) {
         tags = tags.and(customTagsProvider.apply(request));
       }
       RequestMetric requestMetric = new RequestMetric(tags);
       requestMetric.requests.increment();
-      requestMetric.requestCount.increment();
+      requestCount.withTags(tags).increment();
       return requestMetric;
     }
 
     @Override
     public void requestEnd(RequestMetric requestMetric, long bytesWritten) {
-      requestMetric.requestBytes.record(bytesWritten);
+      requestBytes.withTags(requestMetric.tags).record(bytesWritten);
       if (requestMetric.requestEnded()) {
         requestMetric.requests.decrement();
       }
@@ -129,35 +168,32 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
       if (requestMetric.responseEnded()) {
         requestMetric.requests.decrement();
       }
-      requestMetric.responseCount.increment();
-      requestMetric.sample.stop(requestMetric.responseTime);
-      requestMetric.responseBytes.record(bytesRead);
+      responseCount.withTags(requestMetric.responseTags).increment();
+      requestMetric.sample.stop(responseTime.withTags(requestMetric.responseTags));
+      responseBytes.withTags(requestMetric.responseTags).record(bytesRead);
     }
 
   }
 
   class RequestMetric {
 
-    final TagsWrapper tags;
+    final Tags tags;
 
     final LongAdder requests;
-    final Counter requestCount;
-    final DistributionSummary requestBytes;
     final Sample sample;
 
+    Tags responseTags;
     boolean responseEnded;
     boolean requestEnded;
     boolean reset;
 
-    Timer responseTime;
-    Counter responseCount;
-    DistributionSummary responseBytes;
-
-    RequestMetric(TagsWrapper tags) {
+    RequestMetric(Tags tags) {
       this.tags = tags;
-      requests = longGauge(names.getHttpActiveRequests(), "Number of requests waiting for a response", tags.unwrap());
-      requestCount = counter(names.getHttpRequestsCount(), "Number of requests sent", tags.unwrap());
-      requestBytes = distributionSummary(names.getHttpRequestBytes(), "Size of requests in bytes", tags.unwrap());
+      responseTags = tags;
+      requests = longGaugeBuilder(names.getHttpActiveRequests(), LongAdder::doubleValue)
+        .description("Number of requests waiting for a response")
+        .tags(tags)
+        .register(registry);
       sample = Timer.start();
     }
 
@@ -170,11 +206,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
       return !reset && responseEnded;
     }
 
-    public void responseBegin(HttpResponse response) {
-      TagsWrapper responseTags = tags.and(toTag(HTTP_CODE, r -> String.valueOf(r.statusCode()), response));
-      responseTime = timer(names.getHttpResponseTime(), "Response time", responseTags.unwrap());
-      responseCount = counter(names.getHttpResponsesCount(), "Response count with codes", responseTags.unwrap());
-      responseBytes = distributionSummary(names.getHttpResponseBytes(), "Size of responses in bytes", responseTags.unwrap());
+    void responseBegin(HttpResponse response) {
+      if (enabledLabels.contains(HTTP_CODE)) {
+        responseTags = responseTags.and(HTTP_CODE.toString(), String.valueOf(response.statusCode()));
+      }
     }
 
     boolean responseEnded() {
