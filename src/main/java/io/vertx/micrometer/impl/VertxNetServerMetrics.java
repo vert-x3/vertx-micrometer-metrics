@@ -16,25 +16,26 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.VertxNetServerMetrics.NetServerSocketMetric;
 import io.vertx.micrometer.impl.tags.Labels;
-import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
 import static io.vertx.micrometer.MetricsDomain.NET_SERVER;
-import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
  */
 class VertxNetServerMetrics extends AbstractMetrics implements TCPMetrics<NetServerSocketMetric> {
 
-  final TagsWrapper local;
+  final Tags local;
+  private final Meter.MeterProvider<Counter> netErrorCount;
 
   VertxNetServerMetrics(AbstractMetrics parent, SocketAddress localAddress) {
     this(parent, NET_SERVER, localAddress);
@@ -42,13 +43,22 @@ class VertxNetServerMetrics extends AbstractMetrics implements TCPMetrics<NetSer
 
   VertxNetServerMetrics(AbstractMetrics parent, MetricsDomain domain, SocketAddress localAddress) {
     super(parent, domain);
-    local = of(toTag(LOCAL, Labels::address, localAddress));
+    if (enabledLabels.contains(LOCAL)) {
+      local = Tags.of(LOCAL.toString(), Labels.address(localAddress));
+    } else {
+      local = Tags.empty();
+    }
+    netErrorCount = Counter.builder(names.getNetErrorCount())
+      .description("Number of errors")
+      .withRegistry(registry);
   }
-
 
   @Override
   public NetServerSocketMetric connected(SocketAddress remoteAddress, String remoteName) {
-    TagsWrapper tags = local.and(toTag(REMOTE, Labels::address, remoteAddress, remoteName));
+    Tags tags = local;
+    if (enabledLabels.contains(REMOTE)) {
+      tags = tags.and(REMOTE.toString(), Labels.address(remoteAddress, remoteName));
+    }
     NetServerSocketMetric socketMetric = new NetServerSocketMetric(tags);
     socketMetric.connections.increment();
     return socketMetric;
@@ -71,23 +81,35 @@ class VertxNetServerMetrics extends AbstractMetrics implements TCPMetrics<NetSer
 
   @Override
   public void exceptionOccurred(NetServerSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
-    counter(names.getNetErrorCount(), "Number of errors", socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
-      .increment();
+    Tags tags = socketMetric.tags;
+    if (enabledLabels.contains(CLASS_NAME)) {
+      tags = tags.and(CLASS_NAME.toString(), t.getClass().getSimpleName());
+    }
+    netErrorCount.withTags(tags).increment();
   }
 
   class NetServerSocketMetric {
 
-    final TagsWrapper tags;
+    final Tags tags;
 
     final LongAdder connections;
     final Counter bytesReceived;
     final Counter bytesSent;
 
-    NetServerSocketMetric(TagsWrapper tags) {
+    NetServerSocketMetric(Tags tags) {
       this.tags = tags;
-      connections = longGauge(names.getNetActiveConnections(), "Number of opened connections to the server", tags.unwrap());
-      bytesReceived = counter(names.getNetBytesRead(), "Number of bytes received by the server", tags.unwrap());
-      bytesSent = counter(names.getNetBytesWritten(), "Number of bytes sent by the server", tags.unwrap());
+      connections = longGaugeBuilder(names.getNetActiveConnections(), LongAdder::doubleValue)
+        .description("Number of opened connections to the server")
+        .tags(tags)
+        .register(registry);
+      bytesReceived = Counter.builder(names.getNetBytesRead())
+        .description("Number of bytes received by the server")
+        .tags(tags)
+        .register(registry);
+      bytesSent = Counter.builder(names.getNetBytesWritten())
+        .description("Number of bytes sent by the server")
+        .tags(tags)
+        .register(registry);
     }
   }
 }

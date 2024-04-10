@@ -16,12 +16,18 @@
  */
 package io.vertx.micrometer.impl.tags;
 
+import io.micrometer.core.instrument.Tag;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.micrometer.Label;
 
 /**
  * @author Joel Takvorian
  */
 public final class Labels {
+
+  private static final Tag LOCAL = Tag.of(Label.EB_SIDE.toString(), "local");
+  private static final Tag REMOTE = Tag.of(Label.EB_SIDE.toString(), "remote");
+
   private Labels() {
     // Utility
   }
@@ -42,7 +48,7 @@ public final class Labels {
     return addrOverride.toString();
   }
 
-  public static String side(boolean local) {
-    return local ? "local" : "remote";
+  public static Tag side(boolean local) {
+    return local ? LOCAL : REMOTE;
   }
 }

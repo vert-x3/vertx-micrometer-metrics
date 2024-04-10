@@ -17,25 +17,26 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Meter.MeterProvider;
+import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.TCPMetrics;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.VertxNetClientMetrics.NetClientSocketMetric;
 import io.vertx.micrometer.impl.tags.Labels;
-import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
 import static io.vertx.micrometer.MetricsDomain.NET_CLIENT;
-import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
  */
 class VertxNetClientMetrics extends AbstractMetrics implements TCPMetrics<NetClientSocketMetric> {
 
-  final TagsWrapper local;
+  final Tags local;
+  private final MeterProvider<Counter> netErrorCount;
 
   VertxNetClientMetrics(AbstractMetrics parent, String localAddress) {
     this(parent, NET_CLIENT, localAddress);
@@ -43,12 +44,22 @@ class VertxNetClientMetrics extends AbstractMetrics implements TCPMetrics<NetCli
 
   VertxNetClientMetrics(AbstractMetrics parent, MetricsDomain domain, String localAddress) {
     super(parent, domain);
-    local = of(toTag(LOCAL, s -> s == null ? "?" : s, localAddress));
+    if (enabledLabels.contains(LOCAL)) {
+      local = Tags.of(LOCAL.toString(), localAddress == null ? "?" : localAddress);
+    } else {
+      local = Tags.empty();
+    }
+    netErrorCount = Counter.builder(names.getNetErrorCount())
+      .description("Number of errors")
+      .withRegistry(registry);
   }
 
   @Override
   public NetClientSocketMetric connected(SocketAddress remoteAddress, String remoteName) {
-    TagsWrapper tags = local.and(toTag(REMOTE, Labels::address, remoteAddress, remoteName));
+    Tags tags = local;
+    if (enabledLabels.contains(REMOTE)) {
+      tags = tags.and(REMOTE.toString(), Labels.address(remoteAddress, remoteName));
+    }
     NetClientSocketMetric socketMetric = new NetClientSocketMetric(tags);
     socketMetric.connections.increment();
     return socketMetric;
@@ -71,23 +82,35 @@ class VertxNetClientMetrics extends AbstractMetrics implements TCPMetrics<NetCli
 
   @Override
   public void exceptionOccurred(NetClientSocketMetric socketMetric, SocketAddress remoteAddress, Throwable t) {
-    counter(names.getNetErrorCount(), "Number of errors", socketMetric.tags.and(toTag(CLASS_NAME, Class::getSimpleName, t.getClass())).unwrap())
-      .increment();
+    Tags tags = socketMetric.tags;
+    if (enabledLabels.contains(CLASS_NAME)) {
+      tags = tags.and(CLASS_NAME.toString(), t.getClass().getSimpleName());
+    }
+    netErrorCount.withTags(tags).increment();
   }
 
   class NetClientSocketMetric {
 
-    final TagsWrapper tags;
+    final Tags tags;
 
     final LongAdder connections;
     final Counter bytesReceived;
     final Counter bytesSent;
 
-    NetClientSocketMetric(TagsWrapper tags) {
+    NetClientSocketMetric(Tags tags) {
       this.tags = tags;
-      connections = longGauge(names.getNetActiveConnections(), "Number of connections to the remote host currently opened", tags.unwrap());
-      bytesReceived = counter(names.getNetBytesRead(), "Number of bytes received from the remote host", tags.unwrap());
-      bytesSent = counter(names.getNetBytesWritten(), "Number of bytes sent to the remote host", tags.unwrap());
+      connections = longGaugeBuilder(names.getNetActiveConnections(), LongAdder::doubleValue)
+        .description("Number of connections to the remote host currently opened")
+        .tags(tags)
+        .register(registry);
+      bytesReceived = Counter.builder(names.getNetBytesRead())
+        .description("Number of bytes received from the remote host")
+        .tags(tags)
+        .register(registry);
+      bytesSent = Counter.builder(names.getNetBytesWritten())
+        .description("Number of bytes sent to the remote host")
+        .tags(tags)
+        .register(registry);
     }
   }
 }

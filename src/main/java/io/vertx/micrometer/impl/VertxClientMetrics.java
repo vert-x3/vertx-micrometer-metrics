@@ -17,18 +17,17 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.micrometer.impl.tags.Labels;
-import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.NAMESPACE;
 import static io.vertx.micrometer.Label.REMOTE;
-import static io.vertx.micrometer.impl.tags.TagsWrapper.of;
 
 /**
  * @author Joel Takvorian
@@ -43,12 +42,33 @@ class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample
 
   VertxClientMetrics(AbstractMetrics parent, SocketAddress remoteAddress, String type, String namespace) {
     super(parent, type);
-    TagsWrapper tags = of(toTag(REMOTE, Labels::address, remoteAddress), toTag(NAMESPACE, s -> s == null ? "" : s, namespace));
-    queueDelay = timer(names.getClientQueueTime(), "Time spent in queue before being processed", tags.unwrap());
-    queueSize = longGauge(names.getClientQueuePending(), "Number of pending elements in queue", tags.unwrap());
-    processingTime = timer(names.getClientProcessingTime(), "Processing time, from request start to response end", tags.unwrap());
-    processingPending = longGauge(names.getClientProcessingPending(), "Number of elements being processed", tags.unwrap());
-    resetCount = counter(names.getClientResetsCount(), "Total number of resets", tags.unwrap());
+    Tags tags = Tags.empty();
+    if (enabledLabels.contains(REMOTE)) {
+      tags = tags.and(REMOTE.toString(), Labels.address(remoteAddress));
+    }
+    if (enabledLabels.contains(NAMESPACE)) {
+      tags = tags.and(NAMESPACE.toString(), namespace == null ? "" : namespace);
+    }
+    queueDelay = Timer.builder(names.getClientQueueTime())
+      .description("Time spent in queue before being processed")
+      .tags(tags)
+      .register(registry);
+    queueSize = longGaugeBuilder(names.getClientQueuePending(), LongAdder::doubleValue)
+      .description("Number of pending elements in queue")
+      .tags(tags)
+      .register(registry);
+    processingTime = Timer.builder(names.getClientProcessingTime())
+      .description("Processing time, from request start to response end")
+      .tags(tags)
+      .register(registry);
+    processingPending = longGaugeBuilder(names.getClientProcessingPending(), LongAdder::doubleValue)
+      .description("Number of elements being processed")
+      .tags(tags)
+      .register(registry);
+    resetCount = Counter.builder(names.getClientResetsCount())
+      .description("Total number of resets")
+      .tags(tags)
+      .register(registry);
   }
 
   @Override
