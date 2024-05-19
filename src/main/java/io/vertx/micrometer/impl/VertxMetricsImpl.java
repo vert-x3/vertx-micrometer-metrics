@@ -63,7 +63,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   private final Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
 
   public VertxMetricsImpl(MicrometerMetricsOptions options, BackendRegistry backendRegistry, LongGauges longGauges) {
-    super(backendRegistry.getMeterRegistry(), options.getMetricsNaming(), longGauges, EnumSet.copyOf(options.getLabels()), options.isMeterCacheEnabled());
+    super(backendRegistry.getMeterRegistry(), options.getMetricsNaming(), longGauges, EnumSet.copyOf(options.getLabels()));
     this.backendRegistry = backendRegistry;
     registryName = options.getRegistryName();
     if (options.getDisabledMetricsCategories() != null) {

@@ -15,10 +15,8 @@
  */
 package io.vertx.micrometer.impl;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.DistributionSummary;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Meter.MeterProvider;
 import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.ServerWebSocket;
@@ -26,7 +24,6 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
 import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
-import io.vertx.micrometer.impl.tags.TagsWrapper;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -36,7 +33,6 @@ import java.util.function.Function;
 
 import static io.vertx.micrometer.Label.*;
 import static io.vertx.micrometer.MetricsDomain.HTTP_SERVER;
-import static java.util.function.Function.identity;
 
 /**
  * @author Joel Takvorian
@@ -44,16 +40,42 @@ import static java.util.function.Function.identity;
 class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServerMetrics<VertxHttpServerMetrics.RequestMetric, LongAdder, VertxNetServerMetrics.NetServerSocketMetric> {
 
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
+  private final MeterProvider<Counter> requestResetCount;
+  private final MeterProvider<DistributionSummary> requestBytes;
+  private final MeterProvider<Counter> httpRequestsCount;
+  private final MeterProvider<Timer> httpResponseTime;
+  private final MeterProvider<DistributionSummary> httpResponseBytes;
 
   VertxHttpServerMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider, SocketAddress localAddress) {
     super(parent, HTTP_SERVER, localAddress);
     this.customTagsProvider = customTagsProvider;
+    requestResetCount = Counter.builder(names.getHttpRequestResetsCount())
+      .description("Number of request resets")
+      .withRegistry(registry);
+    requestBytes = DistributionSummary.builder(names.getHttpRequestBytes())
+      .description("Size of requests in bytes")
+      .withRegistry(registry);
+    httpRequestsCount = Counter.builder(names.getHttpRequestsCount())
+      .description("Number of processed requests")
+      .withRegistry(registry);
+    httpResponseTime = Timer.builder(names.getHttpResponseTime())
+      .description("Request processing time")
+      .withRegistry(registry);
+    httpResponseBytes = DistributionSummary.builder(names.getHttpResponseBytes())
+      .description("Size of responses in bytes")
+      .withRegistry(registry);
   }
 
 
   @Override
   public RequestMetric requestBegin(NetServerSocketMetric socketMetric, HttpRequest request) {
-    TagsWrapper tags = socketMetric.tags.and(toTag(HTTP_PATH, HttpRequest::uri, request), toTag(HTTP_METHOD, r -> r.method().toString(), request));
+    Tags tags = socketMetric.tags;
+    if (enabledLabels.contains(HTTP_PATH)) {
+      tags = tags.and(HTTP_PATH.toString(), request.uri());
+    }
+    if (enabledLabels.contains(HTTP_METHOD)) {
+      tags = tags.and(HTTP_METHOD.toString(), request.method().toString());
+    }
     if (customTagsProvider != null) {
       tags = tags.and(customTagsProvider.apply(request));
     }
@@ -64,14 +86,14 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
 
   @Override
   public void requestReset(RequestMetric requestMetric) {
-    requestMetric.requestResetCount.increment();
+    requestResetCount.withTags(requestMetric.tags).increment();
     requestMetric.requests.decrement();
     requestMetric.requestReset();
   }
 
   @Override
   public void requestEnd(RequestMetric requestMetric, HttpRequest request, long bytesRead) {
-    requestMetric.requestBytes.record(bytesRead);
+    requestBytes.withTags(requestMetric.tags).record(bytesRead);
     if (requestMetric.requestEnded()) {
       requestMetric.requests.decrement();
     }
@@ -79,8 +101,13 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
 
   @Override
   public RequestMetric responsePushed(NetServerSocketMetric socketMetric, HttpMethod method, String uri, HttpResponse response) {
-    TagsWrapper tags = socketMetric.tags
-      .and(toTag(HTTP_PATH, identity(), uri), toTag(HTTP_METHOD, HttpMethod::toString, method));
+    Tags tags = socketMetric.tags;
+    if (enabledLabels.contains(HTTP_PATH)) {
+      tags.and(HTTP_PATH.toString(), uri);
+    }
+    if (enabledLabels.contains(HTTP_METHOD)) {
+      tags.and(HTTP_METHOD.toString(), method.toString());
+    }
     RequestMetric requestMetric = new RequestMetric(tags);
     requestMetric.requests.increment();
     return requestMetric;
@@ -88,13 +115,16 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
 
   @Override
   public void responseEnd(RequestMetric requestMetric, HttpResponse response, long bytesWritten) {
-    TagsWrapper responseTags = requestMetric.tags
-      .and(toTag(HTTP_ROUTE, RequestMetric::getRoute, requestMetric), toTag(HTTP_CODE, r -> String.valueOf(r.statusCode()), response));
-    counter(names.getHttpRequestsCount(), "Number of processed requests", responseTags.unwrap())
-      .increment();
-    requestMetric.sample.stop(timer(names.getHttpResponseTime(), "Request processing time", responseTags.unwrap()));
-    distributionSummary(names.getHttpResponseBytes(), "Size of responses in bytes", responseTags.unwrap())
-      .record(bytesWritten);
+    Tags responseTags = requestMetric.tags;
+    if (enabledLabels.contains(HTTP_ROUTE)) {
+      responseTags = responseTags.and(HTTP_ROUTE.toString(), requestMetric.getRoute());
+    }
+    if (enabledLabels.contains(HTTP_CODE)) {
+      responseTags = responseTags.and(HTTP_CODE.toString(), String.valueOf(response.statusCode()));
+    }
+    httpRequestsCount.withTags(responseTags).increment();
+    requestMetric.sample.stop(httpResponseTime.withTags(responseTags));
+    httpResponseBytes.withTags(responseTags).record(bytesWritten);
     if (requestMetric.responseEnded()) {
       requestMetric.requests.decrement();
     }
@@ -102,7 +132,10 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
 
   @Override
   public LongAdder connected(NetServerSocketMetric socketMetric, RequestMetric requestMetric, ServerWebSocket serverWebSocket) {
-    LongAdder wsConnections = longGauge(names.getHttpActiveWsConnections(), "Number of websockets currently opened", socketMetric.tags.unwrap());
+    LongAdder wsConnections = longGaugeBuilder(names.getHttpActiveWsConnections(), LongAdder::doubleValue)
+      .description("Number of websockets currently opened")
+      .tags(socketMetric.tags)
+      .register(registry);
     wsConnections.increment();
     return wsConnections;
   }
@@ -119,11 +152,9 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
 
   class RequestMetric {
 
-    final TagsWrapper tags;
+    final Tags tags;
 
     final LongAdder requests;
-    final Counter requestResetCount;
-    final DistributionSummary requestBytes;
     final Sample sample;
 
     // a string for a single route, a list of string for multiple
@@ -134,11 +165,12 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
     private boolean requestEnded;
     private boolean reset;
 
-    RequestMetric(TagsWrapper tags) {
+    RequestMetric(Tags tags) {
       this.tags = tags;
-      requests = longGauge(names.getHttpActiveRequests(), "Number of requests being processed", tags.unwrap());
-      requestResetCount = counter(names.getHttpRequestResetsCount(), "Number of request resets", tags.unwrap());
-      requestBytes = distributionSummary(names.getHttpRequestBytes(), "Size of requests in bytes", tags.unwrap());
+      requests = longGaugeBuilder(names.getHttpActiveRequests(), LongAdder::doubleValue)
+        .description("Number of requests being processed")
+        .tags(tags)
+        .register(registry);
       sample = Timer.start();
     }
 
