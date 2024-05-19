@@ -18,7 +18,6 @@ package io.vertx.micrometer;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.json.annotations.JsonGen;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 
@@ -56,7 +55,6 @@ public class VertxPrometheusOptions {
   private HttpServerOptions embeddedServerOptions;
   private String embeddedServerEndpoint;
   private boolean publishQuantiles;
-  private Handler<Throwable> embeddedServerExceptionHandler;
 
   /**
    * Default constructor
@@ -76,13 +74,11 @@ public class VertxPrometheusOptions {
   public VertxPrometheusOptions(VertxPrometheusOptions other) {
     enabled = other.enabled;
     startEmbeddedServer = other.startEmbeddedServer;
-    embeddedServerEndpoint =
-      other.embeddedServerEndpoint != null ? other.embeddedServerEndpoint : DEFAULT_EMBEDDED_SERVER_ENDPOINT;
+    embeddedServerEndpoint = other.embeddedServerEndpoint != null ? other.embeddedServerEndpoint : DEFAULT_EMBEDDED_SERVER_ENDPOINT;
     if (other.embeddedServerOptions != null) {
       embeddedServerOptions = new HttpServerOptions(other.embeddedServerOptions);
     }
     publishQuantiles = other.publishQuantiles;
-    embeddedServerExceptionHandler = other.embeddedServerExceptionHandler;
   }
 
   /**
@@ -185,24 +181,6 @@ public class VertxPrometheusOptions {
    */
   public VertxPrometheusOptions setPublishQuantiles(boolean publishQuantiles) {
     this.publishQuantiles = publishQuantiles;
-    return this;
-  }
-
-  /**
-   * @return configured Exception Handler on the embedded server
-   */
-  public Handler<Throwable> getEmbeddedServerExceptionHandler() {
-    return embeddedServerExceptionHandler;
-  }
-
-  /**
-   * Set an exception handler on the embedded server
-   *
-   * @param embeddedServerExceptionHandler - Exception Handler to set
-   * @return a reference to this, so the API can be used fluently
-   */
-  public VertxPrometheusOptions setEmbeddedServerExceptionHandler(Handler<Throwable> embeddedServerExceptionHandler) {
-    this.embeddedServerExceptionHandler = embeddedServerExceptionHandler;
     return this;
   }
 }
