@@ -17,14 +17,12 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.util.Objects;
-
-import static io.prometheus.client.exporter.common.TextFormat.*;
 import static io.vertx.core.http.HttpHeaders.*;
 
 /**
@@ -74,7 +72,7 @@ public class PrometheusScrapingHandlerImpl implements Handler<RoutingContext> {
 
   private static void scrapeAndReply(RoutingContext rc, PrometheusMeterRegistry prometheusMeterRegistry) {
     rc.response()
-      .putHeader(CONTENT_TYPE, CONTENT_TYPE_004)
+      .putHeader(CONTENT_TYPE, "text/plain; version=0.0.4; charset=utf-8")
       .end(prometheusMeterRegistry.scrape());
   }
 }

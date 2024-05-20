@@ -16,7 +16,7 @@
 
 package io.vertx.micrometer.backend;
 
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.unit.Async;
@@ -119,8 +119,8 @@ public class PrometheusMetricsITest extends MicrometerMetricsTestBase {
     Async async = context.async();
     PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
       context.verify(v -> assertThat(body.toString())
-        .contains("vertx_http_client_active_connections{local=\"?\",remote=\"localhost:9090\",} 1.0")
-        .doesNotContain("vertx_http_server_connections{local=\"0.0.0.0:9090\",remote=\"_\",} 1.0"));
+        .contains("vertx_http_client_active_connections{local=\"?\",remote=\"localhost:9090\"} 1.0")
+        .doesNotContain("vertx_http_server_connections{local=\"0.0.0.0:9090\",remote=\"_\"} 1.0"));
       async.complete();
     });
     async.awaitSuccess(10000);
@@ -148,11 +148,11 @@ public class PrometheusMetricsITest extends MicrometerMetricsTestBase {
     Async async = context.async();
     PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
       context.verify(v -> assertThat(body.toString())
-        .contains("vertx_eventbus_published_total{address=\"test-eb\",side=\"local\",} 1.0",
-          "vertx_eventbus_received_total{address=\"test-eb\",side=\"local\",} 1.0",
-          "vertx_eventbus_handlers{address=\"test-eb\",} 1.0",
-          "vertx_eventbus_delivered_total{address=\"test-eb\",side=\"local\",} 1.0",
-          "vertx_eventbus_processed_total{address=\"test-eb\",side=\"local\",} 1.0"));
+        .contains("vertx_eventbus_published_total{address=\"test-eb\",side=\"local\"} 1.0",
+          "vertx_eventbus_received_total{address=\"test-eb\",side=\"local\"} 1.0",
+          "vertx_eventbus_handlers{address=\"test-eb\"} 1.0",
+          "vertx_eventbus_delivered_total{address=\"test-eb\",side=\"local\"} 1.0",
+          "vertx_eventbus_processed_total{address=\"test-eb\",side=\"local\"} 1.0"));
       async.complete();
     });
     async.awaitSuccess(15000);
@@ -211,7 +211,7 @@ public class PrometheusMetricsITest extends MicrometerMetricsTestBase {
         // Second connection, this time actually reading the metrics content
         PrometheusTestHelper.tryConnect(vertx, context, 9090, "localhost", "/metrics", body -> {
           context.verify(v2 -> assertThat(body.toString())
-            .contains("vertx_http_client_active_requests{method=\"GET\",path=\"/metrics\",}")
+            .contains("vertx_http_client_active_requests{method=\"GET\",path=\"/metrics\"")
             .doesNotContain("vertx_http_client_response_time_seconds_bucket"));
           async.complete();
         }));
