@@ -16,8 +16,8 @@
 
 package io.vertx.micrometer.impl;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
@@ -69,7 +69,7 @@ public class PrometheusRequestHandlerImpl implements Handler<HttpServerRequest> 
   public void handle(HttpServerRequest request) {
     if (metricsEndpoint.equals(request.path())) {
       request.response()
-        .putHeader(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_004)
+        .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain; version=0.0.4; charset=utf-8")
         .end(registry.scrape());
     } else {
       request.response().setStatusCode(404).end();

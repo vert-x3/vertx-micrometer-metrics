@@ -89,7 +89,7 @@ public class ExternalConfigurationTest {
       "jvm_classes_loaded_classes", // from ClassLoaderMetrics
       "jvm_compilation_time_ms_total", // from JvmCompilationMetrics
       "jvm_gc_memory_promoted_bytes_total", // from JvmGcMetrics
-      "jvm_gc_overhead_percent", // from JvmHeapPressureMetrics
+      "jvm_gc_overhead", // from JvmHeapPressureMetrics
       "jvm_info", // from JvmInfoMetrics
       "jvm_buffer_count_buffers", // from JvmMemoryMetrics
       "jvm_threads_live_threads", // from JvmThreadMetrics
