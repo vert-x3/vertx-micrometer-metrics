@@ -331,24 +331,6 @@ public class MicrometerMetricsExamples {
         .setEnabled(true)));
   }
 
-  public void setupPrometheusWithDefaults() {
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setStartEmbeddedServer(false))
-        .setEnabled(true)
-    ));
-
-    Router router = Router.router(vertx);
-
-    router.route("/metrics").handler(ctx -> PrometheusRequestHandler.create().handle(ctx.request()));
-
-    vertx.createHttpServer()
-      .requestHandler(router)
-      .exceptionHandler(ex -> LOGGER.error("Customize Error in Prometheus registry server" + ex.getMessage()))
-      .listen(8080);
-  }
-
   public void setupPrometheusWithCustomRegistryAndEndpoint() {
     PrometheusMeterRegistry customRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     customRegistry.config().namingConvention(NamingConvention.snakeCase);
@@ -364,6 +346,8 @@ public class MicrometerMetricsExamples {
     Router router = Router.router(vertx);
 
     String customEndpoint = "/custom-metrics";
+//    The custom registry allows you to specify naming conventions and other configurations to suit your application's needs,
+//    while the custom endpoint ensures your metrics are accessible at a specific URL path.
     router.route(customEndpoint)
       .handler(ctx -> PrometheusRequestHandler.create(customRegistry, customEndpoint).handle(ctx.request()));
 
@@ -372,28 +356,4 @@ public class MicrometerMetricsExamples {
       .exceptionHandler(ex -> LOGGER.error("Customize Error in Prometheus registry server" + ex.getMessage()))
       .listen(8080);
   }
-
-  public void setupPrometheusWithCustomRegistry() {
-    PrometheusMeterRegistry customRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-    customRegistry.config().namingConvention(NamingConvention.camelCase);
-
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setStartEmbeddedServer(false))
-        .setMicrometerRegistry(customRegistry)
-        .setEnabled(true)
-    ));
-
-    Router router = Router.router(vertx);
-
-    router.route("/metrics").handler(ctx -> PrometheusRequestHandler.create(customRegistry)
-      .handle(ctx.request()));
-
-    vertx.createHttpServer()
-      .requestHandler(router)
-      .exceptionHandler(ex -> LOGGER.error("Customize Error in Prometheus registry server" + ex.getMessage()))
-      .listen(8080);
-  }
-
 }

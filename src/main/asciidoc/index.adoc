@@ -158,6 +158,15 @@ If the embedded server endpoint is not specified, it defaults to _/metrics_.
 {@link examples.MicrometerMetricsExamples#setupPrometheusBoundRouter()}
 ----
 
+=== Using PrometheusRequestHandler with custom registry and custom endpoint
+
+You can customize Prometheus request handling by using the `PrometheusRequestHandler`. This handler provides flexibility in scraping and serving Prometheus metrics.
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#setupPrometheusWithCustomRegistryAndEndpoint()}
+----
+
 == JMX
 
 === Getting started
