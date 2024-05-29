@@ -15,15 +15,10 @@
  */
 package examples;
 
-import io.micrometer.core.instrument.Clock;
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.*;
 import io.micrometer.core.instrument.binder.system.DiskSpaceMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.core.instrument.config.NamingConvention;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.graphite.GraphiteMeterRegistry;
 import io.micrometer.jmx.JmxMeterRegistry;
@@ -39,18 +34,9 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.Match;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.MetricsService;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.PrometheusRequestHandler;
-import io.vertx.micrometer.PrometheusScrapingHandler;
-import io.vertx.micrometer.VertxInfluxDbOptions;
-import io.vertx.micrometer.VertxJmxMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -130,6 +116,12 @@ public class MicrometerMetricsExamples {
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(8080))
           .setEmbeddedServerEndpoint("/metrics/vertx"))
         .setEnabled(true)));
+  }
+
+  public void setupPrometheusRequestHandler(Vertx vertx, PrometheusMeterRegistry prometheusMeterRegistry) {
+    vertx.createHttpServer()
+      .requestHandler(PrometheusRequestHandler.create(prometheusMeterRegistry, "/metrics/prometheus"))
+      .listen(8888);
   }
 
   public void setupPrometheusBoundRouter() {
@@ -329,31 +321,5 @@ public class MicrometerMetricsExamples {
           return Collections.singletonList(Tag.of("user", user));
         })
         .setEnabled(true)));
-  }
-
-  public void setupPrometheusWithCustomRegistryAndEndpoint() {
-    PrometheusMeterRegistry customRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-    customRegistry.config().namingConvention(NamingConvention.snakeCase);
-
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setStartEmbeddedServer(false))
-        .setMicrometerRegistry(customRegistry)
-        .setEnabled(true)
-    ));
-
-    Router router = Router.router(vertx);
-
-    String customEndpoint = "/custom-metrics";
-//    The custom registry allows you to specify naming conventions and other configurations to suit your application's needs,
-//    while the custom endpoint ensures your metrics are accessible at a specific URL path.
-    router.route(customEndpoint)
-      .handler(ctx -> PrometheusRequestHandler.create(customRegistry, customEndpoint).handle(ctx.request()));
-
-    vertx.createHttpServer()
-      .requestHandler(router)
-      .exceptionHandler(ex -> LOGGER.error("Customize Error in Prometheus registry server" + ex.getMessage()))
-      .listen(8080);
   }
 }
