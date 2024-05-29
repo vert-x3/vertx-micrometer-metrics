@@ -23,11 +23,10 @@ import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.micrometer.PrometheusRequestHandler;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
 /**
@@ -76,19 +75,9 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
         serverOptions = new HttpServerOptions();
       }
       vertx.createHttpServer(serverOptions)
-        .requestHandler(this::handleRequest)
+        .requestHandler(PrometheusRequestHandler.create(registry, options.getEmbeddedServerEndpoint()))
         .exceptionHandler(t -> LOGGER.error("Error in Prometheus registry embedded server", t))
         .listen(serverOptions.getPort(), serverOptions.getHost());
-    }
-  }
-
-  private void handleRequest(HttpServerRequest request) {
-    if (options.getEmbeddedServerEndpoint().equals(request.path())) {
-      request.response()
-        .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain; version=0.0.4; charset=utf-8")
-        .end(registry.scrape());
-    } else {
-      request.response().setStatusCode(404).end();
     }
   }
 

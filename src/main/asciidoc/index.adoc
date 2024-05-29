@@ -151,6 +151,15 @@ Vert.x does not enable SPI implementations by default. You must enable metric co
 
 If the embedded server endpoint is not specified, it defaults to _/metrics_.
 
+==== Using a custom HTTP server
+
+The {@link io.vertx.micrometer.PrometheusRequestHandler} provides flexibility in scraping and serving Prometheus metrics.
+
+[source,$lang]
+----
+{@link examples.MicrometerMetricsExamples#setupPrometheusRequestHandler}
+----
+
 ==== Binding metrics to an existing Vert.x Web router
 
 [source,$lang]

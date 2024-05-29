@@ -29,6 +29,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
@@ -47,6 +49,8 @@ import java.util.regex.Pattern;
 @SuppressWarnings("unused")
 @Source
 public class MicrometerMetricsExamples {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MicrometerMetricsExamples.class);
+
   Vertx vertx;
 
   public void setupMinimalInfluxDB() {
@@ -112,6 +116,12 @@ public class MicrometerMetricsExamples {
           .setEmbeddedServerOptions(new HttpServerOptions().setPort(8080))
           .setEmbeddedServerEndpoint("/metrics/vertx"))
         .setEnabled(true)));
+  }
+
+  public void setupPrometheusRequestHandler(Vertx vertx, PrometheusMeterRegistry prometheusMeterRegistry) {
+    vertx.createHttpServer()
+      .requestHandler(PrometheusRequestHandler.create(prometheusMeterRegistry, "/metrics/prometheus"))
+      .listen(8888);
   }
 
   public void setupPrometheusBoundRouter() {
@@ -261,15 +271,15 @@ public class MicrometerMetricsExamples {
   public void enableLimitedQuantiles() {
     PrometheusMeterRegistry registry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
     registry.config().meterFilter(
-        new MeterFilter() {
-          @Override
-          public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
-            return DistributionStatisticConfig.builder()
-                .percentiles(0.95, 0.99)
-                .build()
-                .merge(config);
-          }
-        });
+      new MeterFilter() {
+        @Override
+        public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+          return DistributionStatisticConfig.builder()
+            .percentiles(0.95, 0.99)
+            .build()
+            .merge(config);
+        }
+      });
   }
 
   public void useExistingRegistry() {
