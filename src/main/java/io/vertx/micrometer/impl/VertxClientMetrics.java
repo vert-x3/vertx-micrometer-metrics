@@ -32,10 +32,8 @@ import static io.vertx.micrometer.Label.REMOTE;
 /**
  * @author Joel Takvorian
  */
-class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample, Sample, Object, Object> {
+class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample, Object, Object> {
 
-  final Timer queueDelay;
-  final LongAdder queueSize;
   final Timer processingTime;
   final LongAdder processingPending;
   final Counter resetCount;
@@ -49,14 +47,6 @@ class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample
     if (enabledLabels.contains(NAMESPACE)) {
       tags = tags.and(NAMESPACE.toString(), namespace == null ? "" : namespace);
     }
-    queueDelay = Timer.builder(names.getClientQueueTime())
-      .description("Time spent in queue before being processed")
-      .tags(tags)
-      .register(registry);
-    queueSize = longGaugeBuilder(names.getClientQueuePending(), LongAdder::doubleValue)
-      .description("Number of pending elements in queue")
-      .tags(tags)
-      .register(registry);
     processingTime = Timer.builder(names.getClientProcessingTime())
       .description("Processing time, from request start to response end")
       .tags(tags)
@@ -69,18 +59,6 @@ class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample
       .description("Total number of resets")
       .tags(tags)
       .register(registry);
-  }
-
-  @Override
-  public Sample enqueueRequest() {
-    queueSize.increment();
-    return Timer.start();
-  }
-
-  @Override
-  public void dequeueRequest(Sample taskMetric) {
-    queueSize.decrement();
-    taskMetric.stop(queueDelay);
   }
 
   @Override

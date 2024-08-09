@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,9 +139,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length);
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.client."));
-    assertThat(datapoints).hasSize(17).contains(
-        dp("vertx.http.client.queue.pending[local=?,remote=127.0.0.1:9195]$VALUE", 0),
-        dp("vertx.http.client.queue.time[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+    assertThat(datapoints).hasSize(13).contains(
         dp("vertx.http.client.bytes.read[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
         dp("vertx.http.client.bytes.written[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
         dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
@@ -156,6 +155,12 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
       "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$MAX",
       "vertx.http.client.active.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$VALUE",
       "vertx.http.client.active.connections[local=?,remote=127.0.0.1:9195]$VALUE");
+
+    datapoints = listDatapoints(dp -> dp.getId().getName().startsWith("vertx.pool.queue.") && Objects.equals(dp.getId().getTag("pool_type"), "http"));
+    assertThat(datapoints).hasSize(4).contains(
+      dp("vertx.pool.queue.pending[pool_name=127.0.0.1:9195,pool_type=http]$VALUE", 0),
+      dp("vertx.pool.queue.time[pool_name=127.0.0.1:9195,pool_type=http]$COUNT", concurrentClients * HTTP_SENT_COUNT)
+    );
   }
 
   @Test

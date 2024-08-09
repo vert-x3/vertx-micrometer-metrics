@@ -43,34 +43,13 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
   }
 
   @Test
-  public void shouldReportQueueClientMetrics(TestContext context) {
-    vertx = vertx(context);
-
-    FakeClient client = new FakeClient(vertx, "somewhere", "my namespace");
-
-    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.fake"));
-    assertThat(datapoints).size().isEqualTo(9);
-
-    client.enqueue(10);
-    datapoints = listDatapoints(startsWith("vertx.fake"));
-    assertThat(datapoints).contains(
-      dp("vertx.fake.queue.pending[client_namespace=my namespace,remote=somewhere]$VALUE", 10));
-
-    client.dequeue(8);
-    datapoints = listDatapoints(startsWith("vertx.fake"));
-    assertThat(datapoints).contains(
-      dp("vertx.fake.queue.pending[client_namespace=my namespace,remote=somewhere]$VALUE", 2),
-      dp("vertx.fake.queue.time[client_namespace=my namespace,remote=somewhere]$COUNT", 8));
-  }
-
-  @Test
   public void shouldReportProcessedClientMetrics(TestContext context) {
     vertx = vertx(context);
 
     FakeClient client = new FakeClient(vertx, "somewhere", "my namespace");
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.fake"));
-    assertThat(datapoints).size().isEqualTo(9);
+    assertThat(datapoints).size().isEqualTo(5);
 
     client.process(6);
     datapoints = listDatapoints(startsWith("vertx.fake"));
@@ -98,8 +77,6 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
     vertx = vertx(context);
 
     FakeClient client = new FakeClient(vertx, "somewhere", "my namespace");
-    client.enqueue(4);
-    client.dequeue(1);
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.fake"));
     assertThat(datapoints).isEmpty();
   }
@@ -114,20 +91,6 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
       this.vertx = vertx;
       metrics = ((VertxInternal)vertx).metricsSPI().createClientMetrics(
         SocketAddress.domainSocketAddress(where), "fake", namespace);
-    }
-
-    void enqueue(int quantity) {
-      for (int i = 0; i < quantity; i++) {
-        Object o = metrics.enqueueRequest();
-        queue.push(o);
-      }
-    }
-
-    void dequeue(int quantity) {
-      for (int i = 0; i < quantity; i++) {
-        Object o = queue.pop();
-        metrics.dequeueRequest(o);
-      }
     }
 
     void process(int quantity) {

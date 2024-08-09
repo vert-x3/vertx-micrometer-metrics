@@ -38,7 +38,7 @@ import static io.vertx.micrometer.MetricsDomain.HTTP_CLIENT;
 /**
  * @author Joel Takvorian
  */
-class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClientMetrics<RequestMetric, LongAdder, NetClientSocketMetric, Sample> {
+class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClientMetrics<RequestMetric, LongAdder, NetClientSocketMetric> {
 
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
   private final MeterProvider<Counter> requestCount;
@@ -68,7 +68,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
   }
 
   @Override
-  public ClientMetrics<RequestMetric, Sample, HttpRequest, HttpResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
+  public ClientMetrics<RequestMetric, HttpRequest, HttpResponse> createEndpointMetrics(SocketAddress remoteAddress, int maxPoolSize) {
     Tags endPointTags = local;
     if (enabledLabels.contains(REMOTE)) {
       endPointTags = endPointTags.and(REMOTE.toString(), Labels.address(remoteAddress));
@@ -95,35 +95,12 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
     wsConnections.decrement();
   }
 
-  class EndpointMetrics implements ClientMetrics<RequestMetric, Sample, HttpRequest, HttpResponse> {
+  class EndpointMetrics implements ClientMetrics<RequestMetric, HttpRequest, HttpResponse> {
 
     final Tags endPointTags;
 
-    final Timer queueDelay;
-    final LongAdder queueSize;
-
     EndpointMetrics(Tags endPointTags) {
       this.endPointTags = endPointTags;
-      queueDelay = Timer.builder(names.getHttpQueueTime())
-        .description("Time spent in queue before being processed")
-        .tags(endPointTags)
-        .register(registry);
-      queueSize = longGaugeBuilder(names.getHttpQueuePending(), LongAdder::doubleValue)
-        .description("Number of pending elements in queue")
-        .tags(endPointTags)
-        .register(registry);
-    }
-
-    @Override
-    public Sample enqueueRequest() {
-      queueSize.increment();
-      return Timer.start();
-    }
-
-    @Override
-    public void dequeueRequest(Sample taskMetric) {
-      queueSize.decrement();
-      taskMetric.stop(queueDelay);
     }
 
     @Override
