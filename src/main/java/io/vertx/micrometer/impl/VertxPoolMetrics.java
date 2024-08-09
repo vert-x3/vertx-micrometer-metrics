@@ -31,7 +31,7 @@ import static io.vertx.micrometer.MetricsDomain.NAMED_POOLS;
 /**
  * @author Joel Takvorian
  */
-class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample> {
+class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample, Sample> {
 
   final Timer queueDelay;
   final LongAdder queueSize;
@@ -43,10 +43,10 @@ class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample> {
   VertxPoolMetrics(AbstractMetrics parent, String poolType, String poolName, int maxPoolSize) {
     super(parent, NAMED_POOLS);
     Tags tags = Tags.empty();
-    if (enabledLabels.contains(POOL_TYPE)) {
+    if (enabledLabels.contains(POOL_TYPE) || "http".equals(poolType)) {
       tags = tags.and(POOL_TYPE.toString(), poolType);
     }
-    if (enabledLabels.contains(POOL_NAME)) {
+    if (enabledLabels.contains(POOL_NAME) || "http".equals(poolType)) {
       tags = tags.and(POOL_NAME.toString(), poolName);
     }
     queueDelay = Timer.builder(names.getPoolQueueTime())
@@ -76,28 +76,26 @@ class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample> {
   }
 
   @Override
-  public Sample submitted() {
+  public Sample enqueue() {
     queueSize.increment();
     return Timer.start();
   }
 
   @Override
-  public void rejected(Sample submitted) {
+  public void dequeue(Sample submitted) {
     queueSize.decrement();
     submitted.stop(queueDelay);
   }
 
   @Override
-  public Sample begin(Sample submitted) {
-    queueSize.decrement();
-    submitted.stop(queueDelay);
+  public Sample begin() {
     inUse.increment();
     usageRatio.increment();
     return Timer.start();
   }
 
   @Override
-  public void end(Sample timer, boolean succeeded) {
+  public void end(Sample timer) {
     inUse.decrement();
     usageRatio.decrement();
     timer.stop(usage);

@@ -90,8 +90,6 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
       "vertx.http.client.active.requests",
       "vertx.http.client.bytes.read",
       "vertx.http.client.bytes.written",
-      "vertx.http.client.queue.pending",
-      "vertx.http.client.queue.time",
       "vertx.http.client.request.bytes",
       "vertx.http.client.requests",
       "vertx.http.client.response.bytes",
@@ -115,13 +113,13 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("counter"))
-      .hasSize(12)
+      .hasSize(13)
       .flatExtracting(JsonObject::fieldNames)
       .contains("count");
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("timer"))
-      .hasSize(9)
+      .hasSize(10)
       .flatExtracting(JsonObject::fieldNames)
       .contains("totalTimeMs", "meanMs", "maxMs");
   }
@@ -140,8 +138,6 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
       "vertx.http.client.bytesReceived",
       "vertx.http.client.bytesSent",
       "vertx.http.client.connections",
-      "vertx.http.client.queue.delay",
-      "vertx.http.client.queue.size",
       "vertx.http.client.request.bytes",
       "vertx.http.client.requestCount",
       "vertx.http.client.requests",

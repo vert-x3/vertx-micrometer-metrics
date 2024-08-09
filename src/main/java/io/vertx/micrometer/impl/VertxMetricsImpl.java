@@ -44,7 +44,6 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
-import static io.vertx.core.metrics.impl.DummyVertxMetrics.*;
 import static io.vertx.micrometer.MetricsDomain.*;
 
 /**
@@ -118,7 +117,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   @Override
   public EventBusMetrics<?> createEventBusMetrics() {
     if (disabledCategories.contains(EVENT_BUS.toCategory())) {
-      return DummyEventBusMetrics.INSTANCE;
+      return null;
     }
     return new VertxEventBusMetrics(this);
   }
@@ -126,15 +125,15 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   @Override
   public HttpServerMetrics<?, ?, ?> createHttpServerMetrics(HttpServerOptions httpClientOptions, SocketAddress socketAddress) {
     if (disabledCategories.contains(HTTP_SERVER.toCategory())) {
-      return DummyHttpServerMetrics.INSTANCE;
+      return null;
     }
     return new VertxHttpServerMetrics(this, serverRequestTagsProvider, socketAddress);
   }
 
   @Override
-  public HttpClientMetrics<?, ?, ?, ?> createHttpClientMetrics(HttpClientOptions httpClientOptions) {
+  public HttpClientMetrics<?, ?, ?> createHttpClientMetrics(HttpClientOptions httpClientOptions) {
     if (disabledCategories.contains(HTTP_CLIENT.toCategory())) {
-      return DummyHttpClientMetrics.INSTANCE;
+      return null;
     }
     return new VertxHttpClientMetrics(this, clientRequestTagsProvider, httpClientOptions.getLocalAddress());
   }
@@ -142,7 +141,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   @Override
   public TCPMetrics<?> createNetServerMetrics(NetServerOptions netServerOptions, SocketAddress socketAddress) {
     if (disabledCategories.contains(NET_SERVER.toCategory())) {
-      return DummyTCPMetrics.INSTANCE;
+      return null;
     }
     return new VertxNetServerMetrics(this, socketAddress);
   }
@@ -150,7 +149,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   @Override
   public TCPMetrics<?> createNetClientMetrics(NetClientOptions netClientOptions) {
     if (disabledCategories.contains(NET_CLIENT.toCategory())) {
-      return DummyTCPMetrics.INSTANCE;
+      return null;
     }
     return new VertxNetClientMetrics(this, netClientOptions.getLocalAddress());
   }
@@ -158,23 +157,23 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   @Override
   public DatagramSocketMetrics createDatagramSocketMetrics(DatagramSocketOptions options) {
     if (disabledCategories.contains(DATAGRAM_SOCKET.toCategory())) {
-      return DummyDatagramMetrics.INSTANCE;
+      return null;
     }
     return new VertxDatagramSocketMetrics(this);
   }
 
   @Override
-  public PoolMetrics<?> createPoolMetrics(String poolType, String poolName, int maxPoolSize) {
+  public PoolMetrics<?, ?> createPoolMetrics(String poolType, String poolName, int maxPoolSize) {
     if (disabledCategories.contains(NAMED_POOLS.toCategory())) {
-      return DummyWorkerPoolMetrics.INSTANCE;
+      return null;
     }
     return new VertxPoolMetrics(this, poolType, poolName, maxPoolSize);
   }
 
   @Override
-  public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
+  public ClientMetrics<?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
     if (disabledCategories.contains(type)) {
-      return DummyClientMetrics.INSTANCE;
+      return null;
     }
     return new VertxClientMetrics(this, remoteAddress, type, namespace);
   }
