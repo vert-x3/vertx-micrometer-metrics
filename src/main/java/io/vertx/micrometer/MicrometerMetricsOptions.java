@@ -75,7 +75,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private String registryName;
   private Set<Label> labels;
   private List<Match> labelMatches;
-  private MeterRegistry micrometerRegistry;
   private VertxInfluxDbOptions influxDbOptions;
   private VertxPrometheusOptions prometheusOptions;
   private VertxJmxMetricsOptions jmxMetricsOptions;
@@ -111,7 +110,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     registryName = other.registryName;
     labels = other.labels != null ? EnumSet.copyOf(other.labels) : EnumSet.noneOf(Label.class);
     labelMatches = new ArrayList<>(other.labelMatches);
-    micrometerRegistry = other.micrometerRegistry;
     if (other.influxDbOptions != null) {
       influxDbOptions = new VertxInfluxDbOptions(other.influxDbOptions);
     }
@@ -313,38 +311,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   public MicrometerMetricsOptions addLabelMatch(Match match) {
     labelMatches.add(match);
-    return this;
-  }
-
-  /**
-   * Get the Micrometer MeterRegistry to be used by Vert.x, that has been previously set programmatically
-   *
-   * @return the micrometer registry.
-   */
-  public MeterRegistry getMicrometerRegistry() {
-    return micrometerRegistry;
-  }
-
-  /**
-   * Programmatically set the Micrometer MeterRegistry to be used by Vert.x.
-   *
-   * This is useful in several scenarios, such as:
-   * <ul>
-   *   <li>if there is already a MeterRegistry used in the application
-   * that should be used by Vert.x as well.</li>
-   *   <li>to define some backend configuration that is not covered in this module
-   * (example: reporting to non-covered backends such as New Relic)</li>
-   *   <li>to use Micrometer's CompositeRegistry</li>
-   * </ul>
-   *
-   * This setter is mutually exclusive with setInfluxDbOptions/setPrometheusOptions/setJmxMetricsOptions
-   * and takes precedence over them.
-   *
-   * @param micrometerRegistry the registry to use
-   * @return a reference to this, so the API can be used fluently
-   */
-  public MicrometerMetricsOptions setMicrometerRegistry(MeterRegistry micrometerRegistry) {
-    this.micrometerRegistry = micrometerRegistry;
     return this;
   }
 

@@ -254,10 +254,12 @@ public class MicrometerMetricsExamples {
     myRegistry.add(new JmxMeterRegistry(s -> null, Clock.SYSTEM));
     myRegistry.add(new GraphiteMeterRegistry(s -> null, Clock.SYSTEM));
 
-    Vertx vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setMicrometerRegistry(myRegistry)
-        .setEnabled(true)));
+    Vertx vertx = Vertx.builder()
+      .with(new VertxOptions()
+        .setMetricsOptions(new MicrometerMetricsOptions()
+          .setEnabled(true)))
+      .withMetrics(new MicrometerMetricsFactory(myRegistry))
+      .build();
   }
 
   public void enableQuantiles() {
@@ -292,12 +294,14 @@ public class MicrometerMetricsExamples {
 
     // It's reused in MicrometerMetricsOptions.
     // Prometheus options configured here, such as "setPublishQuantiles(true)", will affect the whole registry.
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setPublishQuantiles(true))
-        .setMicrometerRegistry(registry)
-        .setEnabled(true)));
+    Vertx.builder()
+      .with(new VertxOptions().setMetricsOptions(
+        new MicrometerMetricsOptions()
+          .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+            .setPublishQuantiles(true))
+          .setEnabled(true)))
+      .withMetrics(new MicrometerMetricsFactory(registry))
+      .build();
   }
 
   public void useV3CompatNames() {

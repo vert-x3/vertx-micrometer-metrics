@@ -21,6 +21,7 @@ package io.vertx.micrometer;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -41,6 +42,7 @@ public class MicrometerMetricsTestBase {
 
   protected String registryName;
   protected MicrometerMetricsOptions metricsOptions;
+  protected MeterRegistry meterRegistry;
   protected Vertx vertx;
 
   @Before
@@ -53,6 +55,10 @@ public class MicrometerMetricsTestBase {
     metricsOptions = metricOptions();
   }
 
+  protected MeterRegistry meterRegistry() {
+    return meterRegistry;
+  }
+
   protected MicrometerMetricsOptions metricOptions() {
     return new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
@@ -61,7 +67,16 @@ public class MicrometerMetricsTestBase {
   }
 
   protected Vertx vertx(TestContext context) {
-    return Vertx.vertx(new VertxOptions().setMetricsOptions(metricsOptions))
+    MeterRegistry meterRegistry = meterRegistry();
+    VertxBuilder builder = Vertx
+      .builder()
+      .with(new VertxOptions()
+        .setMetricsOptions(metricsOptions));
+    if (meterRegistry != null) {
+      builder.withMetrics(new MicrometerMetricsFactory(meterRegistry));
+    }
+    return builder
+      .build()
       .exceptionHandler(context.exceptionHandler());
   }
 

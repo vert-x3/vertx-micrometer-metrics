@@ -194,9 +194,9 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
 
   @Test
   public void shouldGetJvmMetricsInSnapshot(TestContext ctx) {
+    meterRegistry = new SimpleMeterRegistry();
     metricsOptions = new MicrometerMetricsOptions()
       .setJvmMetricsEnabled(true)
-      .setMicrometerRegistry(new SimpleMeterRegistry())
       .setRegistryName(registryName)
       .setEnabled(true);
 
