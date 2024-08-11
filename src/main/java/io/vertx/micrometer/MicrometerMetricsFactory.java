@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.vertx.micrometer.impl;
+package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -27,20 +27,49 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.VertxMetricsFactory;
 import io.vertx.core.spi.metrics.VertxMetrics;
-import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
+import io.vertx.micrometer.impl.VertxMetricsImpl;
 
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * The micrometer metrics registry.
+ *
  * @author Joel Takvorian
  */
-public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
+public class MicrometerMetricsFactory implements VertxMetricsFactory {
 
   private static final Map<MeterRegistry, ConcurrentHashMap<Meter.Id, Object>> tables = new WeakHashMap<>(1);
+
+  private final MeterRegistry micrometerRegistry;
+
+  public MicrometerMetricsFactory() {
+    this(null);
+  }
+
+  /**
+   * Build a factory passing the Micrometer MeterRegistry to be used by Vert.x.
+   *
+   * This is useful in several scenarios, such as:
+   * <ul>
+   *   <li>if there is already a MeterRegistry used in the application
+   * that should be used by Vert.x as well.</li>
+   *   <li>to define some backend configuration that is not covered in this module
+   * (example: reporting to non-covered backends such as New Relic)</li>
+   *   <li>to use Micrometer's CompositeRegistry</li>
+   * </ul>
+   *
+   * This setter is mutually exclusive with setInfluxDbOptions/setPrometheusOptions/setJmxMetricsOptions
+   * and takes precedence over them.
+   *
+   * @param micrometerRegistry the registry to use
+   */
+  public MicrometerMetricsFactory(MeterRegistry micrometerRegistry) {
+    this.micrometerRegistry = micrometerRegistry;
+  }
 
   @Override
   public VertxMetrics metrics(VertxOptions vertxOptions) {
@@ -51,10 +80,14 @@ public class VertxMetricsFactoryImpl implements VertxMetricsFactory {
     } else {
       options = new MicrometerMetricsOptions(metricsOptions.toJson());
     }
-    BackendRegistry backendRegistry = BackendRegistries.setupBackend(options);
+    MeterRegistry meterRegistry = this.micrometerRegistry;
+    if (meterRegistry == null) {
+      meterRegistry = options.getMicrometerRegistry();
+    }
+    BackendRegistry backendRegistry = BackendRegistries.setupBackend(options, meterRegistry);
     ConcurrentHashMap<Meter.Id, Object> gaugesTable;
     synchronized (tables) {
-      gaugesTable = tables.computeIfAbsent(backendRegistry.getMeterRegistry(), meterRegistry -> new ConcurrentHashMap<>());
+      gaugesTable = tables.computeIfAbsent(backendRegistry.getMeterRegistry(), mr -> new ConcurrentHashMap<>());
     }
     VertxMetricsImpl metrics = new VertxMetricsImpl(options, backendRegistry, gaugesTable);
     metrics.init();

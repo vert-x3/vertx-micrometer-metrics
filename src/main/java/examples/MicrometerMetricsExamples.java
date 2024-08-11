@@ -40,16 +40,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.web.Router;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.Match;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.MetricsService;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.PrometheusScrapingHandler;
-import io.vertx.micrometer.VertxInfluxDbOptions;
-import io.vertx.micrometer.VertxJmxMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.util.Collections;
@@ -256,10 +247,12 @@ public class MicrometerMetricsExamples {
     myRegistry.add(new JmxMeterRegistry(s -> null, Clock.SYSTEM));
     myRegistry.add(new GraphiteMeterRegistry(s -> null, Clock.SYSTEM));
 
-    Vertx vertx = Vertx.vertx(new VertxOptions()
-      .setMetricsOptions(new MicrometerMetricsOptions()
-        .setMicrometerRegistry(myRegistry)
-        .setEnabled(true)));
+    Vertx vertx = Vertx.builder()
+      .with(new VertxOptions()
+        .setMetricsOptions(new MicrometerMetricsOptions()
+          .setEnabled(true)))
+      .withMetrics(new MicrometerMetricsFactory(myRegistry))
+      .build();
   }
 
   public void enableQuantiles() {
@@ -294,12 +287,14 @@ public class MicrometerMetricsExamples {
 
     // It's reused in MicrometerMetricsOptions.
     // Prometheus options configured here, such as "setPublishQuantiles(true)", will affect the whole registry.
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
-          .setPublishQuantiles(true))
-        .setMicrometerRegistry(registry)
-        .setEnabled(true)));
+    Vertx.builder()
+      .with(new VertxOptions().setMetricsOptions(
+        new MicrometerMetricsOptions()
+          .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
+            .setPublishQuantiles(true))
+          .setEnabled(true)))
+      .withMetrics(new MicrometerMetricsFactory(registry))
+      .build();
   }
 
   public void useV3CompatNames() {

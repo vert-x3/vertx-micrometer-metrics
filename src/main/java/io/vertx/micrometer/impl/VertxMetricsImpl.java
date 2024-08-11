@@ -84,7 +84,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       : new VertxPoolMetrics(registry, names, gaugesTable);
   }
 
-  void init() {
+  public void init() {
     backendRegistry.init();
   }
 

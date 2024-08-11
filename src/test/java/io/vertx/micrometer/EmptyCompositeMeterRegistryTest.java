@@ -17,6 +17,7 @@
 
 package io.vertx.micrometer;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -26,18 +27,14 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class EmptyCompositeMeterRegistryTest extends MicrometerMetricsTestBase {
 
-  @Override
-  protected MicrometerMetricsOptions metricOptions() {
-    CompositeMeterRegistry emptyCompositeRegistry = new CompositeMeterRegistry();
-    return new MicrometerMetricsOptions()
-      .setRegistryName(registryName)
-      .setMicrometerRegistry(emptyCompositeRegistry)
-      .setEnabled(true);
-  }
-
   @Test
   public void simplyStarts(TestContext ctx) {
     vertx = vertx(ctx);
+
+    meterRegistry = new CompositeMeterRegistry();
+    metricsOptions = new MicrometerMetricsOptions()
+      .setRegistryName(registryName)
+      .setEnabled(true);
 
     // If the task is executed then the gauge lookup succedeed
     vertx.executeBlocking(prom -> prom.complete(), ctx.asyncAssertSuccess());
