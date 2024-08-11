@@ -87,9 +87,9 @@ public class CustomMicrometerMetricsITest extends MicrometerMetricsTestBase {
       }
     }, Clock.SYSTEM));
 
+    meterRegistry = myRegistry;
 
     metricsOptions = new MicrometerMetricsOptions()
-      .setMicrometerRegistry(myRegistry)
       .setRegistryName(registryName)
       .addDisabledMetricsCategory(MetricsDomain.HTTP_SERVER)
       .addDisabledMetricsCategory(MetricsDomain.NAMED_POOLS)
@@ -121,12 +121,12 @@ public class CustomMicrometerMetricsITest extends MicrometerMetricsTestBase {
   public void shouldPublishQuantilesWithProvidedRegistry(TestContext context) throws Exception {
     PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
+    meterRegistry = registry;
     metricsOptions = new MicrometerMetricsOptions()
       .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true)
         .setPublishQuantiles(true)
         .setStartEmbeddedServer(true)
         .setEmbeddedServerOptions(new HttpServerOptions().setPort(9090)))
-      .setMicrometerRegistry(registry)
       .setEnabled(true);
 
     vertx = vertx(context);

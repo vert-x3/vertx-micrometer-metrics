@@ -77,7 +77,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     clientRequestTagsProvider = options.getClientRequestTagsProvider();
   }
 
-  void init() {
+  public void init() {
     backendRegistry.init();
     if (bindJvmMetrics) {
       addMeterBinder(new ClassLoaderMetrics());
