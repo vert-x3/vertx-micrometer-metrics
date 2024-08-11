@@ -307,32 +307,17 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   }
 
   /**
-   * Get the Micrometer MeterRegistry to be used by Vert.x, that has been previously set programmatically
-   *
-   * @return the micrometer registry.
+   * @deprecated see {@link #setMicrometerRegistry(MeterRegistry)}
    */
+  @Deprecated
   public MeterRegistry getMicrometerRegistry() {
     return micrometerRegistry;
   }
 
   /**
-   * Programmatically set the Micrometer MeterRegistry to be used by Vert.x.
-   *
-   * This is useful in several scenarios, such as:
-   * <ul>
-   *   <li>if there is already a MeterRegistry used in the application
-   * that should be used by Vert.x as well.</li>
-   *   <li>to define some backend configuration that is not covered in this module
-   * (example: reporting to non-covered backends such as New Relic)</li>
-   *   <li>to use Micrometer's CompositeRegistry</li>
-   * </ul>
-   *
-   * This setter is mutually exclusive with setInfluxDbOptions/setPrometheusOptions/setJmxMetricsOptions
-   * and takes precedence over them.
-   *
-   * @param micrometerRegistry the registry to use
-   * @return a reference to this, so the API can be used fluently
+   * @deprecated instead use {@link MicrometerMetricsFactory(MeterRegistry)}
    */
+  @Deprecated
   public MicrometerMetricsOptions setMicrometerRegistry(MeterRegistry micrometerRegistry) {
     this.micrometerRegistry = micrometerRegistry;
     return this;

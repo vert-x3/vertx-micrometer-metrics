@@ -58,16 +58,16 @@ public final class BackendRegistries {
    *                If the class is not recognized, a {@link NoopBackendRegistry} will be returned.
    * @return the created (or existing) {@link BackendRegistry}
    */
-  public static BackendRegistry setupBackend(MicrometerMetricsOptions options) {
+  public static BackendRegistry setupBackend(MicrometerMetricsOptions options, MeterRegistry meterRegistry) {
     return REGISTRIES.computeIfAbsent(options.getRegistryName(), k -> {
       final BackendRegistry reg;
-      if (options.getMicrometerRegistry() != null) {
-        if (options.getPrometheusOptions() != null && options.getMicrometerRegistry() instanceof PrometheusMeterRegistry) {
+      if (meterRegistry != null) {
+        if (options.getPrometheusOptions() != null && meterRegistry instanceof PrometheusMeterRegistry) {
           // If a Prometheus registry is provided, extra initialization steps may have to be performed
-          reg = new PrometheusBackendRegistry(options.getPrometheusOptions(), (PrometheusMeterRegistry) options.getMicrometerRegistry());
+          reg = new PrometheusBackendRegistry(options.getPrometheusOptions(), (PrometheusMeterRegistry) meterRegistry);
         } else {
           // Other backend registries have no special extra steps
-          reg = options::getMicrometerRegistry;
+          reg = () -> meterRegistry;
         }
       } else if (options.getInfluxDbOptions() != null && options.getInfluxDbOptions().isEnabled()) {
         reg = new InfluxDbBackendRegistry(options.getInfluxDbOptions());
