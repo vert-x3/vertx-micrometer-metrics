@@ -319,36 +319,17 @@ and inject it into the Vert.x metrics options:
 {@link examples.MicrometerMetricsExamples#useExistingRegistry()}
 ----
 
-=== JVM and system metrics
+=== JVM or other instrumentations
 
-Vert.x Micrometer Metrics can be configured to collect JVM and system metrics:
-
-[source,$lang]
-----
-{@link examples.MicrometerMetricsExamples#instrumentJVM}
-----
-
-=== Netty metrics
-
-Vert.x relies on https://netty.io[Netty] for the networking layer.
-
-Vert.x Micrometer Metrics can be configured to collect Netty metrics:
+Since plain access to Micrometer registries is provided, it is possible to leverage the Micrometer API.
+For instance, to instrument the JVM:
 
 [source,$lang]
 ----
-{@link examples.MicrometerMetricsExamples#instrumentNetty}
+{@link examples.MicrometerMetricsExamples#instrumentJVM()}
 ----
 
-The metric data collected is related to Vert.x specific byte buffer allocators and event loop groups.
-
-=== Other instrumentations
-
-Since plain access to Micrometer registries is provided, it is possible to leverage the Micrometer API:
-
-[source,$lang]
-----
-{@link examples.MicrometerMetricsExamples#anyInstrumentation}
-----
+_From link:http://micrometer.io/docs/ref/jvm[Micrometer documentation]._
 
 === Metric names
 
