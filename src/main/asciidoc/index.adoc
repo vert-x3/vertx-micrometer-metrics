@@ -328,6 +328,14 @@ and inject it into the Vert.x instance using a {@link io.vertx.core.VertxBuilder
 {@link examples.MicrometerMetricsExamples#useExistingRegistry()}
 ----
 
+[IMPORTANT]
+====
+Vert.x Micrometer Metrics registers meter filters for <<_using_matchers,label matching>>.
+Since Micrometer 1.13, a https://github.com/micrometer-metrics/micrometer/pull/4917[warning is logged] when a `MeterFilter` is configured after a meter is registered.
+
+To avoid this warning, make sure to register your own meters only after Vert.x Micrometer Metrics has been initialized.
+====
+
 === JVM and system metrics
 
 Vert.x Micrometer Metrics can be configured to collect JVM and system metrics:
@@ -394,9 +402,10 @@ For that reason, labels enabled by default are restricted to the ones with known
 
 It is possible to interact with labels further than just enabling/disabling. There are two ways for that:
 
+[#_using_matchers]
 ==== Using Matchers
 
-{@link io.vertx.micrometer.Match}  objects can be used to filter or rename some label value
+{@link io.vertx.micrometer.Match} objects can be used to filter or rename some label value
 by matching it with either an exact string or a regular expression (the former being more efficient).
 
 Here is an example to restrict HTTP server metrics to those with label _local=localhost:8080_ only:
