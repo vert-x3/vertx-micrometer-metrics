@@ -18,7 +18,6 @@
 package io.vertx.micrometer;
 
 import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -26,7 +25,6 @@ import io.vertx.core.http.*;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -60,17 +58,19 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
         String user = req.headers() != null ? req.headers().get("user") : null;
         return user != null ? Collections.singletonList(Tag.of("user", user)) : Collections.emptyList();
       })
-      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS);
+      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS)
+      .addLabelMatch(new Match()
+        .setDomain(MetricsDomain.HTTP_SERVER)
+        .setType(MatchType.REGEX)
+        .setLabel("remote")
+        .setValue(".*")
+        .setAlias("_"));
   }
 
   @Override
   protected void setUp(TestContext ctx) {
     super.setUp(ctx);
     vertx = vertx(ctx);
-
-    // Filter out remote labels
-    BackendRegistries.getNow(registryName).config().meterFilter(
-      MeterFilter.replaceTagValues(Label.REMOTE.toString(), s -> "_", "127.0.0.1:9195"));
 
     // Setup server
     Async serverReady = ctx.async();

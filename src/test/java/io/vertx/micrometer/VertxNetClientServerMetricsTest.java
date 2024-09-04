@@ -1,6 +1,5 @@
 package io.vertx.micrometer;
 
-import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.net.NetClient;
@@ -9,7 +8,6 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,7 +32,13 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
   protected MicrometerMetricsOptions metricOptions() {
     return super.metricOptions()
       .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
-      .addLabels(Label.LOCAL, Label.REMOTE);
+      .addLabels(Label.LOCAL, Label.REMOTE)
+      .addLabelMatch(new Match()
+        .setDomain(MetricsDomain.NET_SERVER)
+        .setType(MatchType.REGEX)
+        .setLabel("remote")
+        .setValue(".*")
+        .setAlias("_"));
   }
 
   @Override
@@ -42,10 +46,6 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
     super.setUp(ctx);
 
     vertx = vertx(ctx);
-
-    // Filter out remote labels
-    BackendRegistries.getNow(registryName).config().meterFilter(
-      MeterFilter.replaceTagValues(Label.REMOTE.toString(), s -> "_", "localhost:9194"));
 
     // Setup server
     Async serverReady = ctx.async();
