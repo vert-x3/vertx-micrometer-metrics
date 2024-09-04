@@ -51,15 +51,7 @@ public class LongGaugeBuilder {
 
   public LongAdder register(MeterRegistry registry) {
     Meter.Id meterId = builder.register(registry).getId();
-    LongAdder res = longGauges.get(meterId);
-    if (res == null) {
-      LongAdder candidate = new LongAdder();
-      if ((res = longGauges.putIfAbsent(meterId, candidate)) == null) {
-        res = candidate;
-        supplier.setId(meterId);
-        return res;
-      }
-    }
-    return res;
+    supplier.setId(meterId);
+    return longGauges.computeIfAbsent(meterId, id -> new LongAdder());
   }
 }
