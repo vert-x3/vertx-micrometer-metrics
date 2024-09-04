@@ -17,13 +17,7 @@
 
 package io.vertx.micrometer.impl.meters;
 
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Tags;
-import io.vertx.core.Vertx;
-import io.vertx.core.impl.ContextInternal;
+import io.micrometer.core.instrument.*;
 import io.vertx.micrometer.Label;
 
 import java.util.concurrent.ConcurrentMap;
@@ -35,8 +29,6 @@ import java.util.function.ToDoubleFunction;
  * @author Joel Takvorian
  */
 public class Gauges<T> {
-
-  private final Object valueSupplierKey = new Object();
 
   private final String name;
   private final String description;
@@ -69,40 +61,15 @@ public class Gauges<T> {
   @SuppressWarnings("unchecked")
   public T get(Iterable<Tag> customTags, String... values) {
     Tags tags = TagsCache.getOrCreate(customTags, keys, values);
-    ContextInternal context = (ContextInternal) Vertx.currentContext();
-    ValueSupplier<T> valueSupplier = getOrCreateValueSupplier(context);
+    ValueSupplier<T> valueSupplier = new ValueSupplier<>(gauges, dGetter);
     Gauge gauge = Gauge.builder(name, valueSupplier)
       .description(description)
       .tags(tags)
       .strongReference(true)
       .register(registry);
     Meter.Id meterId = gauge.getId();
-    T res = (T) gauges.get(meterId);
-    if (res == null) {
-      T candidate = tSupplier.apply(meterId);
-      if ((res = (T) gauges.putIfAbsent(meterId, candidate)) == null) {
-        res = candidate;
-        valueSupplier.id = meterId;
-        return res;
-      }
-    }
-    recycleValueSupplier(context, valueSupplier);
-    return res;
-  }
-
-  @SuppressWarnings("unchecked")
-  private ValueSupplier<T> getOrCreateValueSupplier(ContextInternal context) {
-    ValueSupplier<T> res;
-    if (context == null || (res = (ValueSupplier<T>) context.contextData().get(valueSupplierKey)) == null) {
-      res = new ValueSupplier<>(gauges, dGetter);
-    }
-    return res;
-  }
-
-  private void recycleValueSupplier(ContextInternal context, ValueSupplier<T> valueSupplier) {
-    if (context != null) {
-      context.contextData().put(valueSupplierKey, valueSupplier);
-    }
+    valueSupplier.id = meterId;
+    return (T) gauges.computeIfAbsent(meterId, tSupplier);
   }
 
   private static class ValueSupplier<G> implements Supplier<Number> {
