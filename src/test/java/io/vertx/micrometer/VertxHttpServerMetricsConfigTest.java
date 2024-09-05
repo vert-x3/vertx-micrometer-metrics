@@ -81,22 +81,18 @@ public class VertxHttpServerMetricsConfigTest extends MicrometerMetricsTestBase 
     Async serverReady = ctx.async();
     vertx.deployVerticle(new AbstractVerticle() {
       @Override
-      public void start(Promise<Void> future) throws Exception {
+      public void start(Promise<Void> startPromise) {
         httpServer = vertx.createHttpServer();
         httpServer
           .requestHandler(req -> {
             vertx.setTimer(30L, handler ->
               req.response().setChunked(true).putHeader("Content-Type", "text/plain").end(""));
           })
-          .listen(9195, "127.0.0.1").onComplete(r -> {
-            if (r.failed()) {
-              ctx.fail(r.cause());
-            } else {
-              serverReady.complete();
-            }
-          });
+          .listen(9195, "127.0.0.1")
+          .<Void>mapEmpty()
+          .onComplete(startPromise);
       }
-    });
+    }).onComplete(ctx.asyncAssertSuccess(v -> serverReady.complete()));
     serverReady.awaitSuccess();
   }
 

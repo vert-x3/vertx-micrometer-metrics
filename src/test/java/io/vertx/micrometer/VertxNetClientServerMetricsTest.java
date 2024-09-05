@@ -51,19 +51,15 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
     Async serverReady = ctx.async();
     vertx.deployVerticle(new AbstractVerticle() {
       @Override
-      public void start(Promise<Void> future) throws Exception {
+      public void start(Promise<Void> startPromise) {
         netServer = vertx.createNetServer();
         netServer
           .connectHandler(socket -> socket.handler(buffer -> socket.write(SERVER_RESPONSE)))
-          .listen(9194, "localhost").onComplete(r -> {
-            if (r.failed()) {
-              ctx.fail(r.cause());
-            } else {
-              serverReady.complete();
-            }
-          });
+          .listen(9194, "localhost")
+          .<Void>mapEmpty()
+          .onComplete(startPromise);
       }
-    });
+    }).onComplete(ctx.asyncAssertSuccess(v -> serverReady.complete()));
     serverReady.awaitSuccess();
   }
 
