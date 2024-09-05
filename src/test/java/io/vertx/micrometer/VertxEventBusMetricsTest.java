@@ -57,7 +57,7 @@ public class VertxEventBusMetricsTest extends MicrometerMetricsTestBase {
     // Setup eventbus handler
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
-      public void start(Promise<Void> future) {
+      public void start(Promise<Void> startPromise) {
         vertx.eventBus().consumer("testSubject", msg -> {
           JsonObject body = (JsonObject) msg.body();
           try {
@@ -71,10 +71,9 @@ public class VertxEventBusMetricsTest extends MicrometerMetricsTestBase {
           if (body.getBoolean("fail")) {
             throw new RuntimeException("It's ok! [expected failure]");
           }
-        });
-        ebReady.countDown();
+        }).completion().onComplete(startPromise);
       }
-    }, new DeploymentOptions().setInstances(instances));
+    }, new DeploymentOptions().setInstances(instances)).onComplete(context.asyncAssertSuccess(v -> ebReady.complete()));
 
     ebReady.awaitSuccess();
     // Send to eventbus
