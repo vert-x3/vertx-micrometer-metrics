@@ -1,7 +1,7 @@
 = vertx-micrometer-metrics
 :source-language: java
 
-image:https://github.com/vert-x3/vertx-micrometer-metrics/workflows/CI/badge.svg?branch=master["Build Status", link="https://github.com/vert-x3/vertx-micrometer-metrics/actions?query=workflow%3ACI"]
+image:https://github.com/vert-x3/vertx-micrometer-metrics/actions/workflows/ci-4.x.yml/badge.svg["Build Status (4.x)",link="https://github.com/vert-x3/vertx-micrometer-metrics/actions/workflows/ci-4.x.yml"]
 
 Vert.x Micrometer Metrics contains metrics collection and reporting to various target systems through link:http://micrometer.io/[Micrometer].
 
