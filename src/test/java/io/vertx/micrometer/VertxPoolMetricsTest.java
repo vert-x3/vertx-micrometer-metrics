@@ -36,12 +36,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(VertxUnitRunner.class)
 public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
 
-  @Override
-  protected MicrometerMetricsOptions metricOptions() {
-    return super.metricOptions()
-      .addLabels(Label.POOL_NAME);
-  }
-
   @Test
   public void shouldReportNamedPoolMetrics(TestContext context) {
     vertx = vertx(context);

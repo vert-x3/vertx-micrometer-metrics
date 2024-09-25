@@ -15,7 +15,6 @@
  */
 package io.vertx.micrometer;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -23,11 +22,12 @@ import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
-import io.vertx.core.spi.VertxMetricsFactory;
 import io.vertx.core.spi.observability.HttpRequest;
 
 import java.util.*;
 import java.util.function.Function;
+
+import static io.vertx.micrometer.Label.*;
 
 /**
  * Vert.x micrometer configuration.
@@ -49,7 +49,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   /**
    * Default label match for public http server: exclude remote label
    */
-  public static final List<Label> DEFAULT_LABELS = Arrays.asList(Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_TYPE, Label.EB_SIDE);
+  public static final List<Label> DEFAULT_LABELS = Arrays.asList(HTTP_METHOD, HTTP_CODE, POOL_TYPE, POOL_NAME, EB_SIDE);
 
   /**
    * Whether JVM metrics should be collected by default = false.
