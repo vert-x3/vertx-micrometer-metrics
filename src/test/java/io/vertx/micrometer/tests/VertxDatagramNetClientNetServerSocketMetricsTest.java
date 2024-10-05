@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 import io.vertx.core.datagram.DatagramSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MetricsNaming;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

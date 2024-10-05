@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 
 import io.micrometer.core.instrument.Meter;
@@ -25,6 +25,9 @@ import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.micrometer.MicrometerMetricsFactory;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.junit.After;
 import org.junit.Before;

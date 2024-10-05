@@ -1,6 +1,7 @@
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.micrometer.MetricsNaming;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

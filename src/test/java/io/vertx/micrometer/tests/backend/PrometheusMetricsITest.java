@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.vertx.micrometer.backend;
+package io.vertx.micrometer.tests.backend;
 
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Handler;
@@ -29,7 +29,7 @@ import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.MicrometerMetricsTestBase;
+import io.vertx.micrometer.tests.MicrometerMetricsTestBase;
 import io.vertx.micrometer.PrometheusScrapingHandler;
 import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @RunWith(VertxUnitRunner.class)
 public class PrometheusMetricsITest extends MicrometerMetricsTestBase {

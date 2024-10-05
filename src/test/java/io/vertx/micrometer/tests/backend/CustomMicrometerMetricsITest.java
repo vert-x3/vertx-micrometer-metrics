@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.vertx.micrometer.backend;
+package io.vertx.micrometer.tests.backend;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
@@ -29,6 +29,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.*;
+import io.vertx.micrometer.tests.MicrometerMetricsTestBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

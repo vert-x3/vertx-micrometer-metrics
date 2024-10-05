@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.MicrometerMetricsOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

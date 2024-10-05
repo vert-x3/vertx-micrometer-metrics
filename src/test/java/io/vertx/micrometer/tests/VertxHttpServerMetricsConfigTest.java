@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 import io.micrometer.core.instrument.Tag;
 import io.vertx.core.AbstractVerticle;
@@ -27,6 +27,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.MicrometerMetricsOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

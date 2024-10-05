@@ -1,4 +1,4 @@
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientResponse;

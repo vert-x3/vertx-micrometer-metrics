@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
@@ -23,7 +23,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.backend.PrometheusTestHelper;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.tests.backend.PrometheusTestHelper;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;

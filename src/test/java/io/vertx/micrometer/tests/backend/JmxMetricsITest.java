@@ -14,48 +14,36 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.vertx.micrometer.backend;
+package io.vertx.micrometer.tests.backend;
 
-
-import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.MicrometerMetricsTestBase;
-import io.vertx.micrometer.VertxInfluxDbOptions;
+import io.vertx.micrometer.tests.MicrometerMetricsTestBase;
+import io.vertx.micrometer.VertxJmxMetricsOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
+import java.util.Hashtable;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(VertxUnitRunner.class)
-public class InfluxDbReporterITest extends MicrometerMetricsTestBase {
-
-  private Vertx vertxForSimulatedServer = Vertx.vertx();
-
-  @Override
-  protected void tearDown(TestContext context) {
-    super.tearDown(context);
-    vertxForSimulatedServer.close().onComplete(context.asyncAssertSuccess());
-  }
+public class JmxMetricsITest extends MicrometerMetricsTestBase {
 
   @Test
-  public void shouldSendDataToInfluxDb(TestContext context) throws Exception {
-    // Mock an influxdb server
-    Async asyncInflux = context.async();
-    InfluxDbTestHelper.simulateInfluxServer(vertxForSimulatedServer, context, 8086, body -> {
-      if (body.contains("vertx_eventbus_handlers,address=test-eb,metric_type=gauge value=1")) {
-        asyncInflux.complete();
-      }
-    });
-
+  public void shouldReportJmx(TestContext context) throws Exception {
     metricsOptions = new MicrometerMetricsOptions()
-      .setInfluxDbOptions(new VertxInfluxDbOptions()
-        .setStep(1)
-        .setDb("mydb")
-        .setEnabled(true))
       .setRegistryName(registryName)
       .addLabels(Label.EB_ADDRESS)
+      .setJmxMetricsOptions(new VertxJmxMetricsOptions().setEnabled(true)
+        .setDomain("my-metrics")
+        .setStep(1))
       .setEnabled(true);
 
     vertx = vertx(context);
@@ -66,7 +54,13 @@ public class InfluxDbReporterITest extends MicrometerMetricsTestBase {
     vertx.eventBus().publish("test-eb", "test message");
     asyncEB.await(2000);
 
-    // Await influx
-    asyncInflux.awaitSuccess(2000);
+    // Read MBean
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    assertThat(mbs.getDomains()).contains("my-metrics");
+    Hashtable<String, String> table = new Hashtable<>();
+    table.put("type", "gauges");
+    table.put("name", "vertxEventbusHandlers.address.test-eb");
+    Number result = (Number) mbs.getAttribute(new ObjectName("my-metrics", table), "Value");
+    assertThat(result).isEqualTo(1d);
   }
 }

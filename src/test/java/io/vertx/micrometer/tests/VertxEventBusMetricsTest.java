@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -26,6 +26,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.Label;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

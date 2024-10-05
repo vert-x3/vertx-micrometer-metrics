@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 import io.vertx.core.WorkerExecutor;
 import io.vertx.ext.unit.Async;

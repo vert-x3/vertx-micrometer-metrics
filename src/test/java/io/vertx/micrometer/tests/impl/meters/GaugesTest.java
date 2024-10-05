@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer.impl.meters;
+package io.vertx.micrometer.tests.impl.meters;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -25,6 +25,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MatchType;
 import io.vertx.micrometer.backends.BackendRegistries;
+import io.vertx.micrometer.impl.meters.LongGauges;
 import org.junit.Test;
 
 import java.util.Collections;

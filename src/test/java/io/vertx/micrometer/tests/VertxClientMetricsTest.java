@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer;
+package io.vertx.micrometer.tests;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.VertxInternal;
@@ -23,6 +23,8 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MicrometerMetricsOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

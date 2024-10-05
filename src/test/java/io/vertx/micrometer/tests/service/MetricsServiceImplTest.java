@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer.service;
+package io.vertx.micrometer.tests.service;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vertx.core.Future;
@@ -29,6 +29,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.*;
+import io.vertx.micrometer.tests.MicrometerMetricsTestBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

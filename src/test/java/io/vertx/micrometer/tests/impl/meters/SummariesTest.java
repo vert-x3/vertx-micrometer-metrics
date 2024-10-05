@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.vertx.micrometer.impl.meters;
+package io.vertx.micrometer.tests.impl.meters;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
