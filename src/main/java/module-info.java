@@ -4,6 +4,7 @@ module io.vertx.metrics.micrometer {
   requires static io.vertx.codegen.api;
   requires static io.vertx.codegen.json;
 
+  requires io.netty.buffer;
   requires io.prometheus.metrics.model;
   requires io.vertx.core;
   requires io.vertx.core.logging;
