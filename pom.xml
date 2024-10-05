@@ -181,6 +181,13 @@
                 </annotationProcessorPaths>
               </configuration>
             </execution>
+            <execution>
+              <id>default-testCompile</id>
+              <configuration>
+                <!-- Because of launcher -->
+                <useModulePath>false</useModulePath>
+              </configuration>
+            </execution>
           </executions>
         </plugin>
       </plugins>
@@ -190,6 +197,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <useModulePath>false</useModulePath>
           <excludes>
             <exclude>**/*ITest*</exclude>
           </excludes>
