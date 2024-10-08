@@ -14,459 +14,244 @@
   ~
   ~  You may elect to redistribute this code under either of these licenses.
   --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-      
-    <modelVersion>4.0.0</modelVersion>
-      
-    <parent>
-            
-        <groupId>io.vertx</groupId>
-            
-        <artifactId>vertx-ext-parent</artifactId>
-            
-        <version>38</version>
-          
-    </parent>
-      
-    <artifactId>vertx-micrometer-metrics</artifactId>
-      
-    <version>4.5.11-SNAPSHOT</version>
-      
-    <name>Vert.x metrics implementation for Micrometer.io</name>
-      
-    <scm>
-            
-        <connection>scm:git:ssh://github.com/vert-x3/vertx-micrometer-metrics</connection>
-            
-        <developerConnection>scm:git:ssh://github.com/vert-x3/vertx-micrometer-metrics</developerConnection>
-            
-        <url>https://github.com/vert-x3/vertx-micrometer-metrics</url>
-          
-    </scm>
-      
-    <properties>
-            
-        <stack.version>4.5.11-SNAPSHOT</stack.version>
-            
-        <assertj.version>3.9.0</assertj.version>
-            
-        <junit.version>4.13.1</junit.version>
-            
-        <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
-            
-        <micrometer.version>1.12.10</micrometer.version>
-            
-        <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
-          
-    </properties>
-      
-    <dependencyManagement>
-            
-        <dependencies>
-                  
-            <dependency>
-                        
-                <groupId>io.vertx</groupId>
-                        
-                <artifactId>vertx-dependencies</artifactId>
-                        
-                <version>${stack.version}</version>
-                        
-                <type>pom</type>
-                        
-                <scope>import</scope>
-                      
-            </dependency>
-                
-        </dependencies>
-          
-    </dependencyManagement>
-      
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.vertx</groupId>
+    <artifactId>vertx-ext-parent</artifactId>
+    <version>38</version>
+  </parent>
+
+  <artifactId>vertx-micrometer-metrics</artifactId>
+  <version>4.5.11-SNAPSHOT</version>
+
+  <name>Vert.x metrics implementation for Micrometer.io</name>
+
+  <scm>
+    <connection>scm:git:ssh://github.com/vert-x3/vertx-micrometer-metrics</connection>
+    <developerConnection>scm:git:ssh://github.com/vert-x3/vertx-micrometer-metrics</developerConnection>
+    <url>https://github.com/vert-x3/vertx-micrometer-metrics</url>
+  </scm>
+
+  <properties>
+    <stack.version>4.5.11-SNAPSHOT</stack.version>
+    <assertj.version>3.9.0</assertj.version>
+    <junit.version>4.13.1</junit.version>
+    <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
+    <micrometer.version>1.12.4</micrometer.version>
+    <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
+  </properties>
+
+  <dependencyManagement>
     <dependencies>
-            
-        <dependency>
-                  
-            <groupId>io.micrometer</groupId>
-                  
-            <artifactId>micrometer-core</artifactId>
-                  
-            <version>${micrometer.version}</version>
-                  
-            <exclusions>
-                        
-                <exclusion>
-                              
-                    <groupId>org.hdrhistogram</groupId>
-                              
-                    <artifactId>HdrHistogram</artifactId>
-                            
-                </exclusion>
-                      
-            </exclusions>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>org.hdrhistogram</groupId>
-                  
-            <artifactId>HdrHistogram</artifactId>
-                  
-            <version>2.1.12</version>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.micrometer</groupId>
-                  
-            <artifactId>micrometer-registry-prometheus</artifactId>
-                  
-            <version>${micrometer.version}</version>
-                  
-            <optional>true</optional>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.micrometer</groupId>
-                  
-            <artifactId>micrometer-registry-influx</artifactId>
-                  
-            <version>${micrometer.version}</version>
-                  
-            <optional>true</optional>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.micrometer</groupId>
-                  
-            <artifactId>micrometer-registry-jmx</artifactId>
-                  
-            <version>${micrometer.version}</version>
-                  
-            <optional>true</optional>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.micrometer</groupId>
-                  
-            <artifactId>micrometer-registry-graphite</artifactId>
-                  
-            <version>${micrometer.version}</version>
-                  
-            <optional>true</optional>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.vertx</groupId>
-                  
-            <artifactId>vertx-web</artifactId>
-                  
-            <optional>true</optional>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.vertx</groupId>
-                  
-            <artifactId>vertx-core</artifactId>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.vertx</groupId>
-                  
-            <artifactId>vertx-codegen</artifactId>
-                  
-            <optional>true</optional>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.vertx</groupId>
-                  
-            <artifactId>vertx-docgen</artifactId>
-                  
-            <optional>true</optional>
-                
-        </dependency>
-            
-        <!-- scope test -->
-            
-        <dependency>
-                  
-            <groupId>junit</groupId>
-                  
-            <artifactId>junit</artifactId>
-                  
-            <version>${junit.version}</version>
-                  
-            <scope>test</scope>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>org.assertj</groupId>
-                  
-            <artifactId>assertj-core</artifactId>
-                  
-            <version>${assertj.version}</version>
-                  
-            <scope>test</scope>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <groupId>io.vertx</groupId>
-                  
-            <artifactId>vertx-unit</artifactId>
-                  
-            <scope>test</scope>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <!-- for micrometer influx registry -->
-                  
-            <groupId>org.slf4j</groupId>
-                  
-            <artifactId>slf4j-simple</artifactId>
-                  
-            <version>1.7.25</version>
-                  
-            <scope>test</scope>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <!-- Test dependency is for Unix socket test (linux) -->
-                  
-            <groupId>io.netty</groupId>
-                  
-            <artifactId>netty-transport-native-epoll</artifactId>
-                  
-            <classifier>linux-x86_64</classifier>
-                  
-            <scope>test</scope>
-                
-        </dependency>
-            
-        <dependency>
-                  
-            <!-- Test dependency is for Unix socket test (bsd/macos) -->
-                  
-            <groupId>io.netty</groupId>
-                  
-            <artifactId>netty-transport-native-kqueue</artifactId>
-                  
-            <classifier>osx-x86_64</classifier>
-                  
-            <scope>test</scope>
-                
-        </dependency>
-          
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-dependencies</artifactId>
+        <version>${stack.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
-      
-    <build>
-            
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-core</artifactId>
+      <version>${micrometer.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hdrhistogram</groupId>
+          <artifactId>HdrHistogram</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.hdrhistogram</groupId>
+      <artifactId>HdrHistogram</artifactId>
+      <version>2.1.12</version>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>${micrometer.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-influx</artifactId>
+      <version>${micrometer.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-jmx</artifactId>
+      <version>${micrometer.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-graphite</artifactId>
+      <version>${micrometer.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-codegen</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-docgen</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- scope test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-unit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- for micrometer influx registry -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.25</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- Test dependency is for Unix socket test (linux) -->
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-epoll</artifactId>
+      <classifier>linux-x86_64</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- Test dependency is for Unix socket test (bsd/macos) -->
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-kqueue</artifactId>
+      <classifier>osx-x86_64</classifier>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/*ITest*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-failsafe-plugin.version}</version>
+        <configuration>
+          <includes>
+            <include>**/*ITest*</include>
+          </includes>
+          <systemPropertyVariables>
+            <java.util.logging.config.file>${project.basedir}/log-test.properties</java.util.logging.config.file>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>coverage</id>
+      <build>
         <plugins>
-                  
-            <plugin>
-                        
-                <groupId>org.apache.maven.plugins</groupId>
-                        
-                <artifactId>maven-surefire-plugin</artifactId>
-                        
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>${maven-failsafe-plugin.version}</version>
+            <configuration>
+              <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+              <includes>
+                <include>**/*ITest*</include>
+              </includes>
+              <systemPropertyVariables>
+                <java.util.logging.config.file>${project.basedir}/log-test.properties</java.util.logging.config.file>
+              </systemPropertyVariables>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${maven.jacoco.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>pre-integration-test</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
                 <configuration>
-                              
-                    <excludes>
-                                    
-                        <exclude>**/*ITest*</exclude>
-                                  
-                    </excludes>
-                            
+                  <destFile>${sonar.jacoco.reportPath}</destFile>
+                  <propertyName>surefireArgLine</propertyName>
                 </configuration>
-                      
-            </plugin>
-                  
-            <plugin>
-                        
-                <groupId>org.apache.maven.plugins</groupId>
-                        
-                <artifactId>maven-failsafe-plugin</artifactId>
-                        
-                <version>${maven-failsafe-plugin.version}</version>
-                        
+              </execution>
+
+              <execution>
+                <id>post-integration-test</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <phase>post-integration-test</phase>
                 <configuration>
-                              
-                    <includes>
-                                    
-                        <include>**/*ITest*</include>
-                                  
-                    </includes>
-                              
-                    <systemPropertyVariables>
-                                    
-                        <java.util.logging.config.file>${project.basedir}/log-test.properties</java.util.logging.config.file>
-                                  
-                    </systemPropertyVariables>
-                            
+                  <dataFile>${sonar.jacoco.reportPath}</dataFile>
+                  <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
                 </configuration>
-                        
-                <executions>
-                              
-                    <execution>
-                                    
-                        <goals>
-                                          
-                            <goal>integration-test</goal>
-                                          
-                            <goal>verify</goal>
-                                        
-                        </goals>
-                                  
-                    </execution>
-                            
-                </executions>
-                      
-            </plugin>
-                
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
-          
-    </build>
-      
-    <profiles>
-            
-        <profile>
-                  
-            <id>coverage</id>
-                  
-            <build>
-                        
-                <plugins>
-                              
-                    <plugin>
-                                    
-                        <groupId>org.apache.maven.plugins</groupId>
-                                    
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                                    
-                        <version>${maven-failsafe-plugin.version}</version>
-                                    
-                        <configuration>
-                                          
-                            <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
-                                          
-                            <includes>
-                                                
-                                <include>**/*ITest*</include>
-                                              
-                            </includes>
-                                          
-                            <systemPropertyVariables>
-                                                
-                                <java.util.logging.config.file>${project.basedir}/log-test.properties</java.util.logging.config.file>
-                                              
-                            </systemPropertyVariables>
-                                        
-                        </configuration>
-                                    
-                        <executions>
-                                          
-                            <execution>
-                                                
-                                <goals>
-                                                      
-                                    <goal>integration-test</goal>
-                                                      
-                                    <goal>verify</goal>
-                                                    
-                                </goals>
-                                              
-                            </execution>
-                                        
-                        </executions>
-                                  
-                    </plugin>
-                              
-                    <plugin>
-                                    
-                        <groupId>org.jacoco</groupId>
-                                    
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                                    
-                        <version>${maven.jacoco.plugin.version}</version>
-                                    
-                        <executions>
-                                          
-                            <execution>
-                                                
-                                <id>pre-integration-test</id>
-                                                
-                                <goals>
-                                                      
-                                    <goal>prepare-agent</goal>
-                                                    
-                                </goals>
-                                                
-                                <phase>pre-integration-test</phase>
-                                                
-                                <configuration>
-                                                      
-                                    <destFile>${sonar.jacoco.reportPath}</destFile>
-                                                      
-                                    <propertyName>surefireArgLine</propertyName>
-                                                    
-                                </configuration>
-                                              
-                            </execution>
-                                          
-                            <execution>
-                                                
-                                <id>post-integration-test</id>
-                                                
-                                <goals>
-                                                      
-                                    <goal>report</goal>
-                                                    
-                                </goals>
-                                                
-                                <phase>post-integration-test</phase>
-                                                
-                                <configuration>
-                                                      
-                                    <dataFile>${sonar.jacoco.reportPath}</dataFile>
-                                                      
-                                    <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
-                                                    
-                                </configuration>
-                                              
-                            </execution>
-                                        
-                        </executions>
-                                  
-                    </plugin>
-                            
-                </plugins>
-                      
-            </build>
-                
-        </profile>
-          
-    </profiles>
-    
+      </build>
+    </profile>
+  </profiles>
 </project>
