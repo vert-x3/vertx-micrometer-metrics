@@ -107,7 +107,7 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
     public RequestMetric requestBegin(String uri, HttpRequest request) {
       Tags tags = endPointTags;
       if (enabledLabels.contains(HTTP_PATH)) {
-        tags = tags.and(HTTP_PATH.toString(), request.uri());
+        tags = tags.and(HTTP_PATH.toString(), HttpUtils.parsePath(request.uri()));
       }
       if (enabledLabels.contains(HTTP_METHOD)) {
         tags = tags.and(HTTP_METHOD.toString(), request.method().toString());

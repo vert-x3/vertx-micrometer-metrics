@@ -71,7 +71,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
   public RequestMetric requestBegin(NetServerSocketMetric socketMetric, HttpRequest request) {
     Tags tags = socketMetric.tags;
     if (enabledLabels.contains(HTTP_PATH)) {
-      tags = tags.and(HTTP_PATH.toString(), request.uri());
+      tags = tags.and(HTTP_PATH.toString(), HttpUtils.parsePath(request.uri()));
     }
     if (enabledLabels.contains(HTTP_METHOD)) {
       tags = tags.and(HTTP_METHOD.toString(), request.method().toString());
@@ -103,7 +103,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
   public RequestMetric responsePushed(NetServerSocketMetric socketMetric, HttpMethod method, String uri, HttpResponse response) {
     Tags tags = socketMetric.tags;
     if (enabledLabels.contains(HTTP_PATH)) {
-      tags.and(HTTP_PATH.toString(), uri);
+      tags.and(HTTP_PATH.toString(), HttpUtils.parsePath(uri));
     }
     if (enabledLabels.contains(HTTP_METHOD)) {
       tags.and(HTTP_METHOD.toString(), method.toString());
