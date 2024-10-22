@@ -20,9 +20,8 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.prometheus.client.exporter.common.TextFormat;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerOptions;
@@ -36,7 +35,7 @@ import io.vertx.micrometer.VertxPrometheusOptions;
  */
 public final class PrometheusBackendRegistry implements BackendRegistry {
   private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusBackendRegistry.class);
-
+  public static final String CONTENT_TYPE_004 = "text/plain; version=0.0.4; charset=utf-8";
   private final PrometheusMeterRegistry registry;
   private final VertxPrometheusOptions options;
   private Vertx vertx;
@@ -86,7 +85,7 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
   private void handleRequest(HttpServerRequest request) {
     if (options.getEmbeddedServerEndpoint().equals(request.path())) {
       request.response()
-        .putHeader(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_004)
+        .putHeader(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_004)
         .end(registry.scrape());
     } else {
       request.response().setStatusCode(404).end();

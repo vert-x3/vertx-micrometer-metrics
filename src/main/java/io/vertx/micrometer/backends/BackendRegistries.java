@@ -20,7 +20,7 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.Match;
 import io.vertx.micrometer.MetricsDomain;

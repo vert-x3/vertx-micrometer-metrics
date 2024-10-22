@@ -17,15 +17,15 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 
 import java.util.Objects;
 
-import static io.prometheus.client.exporter.common.TextFormat.*;
 import static io.vertx.core.http.HttpHeaders.*;
+import static io.vertx.micrometer.backends.PrometheusBackendRegistry.CONTENT_TYPE_004;
 
 /**
  * @author Thomas Segismont
