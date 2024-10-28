@@ -257,7 +257,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
   private void httpRequest(HttpClient httpClient, TestContext ctx, String user) {
     Async async = ctx.async(HTTP_SENT_COUNT);
     for (int i = 0; i < HTTP_SENT_COUNT; i++) {
-      httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource")
+      httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource?foo=bar")
         .compose(req -> {
           req = user != null ? req.putHeader("user", user) : req;
           return req.send(CLIENT_REQUEST)
