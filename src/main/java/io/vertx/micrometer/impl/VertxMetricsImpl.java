@@ -23,13 +23,15 @@ import io.micrometer.core.instrument.binder.netty4.NettyAllocatorMetrics;
 import io.micrometer.core.instrument.binder.netty4.NettyEventExecutorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufAllocatorMetricProvider;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.vertx.core.Vertx;
-import io.vertx.core.internal.buffer.VertxByteBufAllocator;
 import io.vertx.core.datagram.DatagramSocketOptions;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
@@ -91,11 +93,13 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
       addMeterBinder(new UptimeMetrics());
     }
     if (bindNettyMetrics) {
-      if (VertxByteBufAllocator.UNPOOLED_ALLOCATOR instanceof ByteBufAllocatorMetricProvider) {
-        addMeterBinder(new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.UNPOOLED_ALLOCATOR));
+      ByteBufAllocator allocator = BufferInternal.buffer().getByteBuf().alloc();
+      if (allocator instanceof ByteBufAllocatorMetricProvider) {
+        addMeterBinder(new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) allocator));
       }
-      if (VertxByteBufAllocator.POOLED_ALLOCATOR instanceof ByteBufAllocatorMetricProvider) {
-        addMeterBinder(new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.POOLED_ALLOCATOR));
+      allocator = PooledByteBufAllocator.DEFAULT;
+      if (allocator != null) {
+        addMeterBinder(new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) allocator));
       }
     }
   }
