@@ -5,15 +5,7 @@ import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpVersion;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetServer;
-import io.vertx.core.net.NetSocket;
+import io.vertx.core.http.*;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -236,7 +228,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
   private void httpRequest(HttpClient httpClient, TestContext ctx, String user) {
     Async async = ctx.async(HTTP_SENT_COUNT);
     for (int i = 0; i < HTTP_SENT_COUNT; i++) {
-      httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource")
+      httpClient.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource?foo=bar")
         .compose(req -> {
           req = user != null ? req.putHeader("user", user) : req;
           return req.send(CLIENT_REQUEST)

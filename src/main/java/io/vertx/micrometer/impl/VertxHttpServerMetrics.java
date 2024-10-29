@@ -76,7 +76,7 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics {
 
     @Override
     public Handler requestBegin(String remote, HttpRequest request) {
-      Handler handler = new Handler(remote, request.uri(), request.method().name());
+      Handler handler = new Handler(remote, HttpUtils.parsePath(request.uri()), request.method().name());
       if (customTagsProvider != null) {
         handler.customTags = customTagsProvider.apply(request);
       }
