@@ -19,6 +19,12 @@ public class VertxHttpServerMetricsTest extends MicrometerMetricsTestBase {
 
   private HttpServer httpServer;
 
+  @Override
+  protected MicrometerMetricsOptions metricOptions() {
+    return super.metricOptions()
+      .addLabels(Label.HTTP_PATH);
+  }
+
   @Test
   public void shouldDecrementActiveRequestsWhenRequestEndedAfterResponseEnded(TestContext ctx) {
     vertx = vertx(ctx);
@@ -36,7 +42,7 @@ public class VertxHttpServerMetricsTest extends MicrometerMetricsTestBase {
     listenLatch.awaitSuccess(20_000);
     HttpClient client = vertx.createHttpClient();
     for (int i = 0;i < numRequests;i++) {
-      client.request(HttpMethod.POST, 9195, "127.0.0.1", "/")
+      client.request(HttpMethod.POST, 9195, "127.0.0.1", "/resource?foo=bar")
         .onComplete(ctx.asyncAssertSuccess(req -> {
           req
             .response()
@@ -50,7 +56,8 @@ public class VertxHttpServerMetricsTest extends MicrometerMetricsTestBase {
         }));
     }
     doneLatch.awaitSuccess(20_000);
-    List<Datapoint> res = listDatapoints(startsWith("vertx.http.server.active.requests"));
-    assertThat(res).extracting(Datapoint::value).contains(0.0);
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server.active.requests"));
+    assertThat(datapoints).hasSize(1).contains(
+      dp("vertx.http.server.active.requests[method=POST,path=/resource]$VALUE", 0.0));
   }
 }
