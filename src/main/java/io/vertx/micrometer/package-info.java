@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-@ModuleGen(name = "vertx-micrometer-metrics", groupPackage = "io.vertx", useFutures = true)
+@ModuleGen(name = "vertx-micrometer-metrics", groupPackage = "io.vertx")
 package io.vertx.micrometer;
 
 import io.vertx.codegen.annotations.ModuleGen;
