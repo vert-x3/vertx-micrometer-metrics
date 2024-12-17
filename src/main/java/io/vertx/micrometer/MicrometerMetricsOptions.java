@@ -423,29 +423,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
 
   /**
    * @return an optional custom tags provider for HTTP server requests
-   * @deprecated use {@code getServerRequestTagsProvider} instead
-   */
-  @GenIgnore
-  @Deprecated
-  public Function<HttpRequest, Iterable<Tag>> getRequestsTagsProvider() {
-    return this.getServerRequestTagsProvider();
-  }
-
-  /**
-   * Sets a custom tags provider for HTTP server requests. Allows to generate custom tags for every {@code HttpRequest} object processed through the metrics SPI.
-   *
-   * @param serverRequestTagsProvider an object implementing the {@code CustomTagsProvider} interface for {@code HttpRequest}.
-   * @return a reference to this, so that the API can be used fluently
-   * @deprecated use {@code setServerRequestTagsProvider} instead
-   */
-  @GenIgnore
-  @Deprecated
-  public MicrometerMetricsOptions setRequestsTagsProvider(Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider) {
-    return this.setServerRequestTagsProvider(serverRequestTagsProvider);
-  }
-
-  /**
-   * @return an optional custom tags provider for HTTP server requests
    */
   @GenIgnore
   public Function<HttpRequest, Iterable<Tag>> getServerRequestTagsProvider() {

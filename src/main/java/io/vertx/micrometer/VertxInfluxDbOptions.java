@@ -269,27 +269,6 @@ public class VertxInfluxDbOptions {
   }
 
   /**
-   * Get the number of threads used by the push scheduler.
-   *
-   * @deprecated no longer used by Micrometer
-   */
-  @Deprecated
-  public int getNumThreads() {
-    return numThreads;
-  }
-
-  /**
-   * Number of threads to use by the push scheduler. Default is 2.
-   *
-   * @deprecated no longer used by Micrometer
-   */
-  @Deprecated
-  public VertxInfluxDbOptions setNumThreads(int numThreads) {
-    this.numThreads = numThreads;
-    return this;
-  }
-
-  /**
    * Get the connection timeout for InfluxDB server connections, in seconds.
    */
   public int getConnectTimeout() {
