@@ -54,11 +54,6 @@ public class VertxInfluxDbOptionsConverter {
             obj.setStep(((Number)member.getValue()).intValue());
           }
           break;
-        case "numThreads":
-          if (member.getValue() instanceof Number) {
-            obj.setNumThreads(((Number)member.getValue()).intValue());
-          }
-          break;
         case "connectTimeout":
           if (member.getValue() instanceof Number) {
             obj.setConnectTimeout(((Number)member.getValue()).intValue());
@@ -116,7 +111,6 @@ public class VertxInfluxDbOptionsConverter {
     }
     json.put("compressed", obj.isCompressed());
     json.put("step", obj.getStep());
-    json.put("numThreads", obj.getNumThreads());
     json.put("connectTimeout", obj.getConnectTimeout());
     json.put("readTimeout", obj.getReadTimeout());
     json.put("batchSize", obj.getBatchSize());
