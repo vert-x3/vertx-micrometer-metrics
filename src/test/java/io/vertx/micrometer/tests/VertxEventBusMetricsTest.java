@@ -22,6 +22,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.eventbus.MessageConsumerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -115,8 +116,9 @@ public class VertxEventBusMetricsTest extends MicrometerMetricsTestBase {
 
     int num = 10;
     EventBus eb = vertx.eventBus();
-    MessageConsumer<Object> consumer = eb.consumer("foo");
-    consumer.setMaxBufferedMessages(num);
+    MessageConsumer<Object> consumer = eb.consumer(new MessageConsumerOptions()
+      .setAddress("foo")
+      .setMaxBufferedMessages(num));
     consumer.pause();
     consumer.handler(msg -> fail("should not be called"));
     for (int i = 0; i < num; i++) {
