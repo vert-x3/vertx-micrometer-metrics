@@ -27,8 +27,11 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.VertxBuilder;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.metrics.impl.DummyVertxMetrics;
+import io.vertx.micrometer.MicrometerMetricsFactory;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
 /**
@@ -70,7 +73,16 @@ public final class PrometheusBackendRegistry implements BackendRegistry {
   @Override
   public void init() {
     if (options.isStartEmbeddedServer()) {
-      this.vertx = Vertx.vertx();
+      this.vertx = Vertx.builder()
+        // Make sure this internal Vert.x instance does not reuse the default Prometheus backend registry
+        // Otherwise, the app can fail to start with java.lang.StackOverflowError
+        .withMetrics(new MicrometerMetricsFactory() {
+          @Override
+          public void init(VertxBuilder builder) {
+            builder.metrics(DummyVertxMetrics.INSTANCE);
+          }
+        })
+        .build();
       // Start dedicated server
       HttpServerOptions serverOptions = options.getEmbeddedServerOptions();
       if (serverOptions == null) {
