@@ -91,7 +91,7 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
 
     FakeClient(Vertx vertx, String where, String namespace) {
       this.vertx = vertx;
-      metrics = ((VertxInternal)vertx).metricsSPI().createClientMetrics(
+      metrics = ((VertxInternal)vertx).metrics().createClientMetrics(
         SocketAddress.domainSocketAddress(where), "fake", namespace);
     }
 

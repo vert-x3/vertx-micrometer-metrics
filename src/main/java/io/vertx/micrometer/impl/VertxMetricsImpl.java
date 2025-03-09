@@ -113,8 +113,8 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   public void vertxCreated(Vertx vertx) {
     if (bindNettyMetrics) {
       VertxInternal vi = (VertxInternal) vertx;
-      addMeterBinder(new NettyEventExecutorMetrics(vi.getAcceptorEventLoopGroup()));
-      addMeterBinder(new NettyEventExecutorMetrics(vi.getEventLoopGroup()));
+      addMeterBinder(new NettyEventExecutorMetrics(vi.acceptorEventLoopGroup()));
+      addMeterBinder(new NettyEventExecutorMetrics(vi.eventLoopGroup()));
     }
   }
 
