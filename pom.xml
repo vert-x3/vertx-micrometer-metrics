@@ -36,7 +36,7 @@
   <properties>
     <assertj.version>3.9.0</assertj.version>
     <junit.version>4.13.1</junit.version>
-    <micrometer.version>1.14.4</micrometer.version>
+    <micrometer.version>1.14.5</micrometer.version>
   </properties>
 
   <dependencyManagement>
