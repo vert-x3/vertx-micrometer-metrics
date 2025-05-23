@@ -1,4 +1,4 @@
-name: CI/CD (5.x)
+name: vertx-micrometer-metrics (5.x)
 on:
   push:
     branches:
