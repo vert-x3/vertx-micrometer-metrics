@@ -5,15 +5,17 @@ module io.vertx.metrics.micrometer {
   requires static io.vertx.codegen.json;
 
   requires io.netty.buffer;
-  requires io.prometheus.metrics.model;
   requires io.vertx.core;
   requires io.vertx.core.logging;
   requires io.vertx.web;
   requires micrometer.core;
-  requires micrometer.registry.graphite;
-  requires micrometer.registry.influx;
-  requires micrometer.registry.jmx;
-  requires micrometer.registry.prometheus;
+
+  // Required only at compilation (users can pick the backends they want)
+  requires static micrometer.registry.graphite;
+  requires static micrometer.registry.influx;
+  requires static micrometer.registry.jmx;
+  requires static micrometer.registry.prometheus;
+  requires static io.prometheus.metrics.model;
 
   exports io.vertx.micrometer;
   exports io.vertx.micrometer.backends;
