@@ -1,0 +1,41 @@
+# Dependabot configuration to keep micrometer up to date
+# The requirements were defined in https://github.com/vert-x3/vertx-micrometer-metrics/issues/267
+version: 2
+updates:
+  # Propose PRs for all the release types in the master branch.
+  - package-ecosystem: "maven"
+    directory: "/"
+    target-branch: master
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-name: "io.micrometer:micrometer-core"
+
+    # Propose only minor and patch updates for the 4.x and 5.0 branches.
+  - package-ecosystem: "maven"
+    directory: "/"
+    target-branch: 4.x
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-name: "io.micrometer:micrometer-core"
+    ignore:
+      - dependency-name: "io.micrometer:micrometer-core"
+        update-types:
+          - "version-update:semver-major"
+          # We need to ignore minor versions as well due to https://github.com/micrometer-metrics/micrometer/issues/6555
+          - "version-update:semver-minor"
+
+  - package-ecosystem: "maven"
+    directory: "/"
+    target-branch: "5.0"
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-name: "io.micrometer:micrometer-core"
+    ignore:
+      - dependency-name: "io.micrometer:micrometer-core"
+        update-types:
+          - "version-update:semver-major"
+          # We need to ignore minor versions as well due to https://github.com/micrometer-metrics/micrometer/issues/6555
+          - "version-update:semver-minor"
