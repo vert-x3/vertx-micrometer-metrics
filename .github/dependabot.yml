@@ -9,7 +9,7 @@ updates:
     schedule:
       interval: "weekly"
     allow:
-      - dependency-name: "io.micrometer:micrometer-core"
+      - dependency-name: "io.micrometer:*"
 
     # Propose only minor and patch updates for the 4.x and 5.0 branches.
   - package-ecosystem: "maven"
@@ -18,9 +18,9 @@ updates:
     schedule:
       interval: "weekly"
     allow:
-      - dependency-name: "io.micrometer:micrometer-core"
+      - dependency-name: "io.micrometer:*"
     ignore:
-      - dependency-name: "io.micrometer:micrometer-core"
+      - dependency-name: "io.micrometer:*"
         update-types:
           - "version-update:semver-major"
           # We need to ignore minor versions as well due to https://github.com/micrometer-metrics/micrometer/issues/6555
@@ -32,9 +32,9 @@ updates:
     schedule:
       interval: "weekly"
     allow:
-      - dependency-name: "io.micrometer:micrometer-core"
+      - dependency-name: "io.micrometer:*"
     ignore:
-      - dependency-name: "io.micrometer:micrometer-core"
+      - dependency-name: "io.micrometer:*"
         update-types:
           - "version-update:semver-major"
           # We need to ignore minor versions as well due to https://github.com/micrometer-metrics/micrometer/issues/6555
