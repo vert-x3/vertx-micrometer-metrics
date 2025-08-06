@@ -23,7 +23,7 @@
   </parent>
 
   <artifactId>vertx-micrometer-metrics</artifactId>
-  <version>4.518-SNAPSHOT</version>
+  <version>4.5.18-SNAPSHOT</version>
 
   <name>Vert.x metrics implementation for Micrometer.io</name>
 
