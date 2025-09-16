@@ -20,6 +20,7 @@ package io.vertx.micrometer.tests;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
@@ -141,6 +142,10 @@ public class MicrometerMetricsTestBase {
 
   public static Predicate<Meter> startsWith(String start) {
     return m -> m.getId().getName().startsWith(start);
+  }
+
+  public static Predicate<Meter> hasTag(String key, String value) {
+    return m -> m.getId().getTags().contains(Tag.of(key, value));
   }
 
   public static Datapoint dp(String id, double value) {

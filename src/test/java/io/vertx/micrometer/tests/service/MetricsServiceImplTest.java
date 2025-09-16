@@ -23,6 +23,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -114,15 +115,19 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("counter"))
-      .hasSize(13)
+      .hasSize(isVirtualThreadAvailable() ? 14 : 13) // VT Worker Pool metrics may not be present
       .flatExtracting(JsonObject::fieldNames)
       .contains("count");
 
     assertThat(snapshot).flatExtracting(e -> (List<JsonObject>) ((JsonArray) (e.getValue())).getList())
       .filteredOn(obj -> obj.getString("type").equals("timer"))
-      .hasSize(10)
+      .hasSize(isVirtualThreadAvailable() ? 12 : 10) // VT Worker Pool metrics may not be present
       .flatExtracting(JsonObject::fieldNames)
       .contains("totalTimeMs", "meanMs", "maxMs");
+  }
+
+  private boolean isVirtualThreadAvailable() {
+    return ((VertxInternal) vertx).isVirtualThreadAvailable();
   }
 
   @Test
