@@ -61,8 +61,8 @@ public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
       "vertx.pool.completed[pool_name=test-worker,pool_type=worker]$COUNT",
       value -> value.intValue() == taskCount);
 
-    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.pool"));
-    assertThat(datapoints).hasSize(30).contains(
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.pool").and(hasTag("pool_name", "test-worker")));
+    assertThat(datapoints).hasSize(10).contains(
       dp("vertx.pool.queue.pending[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.ratio[pool_name=test-worker,pool_type=worker]$VALUE", 0),
