@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,5 +88,37 @@ public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
       .usingComparatorForElementFieldsWithType(new GreaterOrEqualsComparator(), Double.class)
       .contains(
         dp("vertx.pool.usage[pool_name=test-worker,pool_type=worker]$TOTAL_TIME", taskCount * sleepMillis / 1000d));
+  }
+
+  @Test
+  public void shouldReportUsageMetrics(TestContext context) {
+    vertx = vertx(context);
+
+    int maxPoolSize = 8;
+    int taskCount = maxPoolSize * 3;
+    CountDownLatch latch = new CountDownLatch(1);
+
+    Async ready = context.async(taskCount);
+    WorkerExecutor workerExecutor = vertx.createSharedWorkerExecutor("test-worker", maxPoolSize);
+    for (int i = 0; i < taskCount; i++) {
+      workerExecutor.executeBlocking(() -> {
+        latch.await();
+        return null;
+      }, false).onComplete(context.asyncAssertSuccess(v -> {
+        ready.countDown();
+      }));
+    }
+
+    waitForValue(
+      context,
+      "vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$VALUE",
+      value -> value.intValue() == maxPoolSize);
+
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.pool.ratio").and(hasTag("pool_name", "test-worker")));
+    assertThat(datapoints).hasSize(1).contains(
+      dp("vertx.pool.ratio[pool_name=test-worker,pool_type=worker]$VALUE", 1.0D));
+
+    latch.countDown();
+    ready.awaitSuccess();
   }
 }
