@@ -20,7 +20,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Meter.MeterProvider;
 import io.micrometer.core.instrument.Tags;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.spi.metrics.TCPMetrics;
+import io.vertx.core.spi.metrics.TransportMetrics;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.impl.VertxNetClientMetrics.NetClientSocketMetric;
 import io.vertx.micrometer.impl.tags.Labels;
@@ -33,7 +33,7 @@ import static io.vertx.micrometer.MetricsDomain.NET_CLIENT;
 /**
  * @author Joel Takvorian
  */
-class VertxNetClientMetrics extends AbstractMetrics implements TCPMetrics<NetClientSocketMetric> {
+class VertxNetClientMetrics extends AbstractMetrics implements TransportMetrics<NetClientSocketMetric> {
 
   final Tags local;
   private final MeterProvider<Counter> netErrorCount;
@@ -52,6 +52,11 @@ class VertxNetClientMetrics extends AbstractMetrics implements TCPMetrics<NetCli
     netErrorCount = Counter.builder(names.getNetErrorCount())
       .description("Number of errors")
       .withRegistry(registry);
+  }
+
+  @Override
+  public String type() {
+    return "tcp";
   }
 
   @Override

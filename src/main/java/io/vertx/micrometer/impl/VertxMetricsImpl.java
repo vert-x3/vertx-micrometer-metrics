@@ -143,7 +143,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public TCPMetrics<?> createNetServerMetrics(NetServerOptions netServerOptions, SocketAddress socketAddress) {
+  public TransportMetrics<?> createNetServerMetrics(NetServerOptions netServerOptions, SocketAddress socketAddress) {
     if (disabledCategories.contains(NET_SERVER.toCategory())) {
       return null;
     }
@@ -151,7 +151,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public TCPMetrics<?> createNetClientMetrics(NetClientOptions netClientOptions) {
+  public TransportMetrics<?> createNetClientMetrics(NetClientOptions netClientOptions) {
     if (disabledCategories.contains(NET_CLIENT.toCategory())) {
       return null;
     }
