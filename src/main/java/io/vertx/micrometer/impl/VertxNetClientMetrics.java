@@ -38,16 +38,22 @@ class VertxNetClientMetrics extends AbstractMetrics implements TransportMetrics<
   final Tags local;
   private final MeterProvider<Counter> netErrorCount;
 
-  VertxNetClientMetrics(AbstractMetrics parent, String localAddress) {
-    this(parent, NET_CLIENT, localAddress);
+  VertxNetClientMetrics(AbstractMetrics parent, String metricsName, String localAddress) {
+    this(parent, metricsName, NET_CLIENT, localAddress);
   }
 
-  VertxNetClientMetrics(AbstractMetrics parent, MetricsDomain domain, String localAddress) {
+  VertxNetClientMetrics(AbstractMetrics parent, String metricsName, MetricsDomain domain, String localAddress) {
     super(parent, domain);
-    if (enabledLabels.contains(LOCAL)) {
-      local = Tags.of(LOCAL.toString(), localAddress == null ? "?" : localAddress);
+    Tags base;
+    if (enabledLabels.contains(CLIENT_NAME)) {
+      base = Tags.of(CLIENT_NAME.toString(), metricsName == null ? "?" : metricsName);
     } else {
-      local = Tags.empty();
+      base = Tags.empty();
+    }
+    if (enabledLabels.contains(LOCAL)) {
+      local = base.and(LOCAL.toString(), localAddress == null ? "?" : localAddress);
+    } else {
+      local = base;
     }
     netErrorCount = Counter.builder(names.getNetErrorCount())
       .description("Number of errors")

@@ -59,7 +59,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
         String user = req.headers() != null ? req.headers().get("user") : null;
         return user != null ? Collections.singletonList(Tag.of("user", user)) : Collections.emptyList();
       })
-      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS)
+      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS, Label.CLIENT_NAME)
       .addLabelMatch(new Match()
         .setDomain(MetricsDomain.HTTP_SERVER)
         .setType(MatchType.REGEX)
@@ -132,26 +132,26 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
   public void shouldReportHttpClientMetrics(TestContext ctx) {
     runClientRequests(ctx, false, "jordi");
 
-    waitForValue(ctx, "vertx.http.client.bytes.read[local=?,remote=127.0.0.1:9195]$COUNT",
+    waitForValue(ctx, "vertx.http.client.bytes.read[client_name=my_client_name,local=?,remote=127.0.0.1:9195]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length);
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.client."));
     assertThat(datapoints).hasSize(13).contains(
-        dp("vertx.http.client.bytes.read[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-        dp("vertx.http.client.bytes.written[local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-        dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-        dp("vertx.http.client.request.bytes[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-        dp("vertx.http.client.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-        dp("vertx.http.client.response.bytes[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-        dp("vertx.http.client.response.bytes[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-        dp("vertx.http.client.responses[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT));
+      dp("vertx.http.client.bytes.read[client_name=my_client_name,local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+      dp("vertx.http.client.bytes.written[client_name=my_client_name,local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+      dp("vertx.http.client.request.bytes[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.client.request.bytes[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+      dp("vertx.http.client.requests[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.client.response.bytes[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.client.response.bytes[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+      dp("vertx.http.client.responses[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT));
 
     assertThat(datapoints).extracting(Datapoint::id).contains(
-      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL_TIME",
-      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT",
-      "vertx.http.client.response.time[code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$MAX",
-      "vertx.http.client.active.requests[local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$VALUE",
-      "vertx.http.client.active.connections[local=?,remote=127.0.0.1:9195]$VALUE");
+      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL_TIME",
+      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT",
+      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$MAX",
+      "vertx.http.client.active.requests[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$VALUE",
+      "vertx.http.client.active.connections[client_name=my_client_name,local=?,remote=127.0.0.1:9195]$VALUE");
 
     datapoints = listDatapoints(dp -> dp.getId().getName().startsWith("vertx.pool.queue.") && Objects.equals(dp.getId().getTag("pool_type"), "http"));
     assertThat(datapoints).hasSize(4).contains(
@@ -242,7 +242,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
     Async clientsFinished = ctx.async(concurrentClients);
     for (int i = 0; i < concurrentClients; i++) {
       ForkJoinPool.commonPool().execute(() -> {
-        httpClient = vertx.createHttpClient();
+        httpClient = vertx.createHttpClient(new HttpClientOptions().setMetricsName("my_client_name"));
         wsClient = vertx.createWebSocketClient();
         httpRequest(httpClient, ctx, user);
         if (ws) {

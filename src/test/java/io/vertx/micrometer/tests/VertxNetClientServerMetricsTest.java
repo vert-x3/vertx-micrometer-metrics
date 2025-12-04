@@ -3,6 +3,7 @@ package io.vertx.micrometer.tests;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
@@ -33,7 +34,7 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
   protected MicrometerMetricsOptions metricOptions() {
     return super.metricOptions()
       .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
-      .addLabels(Label.LOCAL, Label.REMOTE)
+      .addLabels(Label.LOCAL, Label.REMOTE, Label.CLIENT_NAME)
       .addLabelMatch(new Match()
         .setDomain(MetricsDomain.NET_SERVER)
         .setType(MatchType.REGEX)
@@ -68,14 +69,14 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
   public void shouldReportNetClientMetrics(TestContext ctx) {
     runClientRequests(ctx);
 
-    waitForValue(ctx, "vertx.net.client.bytes.read[local=?,remote=localhost:9194]$COUNT",
+    waitForValue(ctx, "vertx.net.client.bytes.read[client_name=my_client_name,local=?,remote=localhost:9194]$COUNT",
       value -> value.intValue() == concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length);
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.net.client."));
     assertThat(datapoints).containsOnly(
-        dp("vertx.net.client.active.connections[local=?,remote=localhost:9194]$VALUE", 0),
-        dp("vertx.net.client.bytes.read[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-        dp("vertx.net.client.bytes.written[local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length));
+      dp("vertx.net.client.active.connections[client_name=my_client_name,local=?,remote=localhost:9194]$VALUE", 0),
+      dp("vertx.net.client.bytes.read[client_name=my_client_name,local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+      dp("vertx.net.client.bytes.written[client_name=my_client_name,local=?,remote=localhost:9194]$COUNT", concurrentClients * SENT_COUNT * CLIENT_REQUEST.getBytes().length));
   }
 
   @Test
@@ -96,7 +97,7 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
     Async clientsFinished = ctx.async(concurrentClients);
     for (int i = 0; i < concurrentClients; i++) {
       ForkJoinPool.commonPool().execute(() -> {
-        NetClient client = vertx.createNetClient();
+        NetClient client = vertx.createNetClient(new NetClientOptions().setMetricsName("my_client_name"));
         request(client, ctx);
         clientsFinished.countDown();
       });
