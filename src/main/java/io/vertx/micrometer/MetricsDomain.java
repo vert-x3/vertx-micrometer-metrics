@@ -54,7 +54,10 @@ public enum MetricsDomain {
   NAMED_POOLS("vertx.pool."),
   /**
    * Verticle metrics.
+   *
+   * @deprecated as of 5.1, because it's no longer used
    */
+  @Deprecated(forRemoval = true)
   VERTICLES("vertx.verticle.");
 
   private String prefix;
