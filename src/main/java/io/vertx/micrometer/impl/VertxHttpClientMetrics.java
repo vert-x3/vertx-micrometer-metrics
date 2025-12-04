@@ -47,8 +47,8 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
   private final MeterProvider<Counter> responseCount;
   private final MeterProvider<DistributionSummary> responseBytes;
 
-  VertxHttpClientMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider, String localAddress) {
-    super(parent, HTTP_CLIENT, localAddress);
+  VertxHttpClientMetrics(AbstractMetrics parent, String metricsName, Function<HttpRequest, Iterable<Tag>> customTagsProvider, String localAddress) {
+    super(parent, metricsName, HTTP_CLIENT, localAddress);
     this.customTagsProvider = customTagsProvider;
     requestCount = Counter.builder(names.getHttpRequestsCount())
       .description("Number of requests sent")

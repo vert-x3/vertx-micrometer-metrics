@@ -139,7 +139,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (disabledCategories.contains(HTTP_CLIENT.toCategory())) {
       return null;
     }
-    return new VertxHttpClientMetrics(this, clientRequestTagsProvider, httpClientOptions.getLocalAddress());
+    return new VertxHttpClientMetrics(this, httpClientOptions.getMetricsName(), clientRequestTagsProvider, httpClientOptions.getLocalAddress());
   }
 
   @Override
@@ -155,7 +155,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (disabledCategories.contains(NET_CLIENT.toCategory())) {
       return null;
     }
-    return new VertxNetClientMetrics(this, netClientOptions.getLocalAddress());
+    return new VertxNetClientMetrics(this, netClientOptions.getMetricsName(), netClientOptions.getLocalAddress());
   }
 
   @Override
