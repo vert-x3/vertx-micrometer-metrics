@@ -75,6 +75,11 @@ public enum Label {
    */
   POOL_NAME("pool_name"),
   /**
+   * Client name, such as Net and HTTP Clients
+   * @see io.vertx.core.net.ClientOptionsBase#setMetricsName(String)
+   */
+  CLIENT_NAME("client_name"),
+  /**
    * Client namespace
    */
   NAMESPACE("client_namespace");
