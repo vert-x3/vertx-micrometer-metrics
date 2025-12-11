@@ -73,6 +73,11 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   @Deprecated(forRemoval = true)
   public static final boolean DEFAULT_METER_CACHED_ENABLED = true;
 
+  /**
+   * Whether gauges previously available should be registered for backward compatibility = false.
+   */
+  public static final boolean DEFAULT_REGISTER_OLD_GAUGES = false;
+
   private Set<String> disabledMetricsCategories;
   private String registryName;
   private Set<Label> labels;
@@ -85,6 +90,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private MetricsNaming metricsNaming;
   private Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider;
   private Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
+  private boolean registerOldGauges;
 
   /**
    * Creates default options for Micrometer metrics.
@@ -99,6 +105,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     metricsNaming = DEFAULT_METRICS_NAMING;
     serverRequestTagsProvider = null;
     clientRequestTagsProvider = null;
+    registerOldGauges = DEFAULT_REGISTER_OLD_GAUGES;
   }
 
   /**
@@ -124,6 +131,7 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     metricsNaming = other.metricsNaming;
     serverRequestTagsProvider = other.serverRequestTagsProvider;
     clientRequestTagsProvider = other.clientRequestTagsProvider;
+    registerOldGauges = other.registerOldGauges;
   }
 
   /**
@@ -478,6 +486,24 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    */
   @Deprecated(forRemoval = true)
   public MicrometerMetricsOptions setMeterCacheEnabled(boolean meterCacheEnabled) {
+    return this;
+  }
+
+  /**
+   * @return {@code true} if old gauges should be registered, {@code false} otherwise
+   */
+  public boolean isRegisterOldGauges() {
+    return registerOldGauges;
+  }
+
+  /**
+   * Whether gauges previously available should be registered for backward compatibility. Defaults to {@code false}.
+   *
+   * @param registerOldGauges {@code true} to register old gauges, {@code false} otherwise. Defaults to {@code false}.
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MicrometerMetricsOptions setRegisterOldGauges(boolean registerOldGauges) {
+    this.registerOldGauges = registerOldGauges;
     return this;
   }
 }
