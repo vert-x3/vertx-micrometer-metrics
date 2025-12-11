@@ -68,7 +68,9 @@ public class MicrometerMetricsOptions extends MetricsOptions {
 
   /**
    * Whether a meter cache should be enabled by default = true.
+   * @deprecated as of 5.1, this is no longer used since Vert.x 5.0
    */
+  @Deprecated(forRemoval = true)
   public static final boolean DEFAULT_METER_CACHED_ENABLED = true;
 
   private Set<String> disabledMetricsCategories;
@@ -83,7 +85,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
   private MetricsNaming metricsNaming;
   private Function<HttpRequest, Iterable<Tag>> serverRequestTagsProvider;
   private Function<HttpRequest, Iterable<Tag>> clientRequestTagsProvider;
-  private boolean meterCacheEnabled;
 
   /**
    * Creates default options for Micrometer metrics.
@@ -98,7 +99,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     metricsNaming = DEFAULT_METRICS_NAMING;
     serverRequestTagsProvider = null;
     clientRequestTagsProvider = null;
-    meterCacheEnabled = DEFAULT_METER_CACHED_ENABLED;
   }
 
   /**
@@ -124,7 +124,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     metricsNaming = other.metricsNaming;
     serverRequestTagsProvider = other.serverRequestTagsProvider;
     clientRequestTagsProvider = other.clientRequestTagsProvider;
-    meterCacheEnabled = other.meterCacheEnabled;
   }
 
   /**
@@ -463,9 +462,11 @@ public class MicrometerMetricsOptions extends MetricsOptions {
 
   /**
    * @return {@code true} if a meter cache should be enabled, {@code false} otherwise
+   * @deprecated as of 5.1, this is no longer used since Vert.x 5.0
    */
+  @Deprecated(forRemoval = true)
   public boolean isMeterCacheEnabled() {
-    return meterCacheEnabled;
+    return false;
   }
 
   /**
@@ -473,9 +474,10 @@ public class MicrometerMetricsOptions extends MetricsOptions {
    *
    * @param meterCacheEnabled {@code true} to enable a meter cache, {@code false} otherwise. Defaults to {@code true}.
    * @return a reference to this, so the API can be used fluently
+   * @deprecated as of 5.1, this is no longer used since Vert.x 5.0
    */
+  @Deprecated(forRemoval = true)
   public MicrometerMetricsOptions setMeterCacheEnabled(boolean meterCacheEnabled) {
-    this.meterCacheEnabled = meterCacheEnabled;
     return this;
   }
 }
