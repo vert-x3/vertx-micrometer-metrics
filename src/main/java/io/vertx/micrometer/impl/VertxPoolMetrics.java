@@ -17,6 +17,7 @@
 package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Timer.Sample;
@@ -31,12 +32,12 @@ import static io.vertx.micrometer.MetricsDomain.NAMED_POOLS;
 /**
  * @author Joel Takvorian
  */
-class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample, Sample> {
+class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<VertxPoolMetrics.QueueMetric, VertxPoolMetrics.UsageMetric> {
 
   final Timer queueDelay;
-  final LongAdder queueSize;
+  final LongTaskTimer queueSize;
   final Timer usage;
-  final LongAdder inUse;
+  final LongTaskTimer inUse;
   final LongAdder usageRatio;
   final Counter completed;
 
@@ -53,7 +54,7 @@ class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample, Sa
       .description("Time spent in queue before being processed")
       .tags(tags)
       .register(registry);
-    queueSize = longGaugeBuilder(names.getPoolQueuePending(), LongAdder::doubleValue)
+    queueSize = LongTaskTimer.builder(names.getPoolQueuePending())
       .description("Number of pending elements in queue")
       .tags(tags)
       .register(registry);
@@ -61,7 +62,7 @@ class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample, Sa
       .description("Time using a resource")
       .tags(tags)
       .register(registry);
-    inUse = longGaugeBuilder(names.getPoolInUse(), LongAdder::doubleValue)
+    inUse = LongTaskTimer.builder(names.getPoolInUse())
       .description("Number of resources used")
       .tags(tags)
       .register(registry);
@@ -76,29 +77,59 @@ class VertxPoolMetrics extends AbstractMetrics implements PoolMetrics<Sample, Sa
   }
 
   @Override
-  public Sample enqueue() {
-    queueSize.increment();
-    return Timer.start();
+  public QueueMetric enqueue() {
+    return new QueueMetric(queueDelay, queueSize);
   }
 
   @Override
-  public void dequeue(Sample submitted) {
-    queueSize.decrement();
-    submitted.stop(queueDelay);
+  public void dequeue(QueueMetric queueMetric) {
+    queueMetric.dequeue();
   }
 
   @Override
-  public Sample begin() {
-    inUse.increment();
+  public UsageMetric begin() {
     usageRatio.increment();
-    return Timer.start();
+    return new UsageMetric(usage, inUse);
   }
 
   @Override
-  public void end(Sample timer) {
-    inUse.decrement();
+  public void end(UsageMetric usageMetric) {
+    usageMetric.end();
     usageRatio.decrement();
-    timer.stop(usage);
     completed.increment();
+  }
+
+  static class QueueMetric {
+    private final Timer queueDelay;
+    private final LongTaskTimer.Sample queueSize;
+    private final Sample submitted;
+
+    private QueueMetric(Timer queueDelay, LongTaskTimer queueSize) {
+      this.queueDelay = queueDelay;
+      this.queueSize = queueSize.start();
+      this.submitted = Timer.start();
+    }
+
+    private void dequeue() {
+      queueSize.stop();
+      submitted.stop(queueDelay);
+    }
+  }
+
+  static class UsageMetric {
+    private final Timer usage;
+    private final LongTaskTimer.Sample inUse;
+    private final Sample begun;
+
+    private UsageMetric(Timer usage, LongTaskTimer inUse) {
+      this.usage = usage;
+      this.inUse = inUse.start();
+      begun = Timer.start();
+    }
+
+    private void end() {
+      inUse.stop();
+      begun.stop(usage);
+    }
   }
 }

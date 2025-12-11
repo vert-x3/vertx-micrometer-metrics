@@ -63,9 +63,9 @@ public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
       value -> value.intValue() == taskCount);
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.pool").and(hasTag("pool_name", "test-worker")));
-    assertThat(datapoints).hasSize(10).contains(
-      dp("vertx.pool.queue.pending[pool_name=test-worker,pool_type=worker]$VALUE", 0),
-      dp("vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$VALUE", 0),
+    assertThat(datapoints).hasSize(14).contains(
+      dp("vertx.pool.queue.pending[pool_name=test-worker,pool_type=worker]$ACTIVE_TASKS", 0),
+      dp("vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$ACTIVE_TASKS", 0),
       dp("vertx.pool.ratio[pool_name=test-worker,pool_type=worker]$VALUE", 0),
       dp("vertx.pool.completed[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
       dp("vertx.pool.queue.time[pool_name=test-worker,pool_type=worker]$COUNT", taskCount),
@@ -111,7 +111,7 @@ public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
 
     waitForValue(
       context,
-      "vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$VALUE",
+      "vertx.pool.in.use[pool_name=test-worker,pool_type=worker]$ACTIVE_TASKS",
       value -> value.intValue() == maxPoolSize);
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.pool.ratio").and(hasTag("pool_name", "test-worker")));
