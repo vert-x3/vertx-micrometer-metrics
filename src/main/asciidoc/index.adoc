@@ -948,3 +948,18 @@ Likewise, use `RedisOptions#setMetricsName(String)` to scope the client metrics
 redisOptions.setMetricsName("the-client-name");
 ----
 
+== Miscellaneous
+
+=== Gauge has already been registered warning
+
+In your logs, you might find a message such as:
+
+-----
+[vert.x-eventloop-thread-0] WARN io.micrometer.core.instrument.MeterRegistry - This Gauge has been already registered (MeterId{name='vertx.pool.queue.pending', tags=[tag(pool_name=localhost:37917),tag(pool_type=ws)]}), the registration will be ignored. Note that subsequent logs will be logged at debug level.
+-----
+
+This is a known https://github.com/vert-x3/vertx-micrometer-metrics/issues/259[issue] but, no worries, it does not impact the accuracy of data reported by Vert.x.
+
+In a few words, it happens because of a Micrometer `Gauge` limitation that is worked around in Vert.x Micrometer Metrics.
+
+In a future Vert.x version, https://github.com/vert-x3/vertx-micrometer-metrics/issues/296[usages of `Gauge` could be replaced] with other metric types.
