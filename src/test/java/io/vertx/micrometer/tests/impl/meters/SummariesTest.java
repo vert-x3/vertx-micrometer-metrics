@@ -51,12 +51,12 @@ public class SummariesTest {
     s2.record(10);
 
     DistributionSummary s = registry.find("my_summary").tags("address", "1").summary();
-    assertThat(s).isNotNull().extracting(DistributionSummary::count).containsExactly(2L);
+    assertThat(s).isNotNull().extracting(DistributionSummary::count).isEqualTo(2L);
     assertThat(s.totalAmount()).isEqualTo(13);
     s = registry.find("my_summary").tags("address", "addr1").summary();
     assertThat(s).isNull();
     s = registry.find("my_summary").tags("address", "addr2").summary();
-    assertThat(s).isNotNull().extracting(DistributionSummary::count).containsExactly(1L);
+    assertThat(s).isNotNull().extracting(DistributionSummary::count).isEqualTo(1L);
     assertThat(s.totalAmount()).isEqualTo(10);
   }
 
@@ -75,7 +75,7 @@ public class SummariesTest {
     s2.record(10);
 
     DistributionSummary s = registry.find("my_summary").tags("address", "_").summary();
-    assertThat(s).isNotNull().extracting(DistributionSummary::count).containsExactly(3L);
+    assertThat(s).isNotNull().extracting(DistributionSummary::count).isEqualTo(3L);
     assertThat(s.totalAmount()).isEqualTo(23);
     s = registry.find("my_summary").tags("address", "addr1").summary();
     assertThat(s).isNull();
