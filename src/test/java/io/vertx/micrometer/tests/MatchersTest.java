@@ -53,7 +53,7 @@ public class MatchersTest {
     c2.increment();
 
     Counter c = registry.find("my_counter").tags("address", "addr1").counter();
-    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).isEqualTo(1d);
     c = registry.find("my_counter").tags("address", "addr2").counter();
     assertThat(c).isNull();
   }
@@ -79,13 +79,13 @@ public class MatchersTest {
 
     // In domain where the rule applies, filter is performed
     Counter c = registry.find(metric1).tags("address", "addr1").counter();
-    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).isEqualTo(1d);
     c = registry.find(metric1).tags("address", "addr2").counter();
     assertThat(c).isNull();
     // In other domain, no filter
     c = registry.find(metric2).tags("address", "addr1").counter();
-    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).isEqualTo(1d);
     c = registry.find(metric2).tags("address", "addr2").counter();
-    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).isEqualTo(1d);
   }
 }
