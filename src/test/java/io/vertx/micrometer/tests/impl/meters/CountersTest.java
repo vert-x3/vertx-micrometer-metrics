@@ -51,11 +51,11 @@ public class CountersTest {
     c2.increment();
 
     Counter c = registry.find("my_counter").tags("address", "1").counter();
-    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(2d);
+    assertThat(c).isNotNull().extracting(Counter::count).isEqualTo(2d);
     c = registry.find("my_counter").tags("address", "addr1").counter();
     assertThat(c).isNull();
     c = registry.find("my_counter").tags("address", "addr2").counter();
-    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(1d);
+    assertThat(c).isNotNull().extracting(Counter::count).isEqualTo(1d);
   }
 
   @Test
@@ -73,7 +73,7 @@ public class CountersTest {
     c2.increment();
 
     Counter c = registry.find("my_counter").tags("address", "_").counter();
-    assertThat(c).isNotNull().extracting(Counter::count).containsExactly(3d);
+    assertThat(c).isNotNull().extracting(Counter::count).isEqualTo(3d);
     c = registry.find("my_counter").tags("address", "addr1").counter();
     assertThat(c).isNull();
     c = registry.find("my_counter").tags("address", "addr2").counter();

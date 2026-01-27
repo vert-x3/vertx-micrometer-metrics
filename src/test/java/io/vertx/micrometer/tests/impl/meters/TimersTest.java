@@ -52,12 +52,12 @@ public class TimersTest {
     t2.record(10, TimeUnit.MILLISECONDS);
 
     Timer t = registry.find("my_timer").tags("address", "1").timer();
-    assertThat(t).isNotNull().extracting(Timer::count).containsExactly(2L);
+    assertThat(t).isNotNull().extracting(Timer::count).isEqualTo(2L);
     assertThat(t.totalTime(TimeUnit.MILLISECONDS)).isEqualTo(13);
     t = registry.find("my_timer").tags("address", "addr1").timer();
     assertThat(t).isNull();
     t = registry.find("my_timer").tags("address", "addr2").timer();
-    assertThat(t).isNotNull().extracting(Timer::count).containsExactly(1L);
+    assertThat(t).isNotNull().extracting(Timer::count).isEqualTo(1L);
     assertThat(t.totalTime(TimeUnit.MILLISECONDS)).isEqualTo(10);
   }
 
@@ -76,7 +76,7 @@ public class TimersTest {
     t2.record(10, TimeUnit.MILLISECONDS);
 
     Timer t = registry.find("my_timer").timer();
-    assertThat(t).isNotNull().extracting(Timer::count).containsExactly(3L);
+    assertThat(t).isNotNull().extracting(Timer::count).isEqualTo(3L);
     assertThat(t.totalTime(TimeUnit.MILLISECONDS)).isEqualTo(23);
     t = registry.find("my_timer").tags("address", "addr1").timer();
     assertThat(t).isNull();
