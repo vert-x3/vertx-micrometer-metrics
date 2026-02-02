@@ -28,13 +28,12 @@ import io.netty.buffer.ByteBufAllocatorMetricProvider;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.vertx.core.Vertx;
 import io.vertx.core.datagram.DatagramSocketOptions;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpClientConfig;
+import io.vertx.core.http.HttpServerConfig;
+import io.vertx.core.http.HttpVersion;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.buffer.BufferInternal;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetServerOptions;
-import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.*;
 import io.vertx.core.spi.metrics.*;
 import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.micrometer.MicrometerMetricsOptions;
@@ -127,35 +126,44 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public HttpServerMetrics<?, ?, ?> createHttpServerMetrics(HttpServerOptions httpClientOptions, SocketAddress socketAddress) {
+  public HttpServerMetrics<?, ?, ?> createHttpServerMetrics(HttpServerConfig config, SocketAddress localAddress) {
     if (disabledCategories.contains(HTTP_SERVER.toCategory())) {
       return null;
     }
-    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, socketAddress);
+    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, localAddress);
   }
 
   @Override
-  public HttpClientMetrics<?, ?, ?> createHttpClientMetrics(HttpClientOptions httpClientOptions) {
+  public HttpClientMetrics<?, ?, ?> createHttpClientMetrics(HttpClientConfig config) {
     if (disabledCategories.contains(HTTP_CLIENT.toCategory())) {
       return null;
     }
-    return new VertxHttpClientMetrics(this, httpClientOptions.getMetricsName(), clientRequestTagsProvider, httpClientOptions.getLocalAddress());
+    SocketAddress localAddress;
+    String localhost;
+    if (config.getVersions().contains(HttpVersion.HTTP_3) && (localAddress = config.getTcpConfig().getLocalAddress()) != null) {
+      localhost = localAddress.host();
+    } else {
+      localhost = null;
+    }
+    return new VertxHttpClientMetrics(this, config.getMetricsName(), clientRequestTagsProvider, localhost);
   }
 
   @Override
-  public TransportMetrics<?> createNetServerMetrics(NetServerOptions netServerOptions, SocketAddress socketAddress) {
+  public TransportMetrics<?> createTcpServerMetrics(TcpServerConfig config, SocketAddress localAddress) {
     if (disabledCategories.contains(NET_SERVER.toCategory())) {
       return null;
     }
-    return new VertxNetServerMetrics(this, socketAddress);
+    return new VertxNetServerMetrics(this, localAddress);
   }
 
   @Override
-  public TransportMetrics<?> createNetClientMetrics(NetClientOptions netClientOptions) {
+  public TransportMetrics<?> createTcpClientMetrics(TcpClientConfig config) {
     if (disabledCategories.contains(NET_CLIENT.toCategory())) {
       return null;
     }
-    return new VertxNetClientMetrics(this, netClientOptions.getMetricsName(), netClientOptions.getLocalAddress());
+    SocketAddress localAddress;
+    String localhost = (localAddress = config.getLocalAddress()) != null ? localAddress.host() : null;
+    return new VertxNetClientMetrics(this, config.getMetricsName(), localhost);
   }
 
   @Override

@@ -61,11 +61,6 @@ class VertxNetClientMetrics extends AbstractMetrics implements TransportMetrics<
   }
 
   @Override
-  public String type() {
-    return "tcp";
-  }
-
-  @Override
   public NetClientSocketMetric connected(SocketAddress remoteAddress, String remoteName) {
     Tags tags = local;
     if (enabledLabels.contains(REMOTE)) {
