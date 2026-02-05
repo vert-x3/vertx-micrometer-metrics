@@ -97,7 +97,8 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
 
     void process(int quantity) {
       for (int i = 0; i < quantity; i++) {
-        Object o = metrics.requestBegin("", "");
+        Object o = metrics.init();
+        metrics.requestBegin(o,"", "");
         metrics.requestEnd(o);
         processing.push(o);
       }

@@ -116,7 +116,12 @@ class VertxHttpClientMetrics extends AbstractMetrics implements HttpClientMetric
     }
 
     @Override
-    public RequestMetric requestBegin(String uri, HttpRequest request) {
+    public RequestMetric init() {
+      return new RequestMetric();
+    }
+
+    @Override
+    public void requestBegin(RequestMetric requestMetric, String uri, HttpRequest request) {
       Tags tags = endPointTags;
       if (enabledLabels.contains(HTTP_PATH)) {
         tags = tags.and(HTTP_PATH.toString(), HttpUtils.parsePath(request.uri()));
@@ -127,10 +132,9 @@ class VertxHttpClientMetrics extends AbstractMetrics implements HttpClientMetric
       if (customTagsProvider != null) {
         tags = tags.and(customTagsProvider.apply(request));
       }
-      RequestMetric requestMetric = new RequestMetric(tags);
+      requestMetric.init(tags);
       requestMetric.requests.increment();
       requestCount.withTags(tags).increment();
-      return requestMetric;
     }
 
     @Override
@@ -166,17 +170,17 @@ class VertxHttpClientMetrics extends AbstractMetrics implements HttpClientMetric
 
   class RequestMetric {
 
-    final Tags tags;
+    Tags tags;
 
-    final LongAdder requests;
-    final Sample sample;
+    LongAdder requests;
+    Sample sample;
 
     Tags responseTags;
     boolean responseEnded;
     boolean requestEnded;
     boolean reset;
 
-    RequestMetric(Tags tags) {
+    void init(Tags tags) {
       this.tags = tags;
       responseTags = tags;
       requests = longGaugeBuilder(names.getHttpActiveRequests(), LongAdder::doubleValue)

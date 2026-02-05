@@ -32,7 +32,7 @@ import static io.vertx.micrometer.Label.REMOTE;
 /**
  * @author Joel Takvorian
  */
-class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample, Object, Object> {
+class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<VertxClientMetrics.RequestMetric, Object, Object> {
 
   final Timer processingTime;
   final LongAdder processingPending;
@@ -61,33 +61,42 @@ class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<Sample
       .register(registry);
   }
 
-  @Override
-  public Sample requestBegin(String uri, Object request) {
-    // Ignore parameters at the moment; need to carefully figure out what can be labelled or not
-    processingPending.increment();
-    return Timer.start();
+  static class RequestMetric {
+    Sample sample;
   }
 
   @Override
-  public void requestEnd(Sample requestMetric) {
+  public RequestMetric init() {
+    return new RequestMetric();
+  }
+
+  @Override
+  public void requestBegin(RequestMetric requestMetric, String uri, Object request) {
+    // Ignore parameters at the moment; need to carefully figure out what can be labelled or not
+    processingPending.increment();
+    requestMetric.sample = Timer.start();
+  }
+
+  @Override
+  public void requestEnd(RequestMetric requestMetric) {
     // Ignoring request-alone metrics at the moment
   }
 
   @Override
-  public void responseBegin(Sample requestMetric, Object response) {
+  public void responseBegin(RequestMetric requestMetric, Object response) {
     // Ignoring response-alone metrics at the moment
   }
 
   @Override
-  public void requestReset(Sample requestMetric) {
+  public void requestReset(RequestMetric requestMetric) {
     processingPending.decrement();
-    requestMetric.stop(processingTime);
+    requestMetric.sample.stop(processingTime);
     resetCount.increment();
   }
 
   @Override
-  public void responseEnd(Sample requestMetric) {
+  public void responseEnd(RequestMetric requestMetric) {
     processingPending.decrement();
-    requestMetric.stop(processingTime);
+    requestMetric.sample.stop(processingTime);
   }
 }
