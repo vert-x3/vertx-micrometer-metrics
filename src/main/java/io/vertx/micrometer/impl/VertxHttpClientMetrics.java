@@ -38,8 +38,9 @@ import static io.vertx.micrometer.MetricsDomain.HTTP_CLIENT;
 /**
  * @author Joel Takvorian
  */
-class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClientMetrics<RequestMetric, LongAdder, NetClientSocketMetric> {
+class VertxHttpClientMetrics extends AbstractMetrics implements HttpClientMetrics<RequestMetric, LongAdder> {
 
+  private final Tags local;
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
   private final MeterProvider<Counter> requestCount;
   private final MeterProvider<DistributionSummary> requestBytes;
@@ -48,7 +49,18 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
   private final MeterProvider<DistributionSummary> responseBytes;
 
   VertxHttpClientMetrics(AbstractMetrics parent, String metricsName, Function<HttpRequest, Iterable<Tag>> customTagsProvider, String localAddress) {
-    super(parent, metricsName, HTTP_CLIENT, localAddress);
+    super(parent, HTTP_CLIENT);
+    Tags base;
+    if (enabledLabels.contains(CLIENT_NAME)) {
+      base = Tags.of(CLIENT_NAME.toString(), metricsName == null ? "?" : metricsName);
+    } else {
+      base = Tags.empty();
+    }
+    if (enabledLabels.contains(LOCAL)) {
+      local = base.and(LOCAL.toString(), localAddress == null ? "?" : localAddress);
+    } else {
+      local = base;
+    }
     this.customTagsProvider = customTagsProvider;
     requestCount = Counter.builder(names.getHttpRequestsCount())
       .description("Number of requests sent")
@@ -77,10 +89,10 @@ class VertxHttpClientMetrics extends VertxNetClientMetrics implements HttpClient
   }
 
   @Override
-  public LongAdder connected(WebSocket webSocket) {
+  public LongAdder connected(HttpRequest request) {
     Tags tags = local;
     if (enabledLabels.contains(REMOTE)) {
-      tags = tags.and(REMOTE.toString(), Labels.address(webSocket.remoteAddress()));
+      tags = tags.and(REMOTE.toString(), Labels.address(request.remoteAddress()));
     }
     LongAdder wsConnections = longGaugeBuilder(names.getHttpActiveWsConnections(), LongAdder::doubleValue)
       .description("Number of websockets currently opened")

@@ -38,10 +38,6 @@ class VertxNetClientMetrics extends AbstractMetrics implements TransportMetrics<
   final Tags local;
   private final MeterProvider<Counter> netErrorCount;
 
-  VertxNetClientMetrics(AbstractMetrics parent, String metricsName, String localAddress) {
-    this(parent, metricsName, NET_CLIENT, localAddress);
-  }
-
   VertxNetClientMetrics(AbstractMetrics parent, String metricsName, MetricsDomain domain, String localAddress) {
     super(parent, domain);
     Tags base;
