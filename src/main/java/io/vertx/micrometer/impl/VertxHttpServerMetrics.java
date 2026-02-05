@@ -24,6 +24,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
 import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
+import io.vertx.micrometer.impl.tags.Labels;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -37,8 +38,9 @@ import static io.vertx.micrometer.MetricsDomain.HTTP_SERVER;
 /**
  * @author Joel Takvorian
  */
-class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServerMetrics<VertxHttpServerMetrics.RequestMetric, LongAdder, VertxNetServerMetrics.NetServerSocketMetric> {
+class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetrics<VertxHttpServerMetrics.RequestMetric, LongAdder> {
 
+  private final Tags local;
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
   private final MeterProvider<Counter> requestResetCount;
   private final MeterProvider<DistributionSummary> requestBytes;
@@ -47,7 +49,12 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
   private final MeterProvider<DistributionSummary> httpResponseBytes;
 
   VertxHttpServerMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider, SocketAddress localAddress) {
-    super(parent, HTTP_SERVER, localAddress);
+    super(parent, HTTP_SERVER);
+    if (enabledLabels.contains(LOCAL)) {
+      local = Tags.of(LOCAL.toString(), Labels.address(localAddress));
+    } else {
+      local = Tags.empty();
+    }
     this.customTagsProvider = customTagsProvider;
     requestResetCount = Counter.builder(names.getHttpRequestResetsCount())
       .description("Number of request resets")
@@ -68,8 +75,15 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
 
 
   @Override
-  public RequestMetric requestBegin(NetServerSocketMetric socketMetric, HttpRequest request) {
-    Tags tags = socketMetric.tags;
+  public RequestMetric requestBegin(SocketAddress remoteAddress, HttpRequest request) {
+    Tags tags = local;
+    if (enabledLabels.contains(REMOTE)) {
+      String remoteName = remoteAddress.hostName();
+      if (remoteName == null) {
+        remoteName = "_";
+      }
+      tags = tags.and(REMOTE.toString(), Labels.address(remoteAddress, remoteName));
+    }
     if (enabledLabels.contains(HTTP_PATH)) {
       tags = tags.and(HTTP_PATH.toString(), HttpUtils.parsePath(request.uri()));
     }
@@ -100,8 +114,8 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
   }
 
   @Override
-  public RequestMetric responsePushed(NetServerSocketMetric socketMetric, HttpMethod method, String uri, HttpResponse response) {
-    Tags tags = socketMetric.tags;
+  public RequestMetric responsePushed(SocketAddress remoteAddress, HttpMethod method, String uri, HttpResponse response) {
+    Tags tags = local;
     if (enabledLabels.contains(HTTP_PATH)) {
       tags.and(HTTP_PATH.toString(), HttpUtils.parsePath(uri));
     }
@@ -131,10 +145,18 @@ class VertxHttpServerMetrics extends VertxNetServerMetrics implements HttpServer
   }
 
   @Override
-  public LongAdder connected(NetServerSocketMetric socketMetric, RequestMetric requestMetric, ServerWebSocket serverWebSocket) {
+  public LongAdder connected(HttpRequest request) {
+    Tags tags = local;
+    if (enabledLabels.contains(REMOTE)) {
+      String remoteName = request.remoteAddress().hostName();
+      if (remoteName == null) {
+        remoteName = "_";
+      }
+      tags = tags.and(REMOTE.toString(), Labels.address(request.remoteAddress(), remoteName));
+    }
     LongAdder wsConnections = longGaugeBuilder(names.getHttpActiveWsConnections(), LongAdder::doubleValue)
       .description("Number of websockets currently opened")
-      .tags(socketMetric.tags)
+      .tags(tags)
       .register(registry);
     wsConnections.increment();
     return wsConnections;

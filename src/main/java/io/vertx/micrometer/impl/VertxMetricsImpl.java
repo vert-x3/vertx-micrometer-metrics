@@ -36,6 +36,7 @@ import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.spi.metrics.*;
 import io.vertx.core.spi.observability.HttpRequest;
+import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.BackendRegistry;
@@ -126,7 +127,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public HttpServerMetrics<?, ?, ?> createHttpServerMetrics(HttpServerConfig config, SocketAddress localAddress) {
+  public HttpServerMetrics<?, ?> createHttpServerMetrics(HttpServerConfig config, SocketAddress localAddress) {
     if (disabledCategories.contains(HTTP_SERVER.toCategory())) {
       return null;
     }
@@ -134,7 +135,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public HttpClientMetrics<?, ?, ?> createHttpClientMetrics(HttpClientConfig config) {
+  public HttpClientMetrics<?, ?> createHttpClientMetrics(HttpClientConfig config) {
     if (disabledCategories.contains(HTTP_CLIENT.toCategory())) {
       return null;
     }
@@ -149,21 +150,33 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public TransportMetrics<?> createTcpServerMetrics(TcpServerConfig config, SocketAddress localAddress) {
-    if (disabledCategories.contains(NET_SERVER.toCategory())) {
+  public TransportMetrics<?> createTcpServerMetrics(TcpServerConfig config, String protocol, SocketAddress localAddress) {
+    MetricsDomain domain;
+    if ("http".equals(protocol)) {
+      domain = HTTP_SERVER;
+    } else {
+      domain = NET_SERVER;
+    }
+    if (disabledCategories.contains(domain.toCategory())) {
       return null;
     }
-    return new VertxNetServerMetrics(this, localAddress);
+    return new VertxNetServerMetrics(this, domain, localAddress);
   }
 
   @Override
-  public TransportMetrics<?> createTcpClientMetrics(TcpClientConfig config) {
-    if (disabledCategories.contains(NET_CLIENT.toCategory())) {
+  public TransportMetrics<?> createTcpClientMetrics(TcpClientConfig config, String protocol) {
+    MetricsDomain domain;
+    if ("http".equals(protocol)) {
+      domain = HTTP_CLIENT;
+    } else {
+      domain = NET_CLIENT;
+    }
+    if (disabledCategories.contains(domain.toCategory())) {
       return null;
     }
     SocketAddress localAddress;
     String localhost = (localAddress = config.getLocalAddress()) != null ? localAddress.host() : null;
-    return new VertxNetClientMetrics(this, config.getMetricsName(), localhost);
+    return new VertxNetClientMetrics(this, config.getMetricsName(), domain, localhost);
   }
 
   @Override
