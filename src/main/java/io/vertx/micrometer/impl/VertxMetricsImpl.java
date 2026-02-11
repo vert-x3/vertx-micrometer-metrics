@@ -127,11 +127,11 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
   }
 
   @Override
-  public HttpServerMetrics<?, ?> createHttpServerMetrics(HttpServerConfig config, SocketAddress localAddress) {
+  public HttpServerMetrics<?, ?> createHttpServerMetrics(HttpServerConfig config, SocketAddress tcpLocalAddress, SocketAddress udpLocalAddress) {
     if (disabledCategories.contains(HTTP_SERVER.toCategory())) {
       return null;
     }
-    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, localAddress);
+    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, config.getMetricsName(), tcpLocalAddress, udpLocalAddress);
   }
 
   @Override
