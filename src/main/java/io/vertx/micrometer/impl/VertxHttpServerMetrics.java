@@ -19,6 +19,7 @@ import io.micrometer.core.instrument.*;
 import io.micrometer.core.instrument.Meter.MeterProvider;
 import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpVersion;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
@@ -40,7 +41,8 @@ import static io.vertx.micrometer.MetricsDomain.HTTP_SERVER;
  */
 class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetrics<VertxHttpServerMetrics.RequestMetric, LongAdder> {
 
-  private final Tags local;
+  private final Tags tcpLocal;
+  private final Tags udpLocal;
   private final Function<HttpRequest, Iterable<Tag>> customTagsProvider;
   private final MeterProvider<Counter> requestResetCount;
   private final MeterProvider<DistributionSummary> requestBytes;
@@ -48,12 +50,15 @@ class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetric
   private final MeterProvider<Timer> httpResponseTime;
   private final MeterProvider<DistributionSummary> httpResponseBytes;
 
-  VertxHttpServerMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider, SocketAddress localAddress) {
+  VertxHttpServerMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider,
+                         SocketAddress tcpLocalAddress, SocketAddress udpLocalAddress) {
     super(parent, HTTP_SERVER);
     if (enabledLabels.contains(LOCAL)) {
-      local = Tags.of(LOCAL.toString(), Labels.address(localAddress));
+      tcpLocal = Tags.of(LOCAL.toString(), Labels.address(tcpLocalAddress));
+      udpLocal = Tags.of(LOCAL.toString(), Labels.address(udpLocalAddress));
     } else {
-      local = Tags.empty();
+      tcpLocal = Tags.empty();
+      udpLocal = Tags.empty();
     }
     this.customTagsProvider = customTagsProvider;
     requestResetCount = Counter.builder(names.getHttpRequestResetsCount())
@@ -76,7 +81,7 @@ class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetric
 
   @Override
   public RequestMetric requestBegin(SocketAddress remoteAddress, HttpRequest request) {
-    Tags tags = local;
+    Tags tags = request.version() == HttpVersion.HTTP_3 ? udpLocal : tcpLocal;
     if (enabledLabels.contains(REMOTE)) {
       String remoteName = remoteAddress.hostName();
       if (remoteName == null) {
@@ -115,7 +120,7 @@ class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetric
 
   @Override
   public RequestMetric responsePushed(SocketAddress remoteAddress, HttpMethod method, String uri, HttpResponse response) {
-    Tags tags = local;
+    Tags tags = tcpLocal;
     if (enabledLabels.contains(HTTP_PATH)) {
       tags.and(HTTP_PATH.toString(), HttpUtils.parsePath(uri));
     }
@@ -146,7 +151,7 @@ class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetric
 
   @Override
   public LongAdder connected(HttpRequest request) {
-    Tags tags = local;
+    Tags tags = tcpLocal;
     if (enabledLabels.contains(REMOTE)) {
       String remoteName = request.remoteAddress().hostName();
       if (remoteName == null) {
