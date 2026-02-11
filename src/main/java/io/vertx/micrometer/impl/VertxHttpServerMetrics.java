@@ -51,14 +51,20 @@ class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetric
   private final MeterProvider<DistributionSummary> httpResponseBytes;
 
   VertxHttpServerMetrics(AbstractMetrics parent, Function<HttpRequest, Iterable<Tag>> customTagsProvider,
-                         SocketAddress tcpLocalAddress, SocketAddress udpLocalAddress) {
+                         String metricsName, SocketAddress tcpLocalAddress, SocketAddress udpLocalAddress) {
     super(parent, HTTP_SERVER);
-    if (enabledLabels.contains(LOCAL)) {
-      tcpLocal = Tags.of(LOCAL.toString(), Labels.address(tcpLocalAddress));
-      udpLocal = Tags.of(LOCAL.toString(), Labels.address(udpLocalAddress));
+    Tags base;
+    if (enabledLabels.contains(SERVER_NAME)) {
+      base = Tags.of(SERVER_NAME.toString(), metricsName == null ? "?" : metricsName);
     } else {
-      tcpLocal = Tags.empty();
-      udpLocal = Tags.empty();
+      base = Tags.empty();
+    }
+    if (enabledLabels.contains(LOCAL)) {
+      tcpLocal = base.and(LOCAL.toString(), Labels.address(tcpLocalAddress));
+      udpLocal = base.and(LOCAL.toString(), Labels.address(udpLocalAddress));
+    } else {
+      tcpLocal = base;
+      udpLocal = base;
     }
     this.customTagsProvider = customTagsProvider;
     requestResetCount = Counter.builder(names.getHttpRequestResetsCount())

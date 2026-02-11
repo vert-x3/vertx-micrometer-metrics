@@ -131,7 +131,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (disabledCategories.contains(HTTP_SERVER.toCategory())) {
       return null;
     }
-    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, tcpLocalAddress, udpLocalAddress);
+    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, config.getMetricsName(), tcpLocalAddress, udpLocalAddress);
   }
 
   @Override

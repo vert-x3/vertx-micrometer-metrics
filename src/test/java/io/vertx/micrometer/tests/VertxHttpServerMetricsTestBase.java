@@ -30,6 +30,7 @@ public abstract class VertxHttpServerMetricsTestBase extends MicrometerMetricsTe
   @Override
   protected MicrometerMetricsOptions metricOptions() {
     return super.metricOptions()
+      .addLabels(Label.SERVER_NAME)
       .addLabels(Label.HTTP_PATH);
   }
 
@@ -75,6 +76,37 @@ public abstract class VertxHttpServerMetricsTestBase extends MicrometerMetricsTe
     doneLatch.awaitSuccess(20_000);
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server.active.requests"));
     assertThat(datapoints).hasSize(1).contains(
-      dp("vertx.http.server.active.requests[method=POST,path=/resource]$VALUE", 0.0));
+      dp("vertx.http.server.active.requests[method=POST,path=/resource,server_name=?]$VALUE", 0.0));
+  }
+
+  @Test
+  public void serverName(TestContext ctx) {
+    int numRequests = 10;
+    vertx = vertx(ctx);
+    httpServer = vertx.createHttpServer(new HttpServerConfig(serverConfig).setMetricsName("the-server"))
+      .requestHandler(req -> {
+        req.response().end(req.version().name());
+      });
+    httpServer
+      .listen(9195, "127.0.0.1")
+      .await();
+    HttpClient client = vertx.createHttpClient(clientConfig);
+    List<HttpVersion> versions = clientConfig.getVersions();
+    for (int i = 0;i < numRequests;i++) {
+      RequestOptions request = new RequestOptions()
+        .setProtocolVersion(versions.get(i % versions.size()))
+        .setMethod(HttpMethod.POST)
+        .setHost("127.0.0.1")
+        .setPort(9195)
+        .setURI("/resource?foo=bar");
+      client.request(request).compose(req -> req
+          .send()
+          .expecting(HttpResponseExpectation.SC_OK)
+          .compose(HttpClientResponse::body))
+        .await();
+    }
+    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server.active.requests"));
+    assertThat(datapoints).hasSize(1).contains(
+      dp("vertx.http.server.active.requests[method=POST,path=/resource,server_name=the-server]$VALUE", 0.0));
   }
 }

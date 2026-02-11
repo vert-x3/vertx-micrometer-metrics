@@ -29,4 +29,10 @@ public class VertxQuicHttpServerMetricsTest extends VertxHttpServerMetricsTestBa
     Assume.assumeFalse(PlatformDependent.isWindows());
     super.shouldDecrementActiveRequestsWhenRequestEndedAfterResponseEnded(ctx);
   }
+
+  @Override
+  public void serverName(TestContext ctx) {
+    Assume.assumeFalse(PlatformDependent.isWindows());
+    super.serverName(ctx);
+  }
 }

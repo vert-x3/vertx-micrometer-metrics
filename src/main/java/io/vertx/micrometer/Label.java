@@ -80,6 +80,11 @@ public enum Label {
    */
   CLIENT_NAME("client_name"),
   /**
+   * Server name, such as HTTP Servers
+   * @see io.vertx.core.http.HttpServerConfig#setMetricsName(String)
+   */
+  SERVER_NAME("server_name"),
+  /**
    * Client namespace
    */
   NAMESPACE("client_namespace");
