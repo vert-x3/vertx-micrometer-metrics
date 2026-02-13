@@ -304,14 +304,6 @@ public class MicrometerMetricsExamples {
       .build();
   }
 
-  public void useV3CompatNames() {
-    Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new MicrometerMetricsOptions()
-        .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-        .setMetricsNaming(MetricsNaming.v3Names())
-        .setEnabled(true)));
-  }
-
   public void useCustomTagsProvider() {
     Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new MicrometerMetricsOptions()
