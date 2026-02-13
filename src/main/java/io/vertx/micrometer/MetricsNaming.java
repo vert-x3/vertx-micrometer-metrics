@@ -140,6 +140,10 @@ public class MetricsNaming {
     return json;
   }
 
+  /**
+   * @deprecated as of 5.1
+   */
+  @Deprecated(forRemoval = true)
   public static MetricsNaming v3Names() {
     MetricsNaming mn = new MetricsNaming();
     mn.clientQueueTime = "queue.time";
