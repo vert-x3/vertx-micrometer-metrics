@@ -31,6 +31,7 @@ import io.vertx.core.datagram.DatagramSocketOptions;
 import io.vertx.core.http.HttpClientConfig;
 import io.vertx.core.http.HttpServerConfig;
 import io.vertx.core.http.HttpVersion;
+import io.vertx.core.http.ObservabilityConfig;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.net.*;
@@ -131,7 +132,12 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (disabledCategories.contains(HTTP_SERVER.toCategory())) {
       return null;
     }
-    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, config.getMetricsName(), tcpLocalAddress, udpLocalAddress);
+    String metricsName = null;
+    ObservabilityConfig obsCfg = config.getObservabilityConfig();
+    if (obsCfg != null) {
+      metricsName = obsCfg.getMetricsName();
+    }
+    return new VertxHttpServerMetrics(this, serverRequestTagsProvider, metricsName, tcpLocalAddress, udpLocalAddress);
   }
 
   @Override
@@ -146,7 +152,12 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     } else {
       localhost = null;
     }
-    return new VertxHttpClientMetrics(this, config.getMetricsName(), clientRequestTagsProvider, localhost);
+    String metricsName = null;
+    ObservabilityConfig obsCfg = config.getObservabilityConfig();
+    if (obsCfg != null) {
+      metricsName = obsCfg.getMetricsName();
+    }
+    return new VertxHttpClientMetrics(this, metricsName, clientRequestTagsProvider, localhost);
   }
 
   @Override

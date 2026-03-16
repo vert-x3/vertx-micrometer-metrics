@@ -1,13 +1,14 @@
 package io.vertx.micrometer.tests;
 
-import io.netty.util.internal.PlatformDependent;
 import io.vertx.core.http.*;
+import io.vertx.core.net.ClientSSLOptions;
+import io.vertx.core.net.ServerSSLOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import org.junit.Assume;
+import io.vertx.test.tls.Cert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -17,6 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(VertxUnitRunner.class)
 public abstract class VertxHttpServerMetricsTestBase extends MicrometerMetricsTestBase {
+
+  private static final ServerSSLOptions SSL_SERVER_CONFIG = new ServerSSLOptions().setKeyCertOptions(Cert.SERVER_JKS.get());
+  private static final ClientSSLOptions SSL_CLIENT_CONFIG = new ClientSSLOptions().setTrustAll(true);
 
   private final HttpServerConfig serverConfig;
   private final HttpClientConfig clientConfig;
@@ -39,7 +43,7 @@ public abstract class VertxHttpServerMetricsTestBase extends MicrometerMetricsTe
     vertx = vertx(ctx);
     int numRequests = 10;
     Async doneLatch = ctx.async(numRequests * 2);
-    httpServer = vertx.createHttpServer(serverConfig)
+    httpServer = vertx.createHttpServer(serverConfig, SSL_SERVER_CONFIG)
       .requestHandler(req -> {
         req.response().end(req.version().name());
         req.end().onComplete(ctx.asyncAssertSuccess(v -> doneLatch.countDown()));
@@ -49,7 +53,7 @@ public abstract class VertxHttpServerMetricsTestBase extends MicrometerMetricsTe
       .listen(9195, "127.0.0.1")
       .onComplete(ctx.asyncAssertSuccess(s -> listenLatch.complete()));
     listenLatch.awaitSuccess(20_000);
-    HttpClient client = vertx.createHttpClient(clientConfig);
+    HttpClient client = vertx.createHttpClient(clientConfig, SSL_CLIENT_CONFIG);
     List<HttpVersion> versions = clientConfig.getVersions();
     for (int i = 0;i < numRequests;i++) {
       RequestOptions request = new RequestOptions()
@@ -83,14 +87,15 @@ public abstract class VertxHttpServerMetricsTestBase extends MicrometerMetricsTe
   public void serverName(TestContext ctx) {
     int numRequests = 10;
     vertx = vertx(ctx);
-    httpServer = vertx.createHttpServer(new HttpServerConfig(serverConfig).setMetricsName("the-server"))
+    httpServer = vertx.createHttpServer(new HttpServerConfig(serverConfig)
+        .setObservabilityConfig(new ObservabilityConfig().setMetricsName("the-server")), SSL_SERVER_CONFIG)
       .requestHandler(req -> {
         req.response().end(req.version().name());
       });
     httpServer
       .listen(9195, "127.0.0.1")
       .await();
-    HttpClient client = vertx.createHttpClient(clientConfig);
+    HttpClient client = vertx.createHttpClient(clientConfig, SSL_CLIENT_CONFIG);
     List<HttpVersion> versions = clientConfig.getVersions();
     for (int i = 0;i < numRequests;i++) {
       RequestOptions request = new RequestOptions()

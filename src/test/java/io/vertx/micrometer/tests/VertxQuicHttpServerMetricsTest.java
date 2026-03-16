@@ -14,10 +14,8 @@ import java.util.Set;
 public class VertxQuicHttpServerMetricsTest extends VertxHttpServerMetricsTestBase {
 
   private static final HttpServerConfig SERVER_CONFIG = new HttpServerConfig()
-    .setSslOptions(new ServerSSLOptions().setKeyCertOptions(Cert.SERVER_JKS.get()))
     .setVersions(Set.of(HttpVersion.HTTP_3));
   private static final HttpClientConfig CLIENT_CONFIG = new HttpClientConfig()
-    .setSslOptions(new ClientSSLOptions().setTrustAll(true))
     .setVersions(List.of(HttpVersion.HTTP_3));
 
   public VertxQuicHttpServerMetricsTest() {
