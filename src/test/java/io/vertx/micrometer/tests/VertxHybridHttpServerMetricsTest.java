@@ -4,10 +4,7 @@ import io.netty.util.internal.PlatformDependent;
 import io.vertx.core.http.HttpClientConfig;
 import io.vertx.core.http.HttpServerConfig;
 import io.vertx.core.http.HttpVersion;
-import io.vertx.core.net.ClientSSLOptions;
-import io.vertx.core.net.ServerSSLOptions;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.test.tls.Cert;
 import org.junit.Assume;
 
 import java.util.List;
@@ -18,7 +15,9 @@ public class VertxHybridHttpServerMetricsTest extends VertxHttpServerMetricsTest
   private static final HttpServerConfig SERVER_CONFIG = new HttpServerConfig()
     .setVersions(Set.of(HttpVersion.HTTP_1_1, HttpVersion.HTTP_3));
   private static final HttpClientConfig CLIENT_CONFIG = new HttpClientConfig()
-    .setVersions(List.of(HttpVersion.HTTP_1_1, HttpVersion.HTTP_3));
+    .setVersions(List.of(HttpVersion.HTTP_1_1, HttpVersion.HTTP_3))
+    .setSsl(true)
+    .setVerifyHost(false);
 
   public VertxHybridHttpServerMetricsTest() {
     super(SERVER_CONFIG, CLIENT_CONFIG);

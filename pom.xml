@@ -304,37 +304,41 @@
       </build>
     </profile>
     <profile>
-      <id>osx-x86_64</id>
+      <id>linux</id>
       <activation>
         <os>
-          <family>mac</family>
-          <arch>x86_64</arch>
+          <family>linux</family>
         </os>
       </activation>
       <dependencies>
         <dependency>
           <groupId>io.netty</groupId>
-          <artifactId>netty-resolver-dns-native-macos</artifactId>
-          <classifier>osx-x86_64</classifier>
+          <artifactId>netty-codec-native-quic</artifactId>
+          <classifier>linux-x86_64</classifier>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>io.netty</groupId>
-          <artifactId>netty-transport-native-kqueue</artifactId>
-          <classifier>osx-x86_64</classifier>
+          <artifactId>netty-codec-native-quic</artifactId>
+          <classifier>linux-aarch_64</classifier>
           <scope>test</scope>
         </dependency>
       </dependencies>
     </profile>
     <profile>
-      <id>osx-aarch64</id>
+      <id>osx</id>
       <activation>
         <os>
           <family>mac</family>
-          <arch>aarch64</arch>
         </os>
       </activation>
       <dependencies>
+        <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-resolver-dns-native-macos</artifactId>
+          <classifier>osx-x86_64</classifier>
+          <scope>test</scope>
+        </dependency>
         <dependency>
           <groupId>io.netty</groupId>
           <artifactId>netty-resolver-dns-native-macos</artifactId>
@@ -344,7 +348,41 @@
         <dependency>
           <groupId>io.netty</groupId>
           <artifactId>netty-transport-native-kqueue</artifactId>
+          <classifier>osx-x86_64</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-transport-native-kqueue</artifactId>
           <classifier>osx-aarch_64</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-codec-native-quic</artifactId>
+          <classifier>osx-x86_64</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-codec-native-quic</artifactId>
+          <classifier>osx-aarch_64</classifier>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-codec-native-quic</artifactId>
+          <classifier>windows-x86_64</classifier>
           <scope>test</scope>
         </dependency>
       </dependencies>
