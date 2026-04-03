@@ -59,7 +59,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
         String user = req.headers() != null ? req.headers().get("user") : null;
         return user != null ? Collections.singletonList(Tag.of("user", user)) : Collections.emptyList();
       })
-      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS, Label.CLIENT_NAME)
+      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS, Label.CLIENT_NAME, Label.HTTP_VERSION)
       .addLabelMatch(new Match()
         .setDomain(MetricsDomain.HTTP_SERVER)
         .setType(MatchType.REGEX)
@@ -139,18 +139,18 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
     assertThat(datapoints).hasSize(13).contains(
       dp("vertx.http.client.bytes.read[client_name=my_client_name,local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
       dp("vertx.http.client.bytes.written[client_name=my_client_name,local=?,remote=127.0.0.1:9195]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.http.client.request.bytes[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-      dp("vertx.http.client.request.bytes[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.http.client.requests[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-      dp("vertx.http.client.response.bytes[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-      dp("vertx.http.client.response.bytes[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-      dp("vertx.http.client.responses[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT", concurrentClients * HTTP_SENT_COUNT));
+      dp("vertx.http.client.request.bytes[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.client.request.bytes[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+      dp("vertx.http.client.requests[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.client.response.bytes[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.client.response.bytes[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+      dp("vertx.http.client.responses[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$COUNT", concurrentClients * HTTP_SENT_COUNT));
 
     assertThat(datapoints).extracting(Datapoint::id).contains(
-      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$TOTAL_TIME",
-      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$COUNT",
-      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$MAX",
-      "vertx.http.client.active.requests[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi]$VALUE",
+      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$TOTAL_TIME",
+      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$COUNT",
+      "vertx.http.client.response.time[client_name=my_client_name,code=200,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$MAX",
+      "vertx.http.client.active.requests[client_name=my_client_name,local=?,method=POST,path=/resource,remote=127.0.0.1:9195,user=jordi,version=HTTP/1.1]$VALUE",
       "vertx.http.client.active.connections[client_name=my_client_name,local=?,remote=127.0.0.1:9195]$VALUE");
 
     datapoints = listDatapoints(dp -> dp.getId().getName().startsWith("vertx.pool.queue.") && Objects.equals(dp.getId().getTag("pool_type"), "http"));
@@ -169,27 +169,27 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server."));
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
-      "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.active.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
+      "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.active.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$VALUE",
       "vertx.http.server.active.connections[local=127.0.0.1:9195,remote=_]$VALUE",
       "vertx.http.server.bytes.read[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.bytes.written[local=127.0.0.1:9195,remote=_]$COUNT",
-      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL",
-      "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL",
-      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL_TIME",
-      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$MAX");
+      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$TOTAL",
+      "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$TOTAL",
+      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$TOTAL_TIME",
+      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$MAX");
 
     assertThat(datapoints).contains(
       dp("vertx.http.server.bytes.read[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
       dp("vertx.http.server.bytes.written[local=127.0.0.1:9195,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-      dp("vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-      dp("vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
-      dp("vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT),
-      dp("vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
-      dp("vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT", concurrentClients * HTTP_SENT_COUNT));
+      dp("vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$TOTAL", concurrentClients * HTTP_SENT_COUNT * CLIENT_REQUEST.getBytes().length),
+      dp("vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT", concurrentClients * HTTP_SENT_COUNT),
+      dp("vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$TOTAL", concurrentClients * HTTP_SENT_COUNT * SERVER_RESPONSE.getBytes().length),
+      dp("vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT", concurrentClients * HTTP_SENT_COUNT));
   }
 
   @Test
@@ -197,41 +197,41 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
     runClientRequests(ctx, true, null);
 
     // Remark, with websockets, two extra requests are performed so increase the expected value
-    waitForValue(ctx, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
+    waitForValue(ctx, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server."));
     assertThat(datapoints).extracting(Datapoint::id).containsOnly(
-      "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.active.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$VALUE",
+      "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.active.requests[local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$VALUE",
       "vertx.http.server.active.connections[local=127.0.0.1:9195,remote=_]$VALUE",
       "vertx.http.server.active.ws.connections[local=127.0.0.1:9195,remote=_]$VALUE",
       "vertx.http.server.bytes.read[local=127.0.0.1:9195,remote=_]$COUNT",
       "vertx.http.server.bytes.written[local=127.0.0.1:9195,remote=_]$COUNT",
-      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL",
-      "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL",
-      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$TOTAL_TIME",
-      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
-      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$MAX",
+      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$TOTAL",
+      "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.response.bytes[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$TOTAL",
+      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$TOTAL_TIME",
+      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.response.time[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$MAX",
       // Following ones result from the WS connection
-      "vertx.http.server.active.requests[local=127.0.0.1:9195,method=GET,path=/,remote=_]$VALUE",
-      "vertx.http.server.requests[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
-      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
-      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=GET,path=/,remote=_]$TOTAL",
-      "vertx.http.server.response.bytes[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
-      "vertx.http.server.response.bytes[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_]$TOTAL",
-      "vertx.http.server.response.time[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_]$TOTAL_TIME",
-      "vertx.http.server.response.time[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_]$COUNT",
-      "vertx.http.server.response.time[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_]$MAX");
+      "vertx.http.server.active.requests[local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$VALUE",
+      "vertx.http.server.requests[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.request.bytes[local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$TOTAL",
+      "vertx.http.server.response.bytes[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.response.bytes[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$TOTAL",
+      "vertx.http.server.response.time[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$TOTAL_TIME",
+      "vertx.http.server.response.time[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$COUNT",
+      "vertx.http.server.response.time[code=101,local=127.0.0.1:9195,method=GET,path=/,remote=_,version=HTTP/1.1]$MAX");
   }
 
   @Test
   public void shouldIgnoreInternalEventbusMetrics(TestContext ctx) {
     runClientRequests(ctx, true, null);
 
-    waitForValue(ctx, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_]$COUNT",
+    waitForValue(ctx, "vertx.http.server.requests[code=200,local=127.0.0.1:9195,method=POST,path=/resource,remote=_,version=HTTP/1.1]$COUNT",
       value -> value.intValue() == concurrentClients * HTTP_SENT_COUNT);
 
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.eventbus."));

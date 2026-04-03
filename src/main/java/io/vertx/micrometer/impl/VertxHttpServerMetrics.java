@@ -17,6 +17,7 @@ package io.vertx.micrometer.impl;
 
 import io.micrometer.core.instrument.*;
 import io.micrometer.core.instrument.Meter.MeterProvider;
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Timer.Sample;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpVersion;
@@ -27,9 +28,7 @@ import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
 import io.vertx.micrometer.impl.tags.Labels;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
@@ -40,6 +39,15 @@ import static io.vertx.micrometer.MetricsDomain.HTTP_SERVER;
  * @author Joel Takvorian
  */
 class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetrics<VertxHttpServerMetrics.RequestMetric, LongAdder> {
+
+  static final Map<HttpVersion, String> versions = new EnumMap<>(HttpVersion.class);
+
+  static {
+    versions.put(HttpVersion.HTTP_1_0, "HTTP/1.0");
+    versions.put(HttpVersion.HTTP_1_1, "HTTP/1.1");
+    versions.put(HttpVersion.HTTP_2, "HTTP/2");
+    versions.put(HttpVersion.HTTP_3, "HTTP/3");
+  }
 
   private final Tags tcpLocal;
   private final Tags udpLocal;
@@ -100,6 +108,9 @@ class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetric
     }
     if (enabledLabels.contains(HTTP_METHOD)) {
       tags = tags.and(HTTP_METHOD.toString(), request.method().toString());
+    }
+    if (enabledLabels.contains(HTTP_VERSION) && request.version() != null) {
+      tags = tags.and(HTTP_VERSION.toString(), versions.get(request.version()));
     }
     if (customTagsProvider != null) {
       tags = tags.and(customTagsProvider.apply(request));
