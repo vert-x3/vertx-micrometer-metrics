@@ -154,6 +154,12 @@
       <artifactId>vertx-launcher-legacy-cli</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Brings native QUIC dependencies for testing -->
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-http3</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <!-- Test dependency is for Unix socket test (linux) -->
       <groupId>io.netty</groupId>
@@ -304,28 +310,6 @@
       </build>
     </profile>
     <profile>
-      <id>linux</id>
-      <activation>
-        <os>
-          <family>linux</family>
-        </os>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-codec-native-quic</artifactId>
-          <classifier>linux-x86_64</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-codec-native-quic</artifactId>
-          <classifier>linux-aarch_64</classifier>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <id>osx</id>
       <activation>
         <os>
@@ -342,30 +326,6 @@
         <dependency>
           <groupId>io.netty</groupId>
           <artifactId>netty-resolver-dns-native-macos</artifactId>
-          <classifier>osx-aarch_64</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport-native-kqueue</artifactId>
-          <classifier>osx-x86_64</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport-native-kqueue</artifactId>
-          <classifier>osx-aarch_64</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-codec-native-quic</artifactId>
-          <classifier>osx-x86_64</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-codec-native-quic</artifactId>
           <classifier>osx-aarch_64</classifier>
           <scope>test</scope>
         </dependency>

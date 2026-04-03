@@ -129,6 +129,9 @@ class VertxHttpClientMetrics extends AbstractMetrics implements HttpClientMetric
       if (enabledLabels.contains(HTTP_METHOD)) {
         tags = tags.and(HTTP_METHOD.toString(), request.method().toString());
       }
+      if (enabledLabels.contains(HTTP_VERSION) && request.version() != null) {
+        tags = tags.and(HTTP_VERSION.toString(), VertxHttpServerMetrics.versions.get(request.version()));
+      }
       if (customTagsProvider != null) {
         tags = tags.and(customTagsProvider.apply(request));
       }

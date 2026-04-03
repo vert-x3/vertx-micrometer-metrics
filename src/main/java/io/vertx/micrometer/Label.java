@@ -50,6 +50,10 @@ public enum Label {
    */
   HTTP_CODE("code"),
   /**
+   * HTTP version: "HTTP/1.0","HTTP/1.1","HTTP/2" or "HTTP/3"
+   */
+  HTTP_VERSION("version"),
+  /**
    * Class name. When used in error counters (in net, http, datagram and eventbus domains) it relates to an exception
    * that occurred. When used in verticle domain, it relates to the verticle class name.
    */
