@@ -19,14 +19,12 @@ package io.vertx.micrometer.impl;
 import io.micrometer.core.instrument.*;
 import io.micrometer.core.instrument.Meter.MeterProvider;
 import io.micrometer.core.instrument.Timer.Sample;
-import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.HttpClientMetrics;
 import io.vertx.core.spi.observability.HttpRequest;
 import io.vertx.core.spi.observability.HttpResponse;
 import io.vertx.micrometer.impl.VertxHttpClientMetrics.RequestMetric;
-import io.vertx.micrometer.impl.VertxNetClientMetrics.NetClientSocketMetric;
 import io.vertx.micrometer.impl.tags.Labels;
 
 import java.util.concurrent.atomic.LongAdder;

@@ -28,7 +28,6 @@ import io.vertx.micrometer.impl.tags.Labels;
 import java.util.concurrent.atomic.LongAdder;
 
 import static io.vertx.micrometer.Label.*;
-import static io.vertx.micrometer.MetricsDomain.NET_CLIENT;
 
 /**
  * @author Joel Takvorian
