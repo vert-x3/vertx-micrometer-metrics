@@ -11,7 +11,7 @@ updates:
     allow:
       - dependency-name: "io.micrometer:*"
 
-    # Propose only minor and patch updates for the 4.x and 5.0 branches.
+    # Propose only minor and patch updates for the 4.x and 5.1 branches.
   - package-ecosystem: "maven"
     directory: "/"
     target-branch: 4.x
@@ -28,7 +28,7 @@ updates:
 
   - package-ecosystem: "maven"
     directory: "/"
-    target-branch: "5.0"
+    target-branch: "5.1"
     schedule:
       interval: "weekly"
     allow:
