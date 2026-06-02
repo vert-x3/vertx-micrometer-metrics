@@ -410,7 +410,6 @@ public class MicrometerMetricsOptions extends MetricsOptions {
 
   /**
    * {@code MetricsNaming} is a structure that holds names of all metrics, each one can be changed individually.
-   * For instance, to retrieve compatibility with the names used in Vert.x 3.x, use {@code setMetricsNaming(MetricsNaming.v3Names())}
    *
    * @param metricsNaming a {@code MetricsNaming} object.
    * @return a reference to this, so the API can be used fluently

@@ -22,7 +22,6 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsNaming;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,38 +69,5 @@ public class VertxDatagramNetClientNetServerSocketMetricsTest extends Micrometer
       dp("vertx.datagram.bytes.written[]$TOTAL", 45),  // 45 = size("some text") * loops
       dp("vertx.datagram.bytes.read[local=localhost:9192]$COUNT", 5),
       dp("vertx.datagram.bytes.read[local=localhost:9192]$TOTAL", 45));
-  }
-
-  @Test
-  public void shouldReportInCompatibilityMode(TestContext context) {
-    metricsOptions.setMetricsNaming(MetricsNaming.v3Names());
-
-    vertx = vertx(context);
-
-    String datagramContent = "some text";
-
-    // Setup server
-    int port = 9192;
-    String host = "localhost";
-    Async receiveLatch = context.async();
-    Async listenLatch = context.async();
-    vertx.createDatagramSocket().listen(port, host).onComplete(context.asyncAssertSuccess(so -> {
-      so.handler(packet -> receiveLatch.countDown());
-      listenLatch.complete();
-    }));
-    listenLatch.awaitSuccess(15000);
-
-    // Send to server
-    DatagramSocket client = vertx.createDatagramSocket();
-    client.send(datagramContent, port, host).onComplete(context.asyncAssertSuccess());
-    receiveLatch.awaitSuccess(15000);
-
-    waitForValue(context, "vertx.datagram.bytesSent[]$COUNT", value -> value.intValue() == 1);
-    List<Datapoint> datapoints = listDatapoints(startsWith("vertx.datagram."));
-    assertThat(datapoints).containsOnly(
-      dp("vertx.datagram.bytesSent[]$COUNT", 1),
-      dp("vertx.datagram.bytesSent[]$TOTAL", 9),
-      dp("vertx.datagram.bytesReceived[]$COUNT", 1),
-      dp("vertx.datagram.bytesReceived[]$TOTAL", 9));
   }
 }
