@@ -90,11 +90,6 @@ public class MicrometerMetricsOptionsConverter {
             obj.setMetricsNaming(new io.vertx.micrometer.MetricsNaming((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
-        case "meterCacheEnabled":
-          if (member.getValue() instanceof Boolean) {
-            obj.setMeterCacheEnabled((Boolean)member.getValue());
-          }
-          break;
       }
     }
   }
@@ -132,6 +127,5 @@ public class MicrometerMetricsOptionsConverter {
     if (obj.getMetricsNaming() != null) {
       json.put("metricsNaming", obj.getMetricsNaming().toJson());
     }
-    json.put("meterCacheEnabled", obj.isMeterCacheEnabled());
   }
 }

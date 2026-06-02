@@ -459,25 +459,4 @@ public class MicrometerMetricsOptions extends MetricsOptions {
     this.clientRequestTagsProvider = clientRequestTagsProvider;
     return this;
   }
-
-  /**
-   * @return {@code true} if a meter cache should be enabled, {@code false} otherwise
-   * @deprecated as of 5.1, this is no longer used since Vert.x 5.0
-   */
-  @Deprecated(forRemoval = true)
-  public boolean isMeterCacheEnabled() {
-    return false;
-  }
-
-  /**
-   * Whether a meter cache should be enabled. Defaults to {@code true}.
-   *
-   * @param meterCacheEnabled {@code true} to enable a meter cache, {@code false} otherwise. Defaults to {@code true}.
-   * @return a reference to this, so the API can be used fluently
-   * @deprecated as of 5.1, this is no longer used since Vert.x 5.0
-   */
-  @Deprecated(forRemoval = true)
-  public MicrometerMetricsOptions setMeterCacheEnabled(boolean meterCacheEnabled) {
-    return this;
-  }
 }
