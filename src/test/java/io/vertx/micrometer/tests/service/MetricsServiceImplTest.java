@@ -29,7 +29,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.micrometer.*;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MetricsNaming;
+import io.vertx.micrometer.MetricsService;
+import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.tests.MicrometerMetricsTestBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -128,37 +131,6 @@ public class MetricsServiceImplTest extends MicrometerMetricsTestBase {
 
   private boolean isVirtualThreadAvailable() {
     return ((VertxInternal) vertx).isVirtualThreadAvailable();
-  }
-
-  @Test
-  public void shouldGetSnapshotWithV3Names(TestContext ctx) {
-    setUpWithNames(ctx, MetricsNaming.v3Names());
-
-    HttpClient httpClient = vertx.createHttpClient();
-    runClientRequests(ctx, httpClient, 10, "/r1");
-    runClientRequests(ctx, httpClient, 5, "/r2");
-    httpClient.close();
-
-    JsonObject snapshot = MetricsService.create(vertx).getMetricsSnapshot();
-    assertThat(snapshot).extracting(Map.Entry::getKey).filteredOn(k -> k.startsWith("vertx.http")).containsExactlyInAnyOrder(
-      "vertx.http.client.bytesReceived",
-      "vertx.http.client.bytesSent",
-      "vertx.http.client.connections",
-      "vertx.http.client.request.bytes",
-      "vertx.http.client.requestCount",
-      "vertx.http.client.requests",
-      "vertx.http.client.response.bytes",
-      "vertx.http.client.responseCount",
-      "vertx.http.client.responseTime",
-      "vertx.http.server.bytesReceived",
-      "vertx.http.server.bytesSent",
-      "vertx.http.server.connections",
-      "vertx.http.server.request.bytes",
-      "vertx.http.server.requestCount",
-      "vertx.http.server.requests",
-      "vertx.http.server.response.bytes",
-      "vertx.http.server.responseTime"
-    );
   }
 
   @Test

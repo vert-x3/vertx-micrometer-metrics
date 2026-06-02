@@ -140,54 +140,6 @@ public class MetricsNaming {
     return json;
   }
 
-  /**
-   * @deprecated as of 5.1
-   */
-  @Deprecated(forRemoval = true)
-  public static MetricsNaming v3Names() {
-    MetricsNaming mn = new MetricsNaming();
-    mn.clientQueueTime = "queue.time";
-    mn.clientQueuePending = "queue.pending";
-    mn.clientProcessingTime = "processing.time";
-    mn.clientProcessingPending = "processing.pending";
-    mn.clientResetsCount = "reset";
-    mn.datagramBytesRead = "bytesReceived";
-    mn.datagramBytesWritten = "bytesSent";
-    mn.datagramErrorCount = "errors";
-    mn.ebHandlers = "handlers";
-    mn.ebPending = "pending";
-    mn.ebProcessed = "processed";
-    mn.ebPublished = "published";
-    mn.ebSent = "sent";
-    mn.ebReceived = "received";
-    mn.ebDelivered = "delivered";
-    mn.ebDiscarded = "discarded";
-    mn.ebReplyFailures = "replyFailures";
-    mn.ebBytesRead = "bytesRead";
-    mn.ebBytesWritten = "bytesWritten";
-    mn.httpQueueTime = "queue.delay";
-    mn.httpQueuePending = "queue.size";
-    mn.httpActiveRequests = "requests";
-    mn.httpRequestsCount = "requestCount";
-    mn.httpRequestBytes = "request.bytes";
-    mn.httpResponseTime = "responseTime";
-    mn.httpResponsesCount = "responseCount";
-    mn.httpResponseBytes = "response.bytes";
-    mn.httpActiveWsConnections = "wsConnections";
-    mn.httpRequestResetsCount = "requestResetCount";
-    mn.netActiveConnections = "connections";
-    mn.netBytesRead = "bytesReceived";
-    mn.netBytesWritten = "bytesSent";
-    mn.netErrorCount = "errors";
-    mn.poolQueueTime = "queue.delay";
-    mn.poolQueuePending = "queue.size";
-    mn.poolUsage = "usage";
-    mn.poolInUse = "inUse";
-    mn.poolUsageRatio = "ratio";
-    mn.poolCompleted = "completed";
-    return mn;
-  }
-
   public static MetricsNaming v4Names() {
     MetricsNaming mn = new MetricsNaming();
     mn.clientQueueTime = "queue.time";
