@@ -44,8 +44,8 @@ class VertxClientMetrics extends AbstractMetrics implements ClientMetrics<VertxC
     if (enabledLabels.contains(REMOTE)) {
       tags = tags.and(REMOTE.toString(), Labels.address(remoteAddress));
     }
-    if (enabledLabels.contains(NAMESPACE)) {
-      tags = tags.and(NAMESPACE.toString(), namespace == null ? "" : namespace);
+    if (enabledLabels.contains(NAMESPACE) && namespace != null && !namespace.isBlank()) {
+      tags = tags.and(NAMESPACE.toString(), namespace);
     }
     processingTime = Timer.builder(names.getClientProcessingTime())
       .description("Processing time, from request start to response end")

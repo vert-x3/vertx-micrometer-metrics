@@ -33,9 +33,7 @@ public abstract class VertxHttpServerMetricsTestBase extends MicrometerMetricsTe
 
   @Override
   protected MicrometerMetricsOptions metricOptions() {
-    return super.metricOptions()
-      .addLabels(Label.SERVER_NAME)
-      .addLabels(Label.HTTP_PATH);
+    return super.metricOptions().addLabels(Label.HTTP_PATH);
   }
 
   @Test
@@ -80,7 +78,7 @@ public abstract class VertxHttpServerMetricsTestBase extends MicrometerMetricsTe
     doneLatch.awaitSuccess(20_000);
     List<Datapoint> datapoints = listDatapoints(startsWith("vertx.http.server.active.requests"));
     assertThat(datapoints).hasSize(1).contains(
-      dp("vertx.http.server.active.requests[method=POST,path=/resource,server_name=?]$VALUE", 0.0));
+      dp("vertx.http.server.active.requests[method=POST,path=/resource]$VALUE", 0.0));
   }
 
   @Test
