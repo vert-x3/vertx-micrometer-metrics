@@ -34,7 +34,7 @@ public class VertxNetClientServerMetricsTest extends MicrometerMetricsTestBase {
   protected MicrometerMetricsOptions metricOptions() {
     return super.metricOptions()
       .addDisabledMetricsCategory(MetricsDomain.EVENT_BUS)
-      .addLabels(Label.LOCAL, Label.REMOTE, Label.CLIENT_NAME)
+      .addLabels(Label.LOCAL, Label.REMOTE)
       .addLabelMatch(new Match()
         .setDomain(MetricsDomain.NET_SERVER)
         .setType(MatchType.REGEX)

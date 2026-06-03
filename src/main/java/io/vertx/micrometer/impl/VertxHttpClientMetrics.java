@@ -49,8 +49,8 @@ class VertxHttpClientMetrics extends AbstractMetrics implements HttpClientMetric
   VertxHttpClientMetrics(AbstractMetrics parent, String metricsName, Function<HttpRequest, Iterable<Tag>> customTagsProvider, String localAddress) {
     super(parent, HTTP_CLIENT);
     Tags base;
-    if (enabledLabels.contains(CLIENT_NAME)) {
-      base = Tags.of(CLIENT_NAME.toString(), metricsName == null ? "?" : metricsName);
+    if (enabledLabels.contains(CLIENT_NAME) && metricsName != null && !metricsName.isBlank()) {
+      base = Tags.of(CLIENT_NAME.toString(), metricsName);
     } else {
       base = Tags.empty();
     }

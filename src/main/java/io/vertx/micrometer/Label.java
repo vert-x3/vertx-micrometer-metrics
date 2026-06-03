@@ -85,7 +85,7 @@ public enum Label {
   CLIENT_NAME("client_name"),
   /**
    * Server name, such as HTTP Servers
-   * @see io.vertx.core.http.HttpServerConfig#setMetricsName(String)
+   * @see io.vertx.core.net.EndpointConfig#setMetricsName(String)
    */
   SERVER_NAME("server_name"),
   /**

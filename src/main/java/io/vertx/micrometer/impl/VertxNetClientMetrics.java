@@ -40,8 +40,8 @@ class VertxNetClientMetrics extends AbstractMetrics implements TransportMetrics<
   VertxNetClientMetrics(AbstractMetrics parent, String metricsName, MetricsDomain domain, String localAddress) {
     super(parent, domain);
     Tags base;
-    if (enabledLabels.contains(CLIENT_NAME)) {
-      base = Tags.of(CLIENT_NAME.toString(), metricsName == null ? "?" : metricsName);
+    if (enabledLabels.contains(CLIENT_NAME) && metricsName != null && !metricsName.isBlank()) {
+      base = Tags.of(CLIENT_NAME.toString(), metricsName);
     } else {
       base = Tags.empty();
     }

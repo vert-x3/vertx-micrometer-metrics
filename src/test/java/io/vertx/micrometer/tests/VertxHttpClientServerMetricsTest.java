@@ -59,7 +59,7 @@ public class VertxHttpClientServerMetricsTest extends MicrometerMetricsTestBase 
         String user = req.headers() != null ? req.headers().get("user") : null;
         return user != null ? Collections.singletonList(Tag.of("user", user)) : Collections.emptyList();
       })
-      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS, Label.CLIENT_NAME, Label.HTTP_VERSION)
+      .addLabels(Label.REMOTE, Label.LOCAL, Label.HTTP_PATH, Label.EB_ADDRESS, Label.HTTP_VERSION)
       .addLabelMatch(new Match()
         .setDomain(MetricsDomain.HTTP_SERVER)
         .setType(MatchType.REGEX)

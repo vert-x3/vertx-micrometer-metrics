@@ -41,7 +41,7 @@ public class VertxClientMetricsTest extends MicrometerMetricsTestBase {
 
   @Override
   protected MicrometerMetricsOptions metricOptions() {
-    return super.metricOptions().addLabels(Label.REMOTE, Label.NAMESPACE);
+    return super.metricOptions().addLabels(Label.REMOTE);
   }
 
   @Test

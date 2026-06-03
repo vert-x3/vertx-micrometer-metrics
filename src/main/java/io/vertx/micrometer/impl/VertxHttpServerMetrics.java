@@ -61,8 +61,8 @@ class VertxHttpServerMetrics extends AbstractMetrics implements HttpServerMetric
                          String metricsName, SocketAddress tcpLocalAddress, SocketAddress udpLocalAddress) {
     super(parent, HTTP_SERVER);
     Tags base;
-    if (enabledLabels.contains(SERVER_NAME)) {
-      base = Tags.of(SERVER_NAME.toString(), metricsName == null ? "?" : metricsName);
+    if (enabledLabels.contains(SERVER_NAME) && metricsName != null && !metricsName.isBlank()) {
+      base = Tags.of(SERVER_NAME.toString(), metricsName);
     } else {
       base = Tags.empty();
     }
