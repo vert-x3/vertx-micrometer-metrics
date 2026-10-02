@@ -28,7 +28,7 @@ updates:
 
   - package-ecosystem: "maven"
     directory: "/"
-    target-branch: "5.1"
+    target-branch: "5.2"
     schedule:
       interval: "weekly"
     allow:
