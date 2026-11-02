@@ -31,6 +31,10 @@ public class LongGauges {
     this.longGauges = longGauges;
   }
 
+  public void remove(Meter.Id id) {
+    longGauges.remove(id);
+  }
+
   public LongGaugeBuilder builder(String name, ToDoubleFunction<LongAdder> func) {
     return new LongGaugeBuilder(name, longGauges, func);
   }
