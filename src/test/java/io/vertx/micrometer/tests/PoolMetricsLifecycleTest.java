@@ -14,8 +14,11 @@ package io.vertx.micrometer.tests;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer.Sample;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
@@ -198,6 +201,88 @@ public class PoolMetricsLifecycleTest {
       assertThat(gauges).isEmpty();
     } finally {
       executor.shutdownNow();
+    }
+  }
+
+  @Test
+  public void shouldKeepSharedGaugeValuesAfterOneOwnerCloses() {
+    VertxMetricsImpl metrics = metrics();
+    PoolMetrics<Sample, Sample> first = (PoolMetrics<Sample, Sample>) metrics.createPoolMetrics("worker", "test", 4);
+    PoolMetrics<Sample, Sample> second = (PoolMetrics<Sample, Sample>) metrics.createPoolMetrics("worker", "test", 4);
+    Sample queued = second.enqueue();
+    Sample running = second.begin();
+    first.close();
+
+    assertThat(registry.get("vertx.pool.queue.pending").gauge().value()).isEqualTo(1);
+    assertThat(registry.get("vertx.pool.in.use").gauge().value()).isEqualTo(1);
+    assertThat(registry.get("vertx.pool.ratio").gauge().value()).isEqualTo(0.25);
+    second.dequeue(queued);
+    second.end(running);
+    assertThat(registry.get("vertx.pool.completed").counter().count()).isEqualTo(1);
+    second.close();
+    assertThat(gauges).isEmpty();
+  }
+
+  @Test
+  public void shouldKeepOwnershipSeparateBetweenRegistries() {
+    SimpleMeterRegistry other = new SimpleMeterRegistry();
+    try {
+      ConcurrentMap<Meter.Id, LongAdder> otherGauges = new ConcurrentHashMap<>();
+      VertxMetricsImpl otherMetrics = new VertxMetricsImpl(options, () -> other, new LongGauges(otherGauges));
+      PoolMetrics<?, ?> first = metrics().createPoolMetrics("worker", "test", 4);
+      PoolMetrics<?, ?> second = otherMetrics.createPoolMetrics("worker", "test", 4);
+      first.close();
+      assertThat(registry.getMeters()).isEmpty();
+      assertThat(gauges).isEmpty();
+      assertThat(other.getMeters()).hasSize(6);
+      second.close();
+      assertThat(other.getMeters()).isEmpty();
+      assertThat(otherGauges).isEmpty();
+    } finally {
+      other.close();
+    }
+  }
+
+  @Test
+  public void shouldRemovePoolMetersFromCompositeChildren() {
+    CompositeMeterRegistry composite = new CompositeMeterRegistry();
+    try {
+      composite.add(registry);
+      VertxMetricsImpl metrics = new VertxMetricsImpl(options, () -> composite, new LongGauges(gauges));
+      PoolMetrics<?, ?> pool = metrics.createPoolMetrics("worker", "test", 4);
+      assertThat(composite.getMeters()).hasSize(6);
+      assertThat(registry.getMeters()).hasSize(6);
+      pool.close();
+      assertThat(composite.getMeters()).isEmpty();
+      assertThat(registry.getMeters()).isEmpty();
+      assertThat(gauges).isEmpty();
+    } finally {
+      composite.close();
+    }
+  }
+
+  @Test
+  public void shouldRemovePrometheusSeriesAndRecreatePoolWithFreshValues() {
+    PrometheusMeterRegistry prometheus = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    try {
+      prometheus.config().commonTags("application", "test");
+      VertxMetricsImpl metrics = new VertxMetricsImpl(options, () -> prometheus, new LongGauges(gauges));
+      PoolMetrics<Sample, Sample> first = (PoolMetrics<Sample, Sample>) metrics.createPoolMetrics("worker", "first", 4);
+      PoolMetrics<?, ?> second = metrics.createPoolMetrics("worker", "second", 4);
+      first.end(first.begin());
+      assertThat(prometheus.scrape()).contains("pool_name=\"first\"").contains("pool_name=\"second\"");
+      first.close();
+      assertThat(prometheus.scrape()).doesNotContain("pool_name=\"first\"").contains("pool_name=\"second\"");
+      PoolMetrics<?, ?> recreated = metrics.createPoolMetrics("worker", "first", 4);
+      assertThat(prometheus.get("vertx.pool.completed").tag("pool_name", "first").counter().count()).isZero();
+      assertThat(prometheus.get("vertx.pool.in.use").tag("pool_name", "first").gauge().value()).isZero();
+      second.close();
+      recreated.close();
+      assertThat(prometheus.getMeters()).isEmpty();
+      assertThat(prometheus.scrape()).doesNotContain("vertx_pool");
+      assertThat(gauges).isEmpty();
+    } finally {
+      prometheus.close();
     }
   }
 
