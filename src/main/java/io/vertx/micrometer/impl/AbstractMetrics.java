@@ -16,6 +16,7 @@
 
 package io.vertx.micrometer.impl;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
@@ -72,6 +73,11 @@ public abstract class AbstractMetrics implements MicrometerMetrics {
   @Override
   public final String baseName() {
     return category == null ? null : "vertx." + category + ".";
+  }
+
+  void removeMeter(Meter meter) {
+    registry.remove(meter);
+    longGauges.remove(meter.getId());
   }
 
   LongGaugeBuilder longGaugeBuilder(String name, ToDoubleFunction<LongAdder> func) {
