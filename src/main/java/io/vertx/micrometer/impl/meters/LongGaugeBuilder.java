@@ -24,6 +24,7 @@ import io.micrometer.core.instrument.Tag;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 
@@ -50,8 +51,15 @@ public class LongGaugeBuilder {
   }
 
   public LongAdder register(MeterRegistry registry) {
-    Meter.Id meterId = builder.register(registry).getId();
+    return register(registry, meter -> {});
+  }
+
+  public LongAdder register(MeterRegistry registry, Consumer<Meter> onRegister) {
+    Gauge gauge = builder.register(registry);
+    Meter.Id meterId = gauge.getId();
     supplier.setId(meterId);
-    return longGauges.computeIfAbsent(meterId, id -> new LongAdder());
+    LongAdder value = longGauges.computeIfAbsent(meterId, id -> new LongAdder());
+    onRegister.accept(gauge);
+    return value;
   }
 }

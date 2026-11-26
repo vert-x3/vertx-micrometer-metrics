@@ -203,7 +203,7 @@ public class VertxMetricsImpl extends AbstractMetrics implements VertxMetrics {
     if (disabledCategories.contains(NAMED_POOLS.toCategory())) {
       return null;
     }
-    return new VertxPoolMetrics(this, poolType, poolName, maxPoolSize);
+    return VertxPoolMetrics.create(this, poolType, poolName, maxPoolSize);
   }
 
   @Override

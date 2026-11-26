@@ -38,6 +38,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class VertxPoolMetricsTest extends MicrometerMetricsTestBase {
 
   @Test
+  public void shouldRemoveClosedWorkerPoolMetrics(TestContext context) {
+    vertx = vertx(context);
+    for (int i = 0; i < 100; i++) {
+      String name = "closed-" + i;
+      WorkerExecutor executor = vertx.createSharedWorkerExecutor(name);
+      assertThat(listDatapoints(startsWith("vertx.pool").and(hasTag("pool_name", name)))).isNotEmpty();
+      Async closed = context.async();
+      executor.close().onComplete(context.asyncAssertSuccess(v -> closed.complete()));
+      closed.awaitSuccess();
+      assertThat(listDatapoints(startsWith("vertx.pool").and(hasTag("pool_name", name)))).isEmpty();
+    }
+  }
+
+  @Test
   public void shouldReportNamedPoolMetrics(TestContext context) {
     vertx = vertx(context);
 
